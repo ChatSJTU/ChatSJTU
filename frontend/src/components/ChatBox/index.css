@@ -1,0 +1,14 @@
+.user-message {
+    background-color: #f8f8f8; /* 用户输入的背景颜色 */
+}
+  
+.bot-message {
+    background-color: #ffffff; /* 机器人回复的背景颜色 */
+}
+
+.sendbox-area{
+    border-top: 1px solid #cccccc; /* 上边框样式 */
+    box-shadow: 0px -6px 20px #cccccc;
+    background-color: #f8f8f8;
+    z-index: 1;
+}

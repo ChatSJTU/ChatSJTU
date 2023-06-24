@@ -14,7 +14,9 @@
     "react-markdown": "^8.0.7",
     "react-scripts": "5.0.1",
     "react-string-replace": "^1.1.1",
+    "rehype-katex": "^6.0.3",
     "remark-gfm": "^3.0.1",
+    "remark-html": "^15.0.2",
     "remark-math": "^5.1.1",
     "web-vitals": "^2.1.4"
   },

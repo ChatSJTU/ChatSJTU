@@ -1,0 +1,22 @@
+.Sider {
+    width: 260px !important;
+    border-right: 1.5px solid #dddddd;
+    overflow-y: auto;
+    scrollbar-width: none;
+    z-index: 4;
+}
+
+.Sider::-webkit-scrollbar{
+    display: none;
+}
+
+.background {
+    z-index: 0;
+}
+
+.center-box{
+    z-index: 1;
+}
+
+
+  

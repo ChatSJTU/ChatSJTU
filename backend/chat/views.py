@@ -83,7 +83,6 @@ def send_message(request, session_id):
             content = ai_message
         )
         # 返回服务端生成的回复消息
-        print(user_message_obj.timestamp.isoformat(), ai_message_obj.timestamp.isoformat())
         return JsonResponse({'message': ai_message, 'timestamp': ai_message_obj.timestamp.isoformat()})
 
 

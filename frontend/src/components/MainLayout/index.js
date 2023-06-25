@@ -29,7 +29,7 @@ const MainLayout = () => {
                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
-                        <Sider className='Sider' width={360}>
+                        <Sider className='Sider' width={300}>
                             <LeftSidebar/>
                         </Sider>
                         <Layout>

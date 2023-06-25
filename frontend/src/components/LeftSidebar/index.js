@@ -34,14 +34,14 @@ const LeftSidebar = () => {
             <Footer className='Sider-content'>
                 <Divider></Divider>
                 <Row style={{margin:'0px 17.5px 20px 17.5px'}}>
-                    <Col span={4} className='button-col'>
+                    <Col span={5} className='button-col'>
                         <Button block size="large" type="text" icon={<UserOutlined />}/>
                     </Col>
-                    <Col span={4} className='button-col'>
+                    <Col span={5} className='button-col'>
                         <Button block size="large" type="text" icon={<QuestionCircleOutlined />}/>
                     </Col>
-                    <Col span={12} className='button-col'/>
-                    <Col span={4} className='button-col'>
+                    <Col span={9} className='button-col'/>
+                    <Col span={5} className='button-col'>
                         <Button block size="large" type="text" icon={<EllipsisOutlined />}/>
                     </Col>
                 </Row>

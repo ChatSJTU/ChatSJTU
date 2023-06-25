@@ -1,9 +1,10 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Typography, Avatar} from 'antd';
-import { UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { Input, Button, List, Typography, Avatar, message, Space} from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
+import copy from 'copy-to-clipboard';
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -31,12 +32,19 @@ function ChatBox() {
         }
     }, [messages]);
 
+    //回到List底部
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     //用户发送消息
     const sendUserMessage = () => {
         setMessages(
             [...messages, 
                 { 
-                    sender: 'User', 
+                    sender: 1, 
                     content: input,
                     time: new Date().toLocaleTimeString()
                 }
@@ -51,7 +59,7 @@ function ChatBox() {
         setMessages(prevMessages => 
             [...prevMessages, 
                 {
-                    sender: 'AI', 
+                    sender: 0, 
                     content: aiMessage,
                     time: new Date().toLocaleTimeString() 
                 }
@@ -65,11 +73,13 @@ function ChatBox() {
 
     //检查发送消息是否为空，不为空则发送
     const handleSend = () => {
-        if (input.trim() !== ''){
-            sendUserMessage();
-            sendAIMessage(input);
+        if (input.trim() !== '') {
+          sendUserMessage();
+          sendAIMessage(input);
+        } else {
+          message.error('发送消息不能为空', 2);
         }
-    };
+      };
 
     //聊天框中html渲染
     const renderers = {
@@ -77,6 +87,12 @@ function ChatBox() {
         // math: ({value}) => <BlockMath>{value}</BlockMath>,
         html: ({value}) => <div dangerouslySetInnerHTML={{ __html: value }} />
     }
+
+    //复制
+    const handleCopy = (content) => {
+        copy(content);
+        message.success('已复制到剪贴板', 2);
+      };
 
     //图标
     const userIcon = <Avatar 
@@ -102,16 +118,24 @@ function ChatBox() {
             dataSource={messages}
             renderItem={item => (
             <List.Item 
-                className={item.sender === 'User' ? 'user-message' : 'bot-message'}
-                style={{padding: '20px 50px', wordBreak: 'break-all'}}>
+                className={item.sender ? 'user-message' : 'bot-message'}
+                style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
                 <div style={{ width: '100%'}}>
                     <List.Item.Meta
-                        avatar={item.sender === 'User' ? userIcon : aiIcon}
-                        description={item.time}
+                        avatar={item.sender ? userIcon : aiIcon}
+                        description={
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <div style={{ flex: '1' }}>{item.time}</div>
+                                <Button
+                                    icon={<CopyOutlined />}
+                                    onClick={() => handleCopy(item.content)}
+                                />
+                            </div>
+                        }
                         
                     />
                     <div style={{ width: '100%', marginTop: 10}}>
-                    {item.sender === 'User' ? (
+                    {item.sender ? (
                         <div style={{ whiteSpace: 'pre-wrap' }}>
                             {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
                             <span key={i}>
@@ -136,7 +160,12 @@ function ChatBox() {
           )}
         />
         
-        <div className='sendbox-area' style={{ padding: '20px 50px'}}>
+        <div className='sendbox-area' style={{ padding: '20px 50px', position: 'relative'}}>
+                <Button
+                    icon={<ArrowDownOutlined />}
+                    style={{ position: 'absolute', top: -40, right: 10, zIndex: 10 }}
+                    onClick={scrollToBottom}
+                />
             <TextArea
                 rows={4}
                 value={input}
@@ -149,11 +178,16 @@ function ChatBox() {
                     }
                   }}
                 placeholder="在此输入您要发送的信息"
-                style={{resize: 'none', fontSize:'18px'}}
+                style={{resize: 'none', fontSize:'16px'}}
             />
-            <Button type="primary" onClick={handleSend} style={{ marginTop: '10px' }}>
-                发送
-            </Button>
+            <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <Button size="large" onClick={() => setInput('')}>
+                    清空
+                </Button>
+                <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}>
+                    发送
+                </Button>
+            </Space>
         </div>
     </div>
     );

@@ -126,7 +126,7 @@ function ChatBox() {
                         description={
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <div style={{ flex: '1' }}>{item.time}</div>
-                                <Button
+                                <Button type="text"
                                     icon={<CopyOutlined />}
                                     onClick={() => handleCopy(item.content)}
                                 />
@@ -161,8 +161,8 @@ function ChatBox() {
         />
         
         <div className='sendbox-area' style={{ padding: '20px 50px', position: 'relative'}}>
-                <Button
-                    icon={<ArrowDownOutlined />}
+                <Button 
+                    icon={<ArrowDownOutlined />} 
                     style={{ position: 'absolute', top: -40, right: 10, zIndex: 10 }}
                     onClick={scrollToBottom}
                 />

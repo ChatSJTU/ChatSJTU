@@ -8,6 +8,13 @@ import './index.css'
 const { Content, Sider} = Layout;
 
 const MainLayout = () => {
+
+    const [selectedSession, setSelectedSession] = useState(null);
+
+    const handleSelectSession = (session) => {
+        setSelectedSession(session);
+    };    
+
     return (
         <div className="background"
             style={{
@@ -30,11 +37,11 @@ const MainLayout = () => {
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
-                            <LeftSidebar/>
+                            <LeftSidebar selectedSession={selectedSession} onSelectSession={handleSelectSession}/>
                         </Sider>
                         <Layout>
                             <Content>
-                                <ChatBox />
+                                {selectedSession && <ChatBox selectedSession={selectedSession} />}
                             </Content>
                         </Layout>
                     </Layout>

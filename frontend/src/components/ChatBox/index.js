@@ -5,6 +5,7 @@ import { Input, Button, List, Typography, Avatar, message, Space} from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
+import axios from 'axios';
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -20,7 +21,7 @@ import './index.css'
 const { TextArea } = Input;
 const { Text } = Typography;
 
-function ChatBox() {
+function ChatBox({ selectedSession }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef(null);
@@ -32,6 +33,19 @@ function ChatBox() {
         }
     }, [messages]);
 
+    useEffect(() => {
+        if (selectedSession) {
+          // 请求选中会话的消息记录数据
+          axios.get(`/api/sessions/${selectedSession.id}/messages`)
+            .then(response => {
+                setMessages(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching messages:', error);
+            });
+        }
+      }, [selectedSession]);
+
     //回到List底部
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -39,32 +53,36 @@ function ChatBox() {
         }
     };
 
-    //用户发送消息
-    const sendUserMessage = () => {
-        setMessages(
-            [...messages, 
-                { 
-                    sender: 1, 
-                    content: input,
-                    time: new Date().toLocaleTimeString()
-                }
+    // 用户发送消息
+    const sendUserMessage = async () => {
+        try {
+            const time_now = new Date();
+            // 发送消息到后端处理
+            const response = await axios.post(`/api/send-message/${selectedSession.id}`, 
+                { message: input});
+            // 在前端显示用户发送的消息和服务端返回的消息
+            const userMessage = input;
+            const aiMessage = response.data.message;
+            const aiTime = new Date(response.data.timestamp);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    sender: 1,
+                    content: userMessage,
+                    time: time_now.toLocaleTimeString(),
+                },
+                {
+                    sender: 0,
+                    content: aiMessage,
+                    time: aiTime.toLocaleTimeString(),
+                },
             ]);
-        setInput('');
+            setInput('');
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        }
     };
 
-    //服务端发送消息
-    const sendAIMessage = async userMessage => {
-        // Replace this with your AI API call
-        const aiMessage = `${userMessage}`;
-        setMessages(prevMessages => 
-            [...prevMessages, 
-                {
-                    sender: 0, 
-                    content: aiMessage,
-                    time: new Date().toLocaleTimeString() 
-                }
-            ]);
-    };
     
     //保持input变量始终与文本框内容同步
     const handleUserInput = e => {
@@ -74,10 +92,9 @@ function ChatBox() {
     //检查发送消息是否为空，不为空则发送
     const handleSend = () => {
         if (input.trim() !== '') {
-          sendUserMessage();
-          sendAIMessage(input);
+            sendUserMessage();
         } else {
-          message.error('发送消息不能为空', 2);
+            message.error('发送消息不能为空', 2);
         }
       };
 

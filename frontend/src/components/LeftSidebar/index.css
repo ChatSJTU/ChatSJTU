@@ -13,4 +13,36 @@
     padding-right: 7.5px;
 }
 
+/* 为 Menu 组件自身的背景设置颜色 */
+.ant-menu {
+    background-color: #e8f2ff;
+    border: none !important;
+}
+  
+.ant-menu-item {
+    background-color: white;
+    border-radius: 15px;  
+}
+  
+/* 选中时的样式 */
+.ant-menu-item-selected {
+    background-color: #eeeeee !important; 
+    box-shadow: 0px 0px 8px #296cc4 !important;
+    color: black !important;  
+}
+
+
+.ant-menu-item-unselected{
+    background-color: white !important;
+    box-shadow: none !important;
+}
+
+.delete-button:hover {
+    color: #4287e1 !important;
+}
+
+.gradient-divider {
+    height: 1.5px;
+    background: linear-gradient(to right, #a3c2eb, #4287e1, #a3c2eb);
+}
   

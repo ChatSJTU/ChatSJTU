@@ -34,6 +34,7 @@ const App = () => {
         return hashCode(userAgent).toString();
     };
 
+    //device-id登入
     const handleLogin = async () => {
         const deviceId = getDeviceId();
         console.log(deviceId);
@@ -47,16 +48,26 @@ const App = () => {
         }
     };
 
+    //登出
+    const handleLogout = async () => {
+        try {
+            await request.post('/oauth/logout/'); 
+            setIsLoggedIn(false);
+        } catch (error) {
+            console.error('Failed to logout:', error);
+        }
+    };
+
     if (isLoggedIn) {
         return (
             <div style={{ background: '#f0f2f5', height: '100%' }}>
-                <MainLayout />
+                <MainLayout handleLogout={handleLogout} />
             </div>
         );
     } else {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0f2f5', height: '100vh'}}>
-                <Button type="primary" onClick={handleLogin}>使用 device_id 登录</Button>
+                <Button type="primary" onClick={handleLogin} size="large">使用 device_id 登录</Button>
             </div>
             
         );

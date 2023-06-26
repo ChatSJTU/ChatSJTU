@@ -7,7 +7,7 @@ import './index.css'
 
 const { Content, Sider} = Layout;
 
-const MainLayout = () => {
+const MainLayout = ({handleLogout}) => {
 
     const [selectedSession, setSelectedSession] = useState(null);
 
@@ -37,7 +37,11 @@ const MainLayout = () => {
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
-                            <LeftSidebar selectedSession={selectedSession} onSelectSession={handleSelectSession}/>
+                            <LeftSidebar 
+                                selectedSession={selectedSession} 
+                                onSelectSession={handleSelectSession}
+                                onLogoutClick={handleLogout}
+                                />
                         </Sider>
                         <Layout>
                             <Content>

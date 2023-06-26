@@ -1,4 +1,5 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from django.contrib.auth.decorators import login_required
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate, login
@@ -26,33 +27,42 @@ def login_deviceID(request):
             return JsonResponse({"message": "login success"})
     return JsonResponse({"message": "login failed"}, status=400)
 
+@login_required
+def get_user_info(request):
+    user = request.user
+    user_data = {
+        'username': user.username
+    }
+    return JsonResponse(user_data)
+
+@login_required
 def auth_logout(request):
     logout(request)
     return JsonResponse({'detail': '已登出。'})
 
-def login_jaccount(request):
-    redirect_uri = request.GET.get('redirect_uri', '')
-    if redirect_uri == '':
-        redirect_uri = request.build_absolute_uri(reverse('auth_jaccount'))
-    return jaccount.authorize_redirect(request, redirect_uri)
+# def login_jaccount(request):
+#     redirect_uri = request.GET.get('redirect_uri', '')
+#     if redirect_uri == '':
+#         redirect_uri = request.build_absolute_uri(reverse('auth_jaccount'))
+#     return jaccount.authorize_redirect(request, redirect_uri)
 
 
-def auth_jaccount(request):
-    try:
-        token = jaccount.authorize_access_token(request)
-    except OAuthError:
-        return JsonResponse({'detail': '参数错误。'}, status=400)
-    claims = jwt.decode(token.get('id_token'),
-                        jaccount.client_secret, claims_cls=CodeIDToken)
-    user_type = claims['type']
-    account = claims['sub']
-    login_with(request, account, user_type)
-    response = JsonResponse({'account': account})
-    return response
+# def auth_jaccount(request):
+#     try:
+#         token = jaccount.authorize_access_token(request)
+#     except OAuthError:
+#         return JsonResponse({'detail': '参数错误。'}, status=400)
+#     claims = jwt.decode(token.get('id_token'),
+#                         jaccount.client_secret, claims_cls=CodeIDToken)
+#     user_type = claims['type']
+#     account = claims['sub']
+#     login_with(request, account, user_type)
+#     response = JsonResponse({'account': account})
+#     return response
 
-def login_with(request, username):
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        user = User.objects.create_user(username=username)
-    login(request, user)
+# def login_with(request, username):
+#     try:
+#         user = User.objects.get(username=username)
+#     except User.DoesNotExist:
+#         user = User.objects.create_user(username=username)
+#     login(request, user)

@@ -1,7 +1,6 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
-import axios from 'axios';
 
 import { fetcher, request } from "../../services/request";
 import './index.css'
@@ -9,13 +8,25 @@ import './index.css'
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession }) {
+function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
     
     const [sessions, setSessions] = useState([]);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         fetchSessions();
+        fetchUserData();
     }, []);
+
+    //获取登录用户信息
+    const fetchUserData = async () => {
+        try {
+            const response = await request.get('/oauth/info/'); // 根据你的后端路由配置，请求获取用户信息
+            setUser(response.data);
+        } catch (error) {
+            console.error('Failed to fetch user data:', error);
+        }
+    };
 
     //获取会话列表
     const fetchSessions = async () => {
@@ -138,10 +149,11 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
                         <Dropdown placement="topLeft"
                             overlay={
                                 <Menu>
-                                    <Menu.Item icon={<UserOutlined />} key="0">USER_NAME占位</Menu.Item>
+                                    <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
                                     <Menu.Item icon={<SettingOutlined />} key="1">偏好设置</Menu.Item>
                                     <Menu.Divider key="2"></Menu.Divider>
-                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="3">退出登录</Menu.Item>
+                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="3"
+                                        onClick={onLogoutClick}>退出登录</Menu.Item>
                                 </Menu>
                             }
                         >

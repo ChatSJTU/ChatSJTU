@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, List, Typography, Avatar, message, Space} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import axios from 'axios';
@@ -82,6 +82,19 @@ function ChatBox({ selectedSession }) {
         }
     };
     
+    //显示特殊信息（预留）
+    const showNotice = () => {
+        const time_now = new Date();
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+                sender: 2,
+                content: '预留信息',
+                time: time_now.toLocaleTimeString(),
+            },
+        ]);
+    }
+
     //保持input变量始终与文本框内容同步
     const handleUserInput = e => {
         setInput(e.target.value);
@@ -109,15 +122,7 @@ function ChatBox({ selectedSession }) {
         message.success('已复制到剪贴板', 2);
       };
 
-    //图标
-    const userIcon = <Avatar 
-        icon={<UserOutlined/>}
-        style={{
-                backgroundColor: '#fde3cf',
-                color: '#f56a00',
-            }}
-        />
-
+    //头像图标
     const aiIcon = <Avatar 
         icon={<RobotOutlined/>}
         style={{
@@ -125,6 +130,24 @@ function ChatBox({ selectedSession }) {
                 color: '#62a645',
             }}
         />
+    const userIcon = <Avatar 
+        icon={<UserOutlined/>}
+        style={{
+                backgroundColor: '#fde3cf',
+                color: '#f56a00',
+            }}
+        />
+    const NoticeIcon = <Avatar
+        icon={<InfoCircleOutlined />}
+        style={{
+                backgroundColor: '#debfff',
+                color: '#7945af',
+            }}
+        />
+
+    const AvatarList = [aiIcon, userIcon, NoticeIcon]
+    
+    // sender标识：AI-0，用户-1，预留提示信息-2（仅留在前端）
 
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' ,minHeight: '100%',maxHeight: '100%'}}>
@@ -133,11 +156,12 @@ function ChatBox({ selectedSession }) {
             dataSource={messages}
             renderItem={item => (
             <List.Item 
-                className={item.sender ? 'user-message' : 'bot-message'}
+                className={item.sender === 1 ? 'user-message' : 'bot-message'}  
                 style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
                 <div style={{ width: '100%'}}>
                     <List.Item.Meta
-                        avatar={item.sender ? userIcon : aiIcon}
+                        // avatar={item.sender ? userIcon : aiIcon}
+                        avatar = {AvatarList[item.sender]}
                         description={
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <div style={{ flex: '1' }}>{item.time}</div>
@@ -150,7 +174,7 @@ function ChatBox({ selectedSession }) {
                         
                     />
                     <div style={{ width: '100%', marginTop: 10}}>
-                    {item.sender ? (
+                    {item.sender === 1 ? (
                         <div style={{ whiteSpace: 'pre-wrap' }}>
                             {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
                             <span key={i}>

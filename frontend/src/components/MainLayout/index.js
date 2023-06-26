@@ -46,6 +46,15 @@ const MainLayout = () => {
                         </Layout>
                     </Layout>
             </div>
+            <div
+                style={{
+                position: 'absolute',
+                bottom: 0,
+                width: '100%',
+                textAlign: 'center',
+                }}>
+                <p style={{fontSize: '12px', color: '#aaaaaa'}}>© 2023 上海交通大学 沪交ICP备20230139</p>
+            </div>
         </div>
     );
   };

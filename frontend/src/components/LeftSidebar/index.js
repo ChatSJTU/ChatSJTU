@@ -3,6 +3,7 @@ import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'ant
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
 import axios from 'axios';
 
+import { fetcher, request } from "../../services/request";
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
@@ -12,22 +13,6 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
     
     const [sessions, setSessions] = useState([]);
 
-    //通过设备标识验证（开发中使用）
-    const getDeviceId = () => {
-        const { userAgent } = navigator;
-        const hashCode = (s) => {
-            let h = 0;
-            for (let i = 0; i < s.length; i++) {
-                h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-            }
-            return h;
-        };
-        const deviceId = hashCode(userAgent).toString();
-        return deviceId;
-        };
-    // 使用设备标识
-    const deviceId = getDeviceId();
-
     useEffect(() => {
         fetchSessions();
     }, []);
@@ -35,11 +20,7 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
     //获取会话列表
     const fetchSessions = async () => {
         try {
-            const response = await axios.get('/api/sessions',{
-                headers: {
-                    'device-id': deviceId,  // 将设备ID添加到请求头中
-                },
-            });
+            const response = await request.get('/api/sessions/');
             setSessions(response.data);
         } catch (error) {
             console.error('Failed to fetch sessions:', error);
@@ -50,7 +31,7 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
     const handleDeleteSession = async (event, sessionId) => {
         event.stopPropagation(); 
         try {
-            await axios.delete(`/api/sessions/${sessionId}`);
+            await request.delete(`/api/sessions/${sessionId}/`);
             // 更新会话列表
             setSessions((prevSessions) => prevSessions.filter((session) => session.id !== sessionId));
 
@@ -76,9 +57,7 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
     //新建会话
     const handleCreateSession = async () => {
         try {
-            const response = await axios.post('/api/sessions', {
-                device_id: deviceId,
-            });
+            const response = await request.post('/api/sessions/');
             const newSession = response.data;
             setSessions([...sessions, newSession]);
             onSelectSession(newSession); // 进入新创建的会话

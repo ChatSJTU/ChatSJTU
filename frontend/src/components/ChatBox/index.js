@@ -12,14 +12,13 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex'
 import remarkHtml from 'remark-html';
+import { request } from '../../services/request';
 
 import 'katex/dist/katex.min.css';
 import 'github-markdown-css/github-markdown-light.css';
 import './index.css'
 
-
 const { TextArea } = Input;
-const { Text } = Typography;
 
 function ChatBox({ selectedSession }) {
     const [messages, setMessages] = useState([]);
@@ -36,7 +35,7 @@ function ChatBox({ selectedSession }) {
     useEffect(() => {
         if (selectedSession) {
           // 请求选中会话的消息记录数据
-          axios.get(`/api/sessions/${selectedSession.id}/messages`)
+          request.get(`/api/sessions/${selectedSession.id}/messages/`)
             .then(response => {
                 setMessages(response.data);
             })
@@ -57,9 +56,9 @@ function ChatBox({ selectedSession }) {
     const sendUserMessage = async () => {
         try {
             const time_now = new Date();
+            const messageData = { message: input };  // 存储请求数据到变量
             // 发送消息到后端处理
-            const response = await axios.post(`/api/send-message/${selectedSession.id}`, 
-                { message: input});
+            const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
             // 在前端显示用户发送的消息和服务端返回的消息
             const userMessage = input;
             const aiMessage = response.data.message;
@@ -82,7 +81,6 @@ function ChatBox({ selectedSession }) {
             console.error('Failed to send message:', error);
         }
     };
-
     
     //保持input变量始终与文本框内容同步
     const handleUserInput = e => {

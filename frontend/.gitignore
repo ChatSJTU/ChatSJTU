@@ -24,3 +24,6 @@ yarn-error.log*
 
 # database
 /backend/db.sqlite3
+
+# sensitive
+/src/config

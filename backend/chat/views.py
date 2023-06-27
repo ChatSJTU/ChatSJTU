@@ -57,7 +57,7 @@ def session_messages(request, session_id):
         for message in messages:
             # 转换时区和格式
             time_str = message.timestamp.astimezone(pytz.timezone('Asia/Shanghai'))
-            time_str = time_str.strftime("%H:%M:%S")
+            time_str = time_str.strftime("%Y/%m/%d %H:%M:%S")
             data.append({
                 'id': message.id, 
                 'content': message.content,
@@ -66,6 +66,7 @@ def session_messages(request, session_id):
             })
         return JsonResponse(data, safe=False)
 
+# 发送消息
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])

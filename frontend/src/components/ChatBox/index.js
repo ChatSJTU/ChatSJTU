@@ -25,6 +25,15 @@ function ChatBox({ selectedSession }) {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef(null);
 
+    const timeOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    };
+
     //发送消息自动滚动到底部
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -68,12 +77,12 @@ function ChatBox({ selectedSession }) {
                 {
                     sender: 1,
                     content: userMessage,
-                    time: time_now.toLocaleTimeString(),
+                    time: time_now.toLocaleString('default', timeOptions),
                 },
                 {
                     sender: 0,
                     content: aiMessage,
-                    time: aiTime.toLocaleTimeString(),
+                    time: aiTime.toLocaleString('default', timeOptions),
                 },
             ]);
             setInput('');

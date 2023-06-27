@@ -1,5 +1,4 @@
 from authlib.integrations.django_client import OAuth
-
 from chat_sjtu import settings
 
 oauth = OAuth()

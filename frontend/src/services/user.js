@@ -1,10 +1,5 @@
-import axios from 'axios';
+import { fetcher, request } from "./request";
 import Config from "../config/config";
-
-export const authInstance = axios.create({
-    baseURL: 'http://localhost:8000',
-    timeout: 5000, 
-});
 
 export async function jAccountAuth(code, state, basePath, next) {
     let redirect_uri =
@@ -12,14 +7,13 @@ export async function jAccountAuth(code, state, basePath, next) {
     if (next) {
         redirect_uri += "?next=" + next;
     }
-    const resp = await authInstance.post("/oauth/jaccount/auth/", {
-        params: {
+    console.log(code, state, redirect_uri);
+    const resp = await request.post("/oauth/jaccount/auth/", {
         code,
         state,
         redirect_uri,
-        },
-    });
-    return resp.data;
+        });
+    return resp;
 }
 
 export async function jAccountLogin(basePath, next) {
@@ -28,5 +22,6 @@ export async function jAccountLogin(basePath, next) {
     if (next) {
         redirect_uri += "?next=" + next;
     }
-    window.location.href = `/oauth/jaccount/login/?redirect_uri=${redirect_uri}`;
+    // window.location.href = `/oauth/jaccount/login/?redirect_uri=${redirect_uri}`;
+    window.location.href = `http://localhost:8000/oauth/jaccount/login/?redirect_uri=${redirect_uri}`;
 }

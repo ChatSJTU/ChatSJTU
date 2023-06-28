@@ -46,5 +46,6 @@
       "last 1 safari version"
     ]
   },
+  "options":{"allowedHosts": ["localhost", ".localhost"]},
   "proxy": "http://127.0.0.1:8000"
 }

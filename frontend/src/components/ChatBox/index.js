@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, List, Typography, Avatar, message, Space} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import axios from 'axios';
@@ -12,19 +12,27 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex'
 import remarkHtml from 'remark-html';
+import { request } from '../../services/request';
 
 import 'katex/dist/katex.min.css';
 import 'github-markdown-css/github-markdown-light.css';
 import './index.css'
 
-
 const { TextArea } = Input;
-const { Text } = Typography;
 
 function ChatBox({ selectedSession }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef(null);
+
+    const timeOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    };
 
     //发送消息自动滚动到底部
     useEffect(() => {
@@ -36,7 +44,7 @@ function ChatBox({ selectedSession }) {
     useEffect(() => {
         if (selectedSession) {
           // 请求选中会话的消息记录数据
-          axios.get(`/api/sessions/${selectedSession.id}/messages`)
+          request.get(`/api/sessions/${selectedSession.id}/messages/`)
             .then(response => {
                 setMessages(response.data);
             })
@@ -57,9 +65,9 @@ function ChatBox({ selectedSession }) {
     const sendUserMessage = async () => {
         try {
             const time_now = new Date();
+            const messageData = { message: input };  // 存储请求数据到变量
             // 发送消息到后端处理
-            const response = await axios.post(`/api/send-message/${selectedSession.id}`, 
-                { message: input});
+            const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
             // 在前端显示用户发送的消息和服务端返回的消息
             const userMessage = input;
             const aiMessage = response.data.message;
@@ -69,12 +77,12 @@ function ChatBox({ selectedSession }) {
                 {
                     sender: 1,
                     content: userMessage,
-                    time: time_now.toLocaleTimeString(),
+                    time: time_now.toLocaleString('default', timeOptions),
                 },
                 {
                     sender: 0,
                     content: aiMessage,
-                    time: aiTime.toLocaleTimeString(),
+                    time: aiTime.toLocaleString('default', timeOptions),
                 },
             ]);
             setInput('');
@@ -82,8 +90,20 @@ function ChatBox({ selectedSession }) {
             console.error('Failed to send message:', error);
         }
     };
-
     
+    //显示特殊信息（预留）
+    const showNotice = () => {
+        const time_now = new Date();
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+                sender: 2,
+                content: '预留信息',
+                time: time_now.toLocaleTimeString(),
+            },
+        ]);
+    }
+
     //保持input变量始终与文本框内容同步
     const handleUserInput = e => {
         setInput(e.target.value);
@@ -111,15 +131,7 @@ function ChatBox({ selectedSession }) {
         message.success('已复制到剪贴板', 2);
       };
 
-    //图标
-    const userIcon = <Avatar 
-        icon={<UserOutlined/>}
-        style={{
-                backgroundColor: '#fde3cf',
-                color: '#f56a00',
-            }}
-        />
-
+    //头像图标
     const aiIcon = <Avatar 
         icon={<RobotOutlined/>}
         style={{
@@ -127,6 +139,24 @@ function ChatBox({ selectedSession }) {
                 color: '#62a645',
             }}
         />
+    const userIcon = <Avatar 
+        icon={<UserOutlined/>}
+        style={{
+                backgroundColor: '#fde3cf',
+                color: '#f56a00',
+            }}
+        />
+    const NoticeIcon = <Avatar
+        icon={<InfoCircleOutlined />}
+        style={{
+                backgroundColor: '#debfff',
+                color: '#7945af',
+            }}
+        />
+
+    const AvatarList = [aiIcon, userIcon, NoticeIcon]
+    
+    // sender标识：AI-0，用户-1，预留提示信息-2（仅留在前端）
 
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' ,minHeight: '100%',maxHeight: '100%'}}>
@@ -135,11 +165,12 @@ function ChatBox({ selectedSession }) {
             dataSource={messages}
             renderItem={item => (
             <List.Item 
-                className={item.sender ? 'user-message' : 'bot-message'}
+                className={item.sender === 1 ? 'user-message' : 'bot-message'}  
                 style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
                 <div style={{ width: '100%'}}>
                     <List.Item.Meta
-                        avatar={item.sender ? userIcon : aiIcon}
+                        // avatar={item.sender ? userIcon : aiIcon}
+                        avatar = {AvatarList[item.sender]}
                         description={
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <div style={{ flex: '1' }}>{item.time}</div>
@@ -152,7 +183,7 @@ function ChatBox({ selectedSession }) {
                         
                     />
                     <div style={{ width: '100%', marginTop: 10}}>
-                    {item.sender ? (
+                    {item.sender === 1 ? (
                         <div style={{ whiteSpace: 'pre-wrap' }}>
                             {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
                             <span key={i}>

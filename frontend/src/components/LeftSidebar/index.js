@@ -1,45 +1,37 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Card} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined} from '@ant-design/icons';
-import axios from 'axios';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'antd';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
 
+import { fetcher, request } from "../../services/request";
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession }) {
+function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
     
     const [sessions, setSessions] = useState([]);
-
-    //通过设备标识验证（开发中使用）
-    const getDeviceId = () => {
-        const { userAgent } = navigator;
-        const hashCode = (s) => {
-            let h = 0;
-            for (let i = 0; i < s.length; i++) {
-                h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-            }
-            return h;
-        };
-        const deviceId = hashCode(userAgent).toString();
-        return deviceId;
-        };
-    // 使用设备标识
-    const deviceId = getDeviceId();
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         fetchSessions();
+        fetchUserData();
     }, []);
+
+    //获取登录用户信息
+    const fetchUserData = async () => {
+        try {
+            const response = await request.get('/oauth/info/'); // 根据你的后端路由配置，请求获取用户信息
+            setUser(response.data);
+        } catch (error) {
+            console.error('Failed to fetch user data:', error);
+        }
+    };
 
     //获取会话列表
     const fetchSessions = async () => {
         try {
-            const response = await axios.get('/api/sessions',{
-                headers: {
-                    'device-id': deviceId,  // 将设备ID添加到请求头中
-                },
-            });
+            const response = await request.get('/api/sessions/');
             setSessions(response.data);
         } catch (error) {
             console.error('Failed to fetch sessions:', error);
@@ -50,7 +42,7 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
     const handleDeleteSession = async (event, sessionId) => {
         event.stopPropagation(); 
         try {
-            await axios.delete(`/api/sessions/${sessionId}`);
+            await request.delete(`/api/sessions/${sessionId}/`);
             // 更新会话列表
             setSessions((prevSessions) => prevSessions.filter((session) => session.id !== sessionId));
 
@@ -76,9 +68,7 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
     //新建会话
     const handleCreateSession = async () => {
         try {
-            const response = await axios.post('/api/sessions', {
-                device_id: deviceId,
-            });
+            const response = await request.post('/api/sessions/');
             const newSession = response.data;
             setSessions([...sessions, newSession]);
             onSelectSession(newSession); // 进入新创建的会话
@@ -139,8 +129,7 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
                                 <Button
                                     className='delete-button'
                                     style={{backgroundColor:'transparent', marginRight: '-10px'}}
-                                    type="text"
-                                    icon={<DeleteOutlined />}
+                                    type="text" icon={<DeleteOutlined />}
                                     onClick={(event) => {
                                         event.stopPropagation();
                                         handleDeleteSession(event, session.id);
@@ -155,15 +144,39 @@ function LeftSidebar ({ selectedSession, onSelectSession }) {
             <Footer className='Sider-content'>
                 <Divider className="gradient-divider"></Divider>
                 <Row style={{margin:'0px 17.5px 20px 17.5px'}}>
+                    {/* 用户按钮 */}
                     <Col span={5} className='button-col'>
-                        <Button block size="large" type="text" icon={<UserOutlined />}/>
+                        <Dropdown placement="topLeft"
+                            overlay={
+                                <Menu>
+                                    <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
+                                    <Menu.Item icon={<SettingOutlined />} key="1">偏好设置</Menu.Item>
+                                    <Menu.Divider key="2"></Menu.Divider>
+                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="3"
+                                        onClick={onLogoutClick}>退出登录</Menu.Item>
+                                </Menu>
+                            }
+                        >
+                            <Button block size="large" type="text" icon={<UserOutlined />}/>
+                        </Dropdown>
                     </Col>
+                    {/* 帮助按钮 */}
                     <Col span={5} className='button-col'>
                         <Button block size="large" type="text" icon={<QuestionCircleOutlined />}/>
                     </Col>
                     <Col span={9} className='button-col'/>
+                    {/* 更多按钮 */}
                     <Col span={5} className='button-col'>
-                        <Button block size="large" type="text" icon={<EllipsisOutlined />}/>
+                        <Dropdown placement="topRight"
+                            overlay={
+                                    <Menu>
+                                        <Menu.Item icon={<CodeOutlined />} key="1">扩展开发</Menu.Item>
+                                        <Menu.Item icon={<InfoCircleOutlined />} key="2">关于我们</Menu.Item>
+                                    </Menu>
+                                }
+                        >
+                            <Button block size="large" type="text" icon={<EllipsisOutlined />}/>
+                        </Dropdown>
                     </Col>
                 </Row>
             </Footer>

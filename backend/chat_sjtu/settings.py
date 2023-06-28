@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +27,12 @@ SECRET_KEY = 'django-insecure-$ggno&vd4x%9nv1j1cz-rr=gu$^38g&snc5^153en*k&bxiv28
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+if os.environ.get('ALLOWED_HOSTS', None):
+    ALLOWED_HOSTS += os.environ.get('ALLOWED_HOSTS').split(',')
+    
+CSRF_TRUSTED_ORIGINS = []
+if os.environ.get('CSRF_TRUSTED_ORIGINS', None):
+    CSRF_TRUSTED_ORIGINS += os.environ.get('CSRF_TRUSTED_ORIGINS').split(',')
 
 # Application definition
 
@@ -38,6 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'chat',
+    'oauth',
+    'corsheaders',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'chat_sjtu.urls'
@@ -81,6 +91,7 @@ DATABASES = {
     }
 }
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -122,3 +133,33 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHLIB_OAUTH_CLIENTS = {
+    'jaccount': {
+        'client_id': os.environ.get('JACCOUNT_CLIENT_ID', ''),
+        'client_secret': os.environ.get('JACCOUNT_CLIENT_SECRET', ''),
+    }
+}
+
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:3000',
+# ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+# SESSION_COOKIE_SECURE = True
+
+# SESSION_COOKIE_HTTPONLY = True
+
+# SESSION_COOKIE_SAMESITE = None
+
+# CSRF_COOKIE_SECURE = True

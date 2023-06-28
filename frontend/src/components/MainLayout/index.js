@@ -7,7 +7,7 @@ import './index.css'
 
 const { Content, Sider} = Layout;
 
-const MainLayout = () => {
+const MainLayout = ({handleLogout}) => {
 
     const [selectedSession, setSelectedSession] = useState(null);
 
@@ -37,7 +37,11 @@ const MainLayout = () => {
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
-                            <LeftSidebar selectedSession={selectedSession} onSelectSession={handleSelectSession}/>
+                            <LeftSidebar 
+                                selectedSession={selectedSession} 
+                                onSelectSession={handleSelectSession}
+                                onLogoutClick={handleLogout}
+                                />
                         </Sider>
                         <Layout>
                             <Content>
@@ -45,6 +49,15 @@ const MainLayout = () => {
                             </Content>
                         </Layout>
                     </Layout>
+            </div>
+            <div
+                style={{
+                position: 'absolute',
+                bottom: 0,
+                width: '100%',
+                textAlign: 'center',
+                }}>
+                <p style={{fontSize: '12px', color: '#aaaaaa'}}>© 2023 上海交通大学 沪交ICP备20230139</p>
             </div>
         </div>
     );

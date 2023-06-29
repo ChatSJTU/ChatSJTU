@@ -1,18 +1,49 @@
-import React, {useRef,useState} from 'react';
+import React, { useState } from 'react';
 import {Layout} from 'antd';
+
 import ChatBox from '../ChatBox';
 import LeftSidebar from '../LeftSidebar';
+import TabAbout from '../Tabs/about';
+import TabHelp from '../Tabs/help';
+import TabSettings from '../Tabs/settings';
 
 import './index.css'
 
-const { Content, Sider} = Layout;
+const { Content, Sider } = Layout;
 
 const MainLayout = ({handleLogout}) => {
-
     const [selectedSession, setSelectedSession] = useState(null);
+    const [prevSelectedSession, setPrevSelectedSession] = useState(null);
+    const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
 
+    //右侧可显示的组件列表
+    const componentList = [
+        <div/>,
+        <ChatBox selectedSession={selectedSession} />,
+        <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)}/>,
+    ];
+
+    const handleChangeComponent = (index) => {
+        if (index !== 1){
+            setPrevSelectedSession(selectedSession);
+            setSelectedSession(null);
+            setCurRightComponent(index);
+        }
+        else if (index === 1 && !selectedSession){
+            setSelectedSession(prevSelectedSession);
+            setCurRightComponent(index);
+        }
+        if (index === 1 && !prevSelectedSession){
+            setCurRightComponent(0);
+        }
+    };
+
+    //选中会话（在LeftSider中）
     const handleSelectSession = (session) => {
         setSelectedSession(session);
+        setCurRightComponent(1);    //切换为聊天框
     };    
 
     return (
@@ -32,7 +63,7 @@ const MainLayout = ({handleLogout}) => {
                         width: '80%',
                         height: '90%',
                         background: '#fff',
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         overflow: 'hidden',
                         border: '1px solid #ccc',
                         boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.08)',
@@ -43,11 +74,15 @@ const MainLayout = ({handleLogout}) => {
                                 selectedSession={selectedSession} 
                                 onSelectSession={handleSelectSession}
                                 onLogoutClick={handleLogout}
+                                onChangeComponent={handleChangeComponent}
                                 />
                         </Sider>
                         <Layout>
                             <Content>
-                                {selectedSession && <ChatBox selectedSession={selectedSession} />}
+                                {/* {selectedSession && 
+                                <ChatBox selectedSession={selectedSession} style={{ visibility: curRightComponent === 0 ? 'visible' : 'hidden' }}/>}  */}
+                                {componentList[curRightComponent]}
+                                {/* {curRightComponent !== 0 && componentList[curRightComponent]} */}
                             </Content>
                         </Layout>
                     </Layout>

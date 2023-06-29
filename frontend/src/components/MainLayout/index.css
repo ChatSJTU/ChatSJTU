@@ -6,10 +6,6 @@
     z-index: 4;
 }
 
-.Sider::-webkit-scrollbar{
-    display: none;
-}
-
 .background {
     z-index: 0;
 }
@@ -18,5 +14,16 @@
     z-index: 1;
 }
 
-
+::-webkit-scrollbar {
+    width: 4px;
+}
+  
+::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 2px;
+}
+  
+::-webkit-scrollbar-thumb:hover {
+    background-color: #aaa;
+}
   

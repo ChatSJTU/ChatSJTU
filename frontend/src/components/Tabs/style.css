@@ -1,0 +1,28 @@
+.Header{
+    background-color: #ffffff !important;
+    padding-bottom: 40px;
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #cccccc;
+}
+
+@keyframes floatUp {
+    from {
+        transform: translateY(15px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }   
+}
+  
+.float-up {
+    animation: floatUp 0.3s ease-out forwards;
+}
+
+.tab-content{
+    background-color: #ffffff;
+}

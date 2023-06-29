@@ -1,11 +1,10 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Typography, Avatar, message, Space} from 'antd';
+import { Input, Button, List, Avatar, message, Space} from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
-import axios from 'axios';
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

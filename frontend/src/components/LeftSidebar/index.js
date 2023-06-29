@@ -1,14 +1,14 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, MessageOutlined} from '@ant-design/icons';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
 
-import { fetcher, request } from "../../services/request";
+import { request } from "../../services/request";
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
+function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent}) {
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
@@ -77,8 +77,14 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
         }
     };
 
+    //选中会话
     const handleSelectSession = (session) => {
         onSelectSession(session);
+    };
+
+    //选中帮助、关于、设置等
+    const handleChangeComponent = (index) => {
+        return () => onChangeComponent(index);
     };
 
     // useEffect(() => {
@@ -91,7 +97,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
         <Layout style={{ height: '100%'}}>
             <Header className='Sider-content'>
                 <Typography style={{margin:'0px 25px'}}>
-                    <Title level={2} style={{ fontWeight: 'bold', marginBottom: 5}}>Chat SJTU</Title>
+                    <Title className='chat-sjtu-title' level={2}>Chat SJTU</Title>
                     <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>交大人的AI助手</Paragraph>
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>
@@ -128,7 +134,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                                 <span>{session.name}</span>
                             </div> */}
                             <span>{session.name}</span>
-                            
+
                             {selectedSession && selectedSession.id === session.id && (
                                 <Button
                                     className='delete-button'
@@ -154,7 +160,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                             overlay={
                                 <Menu>
                                     <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
-                                    <Menu.Item icon={<SettingOutlined />} key="1">偏好设置</Menu.Item>
+                                    <Menu.Item icon={<SettingOutlined />} key="1"
+                                        onClick={handleChangeComponent(4)}>偏好设置</Menu.Item>
                                     <Menu.Divider key="2"></Menu.Divider>
                                     <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="3"
                                         onClick={onLogoutClick}>退出登录</Menu.Item>
@@ -166,7 +173,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                     </Col>
                     {/* 帮助按钮 */}
                     <Col span={5} className='button-col'>
-                        <Button block size="large" type="text" icon={<QuestionCircleOutlined />}/>
+                        <Button block size="large" type="text" icon={<QuestionCircleOutlined />}
+                            onClick={handleChangeComponent(3)}/>
                     </Col>
                     <Col span={9} className='button-col'/>
                     {/* 更多按钮 */}
@@ -175,7 +183,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                             overlay={
                                     <Menu>
                                         <Menu.Item icon={<CodeOutlined />} key="1">扩展开发</Menu.Item>
-                                        <Menu.Item icon={<InfoCircleOutlined />} key="2">关于我们</Menu.Item>
+                                        <Menu.Item icon={<InfoCircleOutlined />} key="2"
+                                            onClick={handleChangeComponent(2)}>关于我们</Menu.Item>
                                     </Menu>
                                 }
                         >

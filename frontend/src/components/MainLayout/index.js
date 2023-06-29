@@ -24,7 +24,7 @@ const MainLayout = ({handleLogout}) => {
                 width: '100vw',
                 height: '100vh',
                 overflow: 'hidden',
-                background: '#f9f9f9',
+                background: '#fafafa',
                 position: 'relative',
             }}>
                 <div
@@ -32,8 +32,10 @@ const MainLayout = ({handleLogout}) => {
                         width: '80%',
                         height: '90%',
                         background: '#fff',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
                         border: '1px solid #ccc',
-                        boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.08)',
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>

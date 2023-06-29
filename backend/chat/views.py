@@ -83,7 +83,7 @@ def send_message(request, session_id):
         )
 
         # 待替换逻辑
-        ai_message = user_message
+        ai_message = "本网站正在开发中 😊 **敬请期待~**"
 
         # 创建新的 AI 回复消息对象，并关联到会话
         ai_message_obj = Message.objects.create(

@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, MessageOutlined} from '@ant-design/icons';
 
 import { fetcher, request } from "../../services/request";
 import './index.css'
@@ -21,7 +21,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
     //获取登录用户信息
     const fetchUserData = async () => {
         try {
-            const response = await request.get('/oauth/info/'); // 根据你的后端路由配置，请求获取用户信息
+            const response = await request.get('/oauth/info/'); 
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user data:', error);
@@ -123,8 +123,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                             }}
                             onClick={() => handleSelectSession(session)}
                         >
+                            {/* <div>
+                                <MessageOutlined />
+                                <span>{session.name}</span>
+                            </div> */}
                             <span>{session.name}</span>
-
+                            
                             {selectedSession && selectedSession.id === session.id && (
                                 <Button
                                     className='delete-button'

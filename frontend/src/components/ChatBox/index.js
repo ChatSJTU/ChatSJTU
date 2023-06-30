@@ -5,16 +5,9 @@ import { Input, Button, List, Avatar, message, Space} from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
-
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex'
-import remarkHtml from 'remark-html';
+import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 
-import 'katex/dist/katex.min.css';
-import 'github-markdown-css/github-markdown-light.css';
 import './index.css'
 
 const { TextArea } = Input;
@@ -117,13 +110,6 @@ function ChatBox({ selectedSession }) {
         }
       };
 
-    //聊天框中html渲染
-    const renderers = {
-        // inlineMath: ({value}) => <InlineMath>{value}</InlineMath>,
-        // math: ({value}) => <BlockMath>{value}</BlockMath>,
-        html: ({value}) => <div dangerouslySetInnerHTML={{ __html: value }} />
-    }
-
     //复制
     const handleCopy = (content) => {
         copy(content);
@@ -191,14 +177,15 @@ function ChatBox({ selectedSession }) {
                             ))}
                         </div>
                         ) : (
-                        <ReactMarkdown
-                            className='markdown-body'
-                            children={item.content}
-                            remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
-                            rehypePlugins={[rehypeKatex]}
-                            components={renderers}
-                            style={{ wordWrap: 'break-word', overflowWrap: 'break-word'}}
-                        />
+                        <MarkdownRenderer content={item.content}/>
+                        // <ReactMarkdown
+                        //     className='markdown-body'
+                        //     children={item.content}
+                        //     remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
+                        //     rehypePlugins={[rehypeKatex]}
+                        //     components={renderers}
+                        //     style={{ wordWrap: 'break-word', overflowWrap: 'break-word'}}
+                        // />
                     )}
                     </div>
                 </div>

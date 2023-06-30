@@ -1,11 +1,10 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from django.http import JsonResponse, QueryDict
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
+from django.conf import settings
 from .models import Session, Message
-from datetime import datetime, timedelta
 import pytz
 
 # def get_or_create_user(device_id):
@@ -93,5 +92,3 @@ def send_message(request, session_id):
         )
         # 返回服务端生成的回复消息
         return JsonResponse({'message': ai_message, 'timestamp': ai_message_obj.timestamp.isoformat()})
-
-

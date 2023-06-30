@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Button } from 'antd';
+import { Layout, Typography, Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
+
 import './style.css'
 
 const { Header, Content } = Layout;
+const { Title } = Typography;
 
 function TabHelp ({ onCloseTab }) {
 
@@ -20,6 +22,11 @@ function TabHelp ({ onCloseTab }) {
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0 50px', overflow: 'auto'}}>
+                <Typography>
+                    <Title level={2} style={{fontFamily: "Trebuchet MS, Arial, sans-serif"}}>
+                        欢迎使用 <span style={{ color: '#a72139' }}>Chat SJTU</span> !
+                        </Title>
+                </Typography>
             </Content>
         </Layout>
     )

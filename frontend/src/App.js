@@ -15,7 +15,7 @@ import React, { useState, useEffect } from 'react';
 import {Button, Space} from 'antd';
 
 import MainLayout from './components/MainLayout'
-import { fetcher, request } from "./services/request";
+import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
 
 import './App.css';

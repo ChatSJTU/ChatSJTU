@@ -56,25 +56,26 @@ function ChatBox({ selectedSession }) {
     // 用户发送消息
     const sendUserMessage = async () => {
         try {
-            const time_now = new Date();
             const messageData = { message: input };  // 存储请求数据到变量
             // 发送消息到后端处理
             const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
             // 在前端显示用户发送的消息和服务端返回的消息
             const userMessage = input;
             const aiMessage = response.data.message;
-            const aiTime = new Date(response.data.timestamp);
+            const sendTime = new Date(response.data.send_timestamp);
+            const responseTime = new Date(response.data.response_timestamp);
+
             setMessages((prevMessages) => [
                 ...prevMessages,
                 {
                     sender: 1,
                     content: userMessage,
-                    time: time_now.toLocaleString('default', timeOptions),
+                    time: sendTime.toLocaleString('default', timeOptions),
                 },
                 {
                     sender: 0,
                     content: aiMessage,
-                    time: aiTime.toLocaleString('default', timeOptions),
+                    time: responseTime.toLocaleString('default', timeOptions),
                 },
             ]);
             setInput('');

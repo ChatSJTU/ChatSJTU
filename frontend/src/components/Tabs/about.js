@@ -21,9 +21,9 @@ function TabAbout ({ onCloseTab }) {
                     <h2>关于我们</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
-            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0 50px', overflow: 'auto'}}>
+            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0px 50px', overflow: 'auto'}}>
                 <Typography>
-                    <Title level={4}>简介</Title>
+                    <Title level={4} style={{marginTop:'25px'}}>简介</Title>
                     <Paragraph>
                         Chat SJTU是由上海交通大学网络信息中心指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。
                     </Paragraph>
@@ -44,7 +44,7 @@ function TabAbout ({ onCloseTab }) {
                             <Card hoverable className="card" size="small"
                                 actions={[
                                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/1357310795"><GithubOutlined/></a>,
-                                    <a target="_blank" rel="noopener noreferrer" href="http://47.100.52.206/"><BookOutlined /></a>,
+                                    <span />
                                 ]}>
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/1357310795" />}

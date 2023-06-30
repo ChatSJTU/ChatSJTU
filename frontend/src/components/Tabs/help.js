@@ -21,9 +21,9 @@ function TabHelp ({ onCloseTab }) {
                     <h2>帮助</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
-            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0 50px', overflow: 'auto'}}>
+            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0px 50px', overflow: 'auto'}}>
                 <Typography>
-                    <Title level={2} style={{fontFamily: "Trebuchet MS, Arial, sans-serif"}}>
+                    <Title level={2} style={{fontFamily: "Trebuchet MS, Arial, sans-serif", marginTop:'25px'}}>
                         欢迎使用 <span style={{ color: '#a72139' }}>Chat SJTU</span> !
                         </Title>
                 </Typography>

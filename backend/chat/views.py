@@ -43,6 +43,19 @@ def delete_session(request, session_id):
         except Session.DoesNotExist:
             return JsonResponse({'error': 'Session does not exist'}, status=404)
 
+# 删除所有会话
+@api_view(['DELETE'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_all_sessions(request):
+    if request.method == 'DELETE':
+        try:
+            sessions = Session.objects.filter(user=request.user)
+            sessions.delete()
+            return JsonResponse({'message': 'All sessions deleted successfully'})
+        except Session.DoesNotExist:
+            return JsonResponse({'error': 'Session does not exist'}, status=404)
+
 
 # 获取会话中的消息内容
 @api_view(['GET'])

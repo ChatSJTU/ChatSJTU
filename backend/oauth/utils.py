@@ -12,3 +12,5 @@ oauth.register(
     client_kwargs={"scope": "basic"}
 )
 jaccount = oauth.jaccount
+
+AGREE_USERTYPE=['faculty','postphd','student']

@@ -25,3 +25,14 @@ export async function jAccountLogin(basePath, next) {
     // window.location.href = `/oauth/jaccount/login/?redirect_uri=${redirect_uri}`;
     window.location.href = `http://localhost:8000/oauth/jaccount/login/?redirect_uri=${redirect_uri}`;
 }
+
+//获取用户信息
+export async function fetchUserProfile() {
+    try {
+        const response = await request.get('/oauth/profile/'); 
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        throw error
+    }
+};

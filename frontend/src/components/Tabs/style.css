@@ -35,23 +35,23 @@
 }
 
 /* 关于选项卡 card */
-.card{
+.developer-card{
     width: 240px; 
     margin: 12px; 
 }
 
-.ant-card-meta-avatar {
+.developer-card .ant-card-meta-avatar {
     margin-top: 8px;
     margin-left:4px;
 }
   
 
-.ant-card-meta-description {
+.developer-card .ant-card-meta-description {
     margin-top: -8px;
     margin-bottom: 4px;
 }   
 
-.ant-card-meta-title {
+.developer-card .ant-card-meta-title {
     margin-top: 4px;
 }   
 
@@ -64,11 +64,11 @@
 
 .setting-title > div > span{
     font-weight: bold;
-    font-size: 14px;
+    font-size: 16px;
 }   
 
 .setting-title > div{
-    font-size: 12px;
+    font-size: 12.5px;
 } 
 
 .setting-item{
@@ -81,4 +81,12 @@
     margin: 16px 0 !important; /* 调整 Divider 的上下间距 */
     height: 1px; /* 调整 Divider 的高度 */
 }
-  
+
+/* Badge*/
+.solid-badge .ant-badge-count {
+    border-radius: 2px;
+    color: white;
+    font-weight: bold;
+    padding: 0px 6px;
+    letter-spacing: 1px;
+  }

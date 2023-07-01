@@ -4,8 +4,10 @@ import {Layout} from 'antd';
 import ChatBox from '../ChatBox';
 import LeftSidebar from '../LeftSidebar';
 import TabAbout from '../Tabs/about';
+import TabDisclaimers from '../Tabs/disclaimers';
 import TabHelp from '../Tabs/help';
 import TabSettings from '../Tabs/settings';
+import TabWallet from '../Tabs/wallet';
 
 import './index.css'
 
@@ -21,8 +23,10 @@ const MainLayout = ({handleLogout}) => {
         <div/>,
         <ChatBox selectedSession={selectedSession} />,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabSettings onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabWallet onCloseTab={() => handleChangeComponent(1)}/>
     ];
 
     const handleChangeComponent = (index) => {

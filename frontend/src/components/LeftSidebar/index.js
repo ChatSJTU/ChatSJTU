@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message} from 'antd';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
 import { request } from "../../services/request";
+import { fetchUserProfile } from '../../services/user';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
@@ -15,16 +16,18 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
 
     useEffect(() => {
         fetchSessions();
-        fetchUserData();
+        fetchUserName();
     }, []);
 
-    //获取登录用户信息
-    const fetchUserData = async () => {
+    //获取登录用户名称
+    const fetchUserName = async () => {
         try {
-            const response = await request.get('/oauth/info/'); 
-            setUser(response.data);
+            const userData = await fetchUserProfile();
+            setUser(userData);
         } catch (error) {
-            console.error('Failed to fetch user data:', error);
+            if (error.response.status === 404){
+                message.error('用户不存在',2);
+            }
         }
     };
 
@@ -58,10 +61,14 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 nextSelectedSession = sessions[sessionIndex - 1];
                 }
             }
-
             onSelectSession(nextSelectedSession); // 更新选定的会话
         } catch (error) {
             console.error('Failed to delete session:', error);
+            if (error.response && error.response.status === 404) {
+                message.error('删除会话失败：会话不存在', 2);
+            } else {
+                message.error('删除会话失败', 2);
+            }
         }
     };
 
@@ -160,10 +167,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                             overlay={
                                 <Menu>
                                     <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
-                                    <Menu.Item icon={<SettingOutlined />} key="1"
-                                        onClick={handleChangeComponent(4)}>偏好设置</Menu.Item>
-                                    <Menu.Divider key="2"></Menu.Divider>
-                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="3"
+                                    <Menu.Item icon={<WalletOutlined />} key="1"
+                                        onClick={handleChangeComponent(6)}>账户信息</Menu.Item>
+                                    <Menu.Item icon={<SettingOutlined />} key="2"
+                                        onClick={handleChangeComponent(5)}>偏好设置</Menu.Item>
+                                    <Menu.Divider key="3"></Menu.Divider>
+                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="4"
                                         onClick={onLogoutClick}>退出登录</Menu.Item>
                                 </Menu>
                             }
@@ -174,7 +183,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                     {/* 帮助按钮 */}
                     <Col span={5} className='button-col'>
                         <Button block size="large" type="text" icon={<QuestionCircleOutlined />}
-                            onClick={handleChangeComponent(3)}/>
+                            onClick={handleChangeComponent(4)}/>
                     </Col>
                     <Col span={9} className='button-col'/>
                     {/* 更多按钮 */}
@@ -182,8 +191,10 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                         <Dropdown placement="topRight"
                             overlay={
                                     <Menu>
-                                        <Menu.Item icon={<CodeOutlined />} key="1">扩展开发</Menu.Item>
-                                        <Menu.Item icon={<InfoCircleOutlined />} key="2"
+                                        <Menu.Item icon={<CodeOutlined />} key="1" disabled>扩展开发</Menu.Item>
+                                        <Menu.Item icon={<AlertOutlined />} key="2"
+                                            onClick={handleChangeComponent(3)}>免责声明</Menu.Item>
+                                        <Menu.Item icon={<InfoCircleOutlined />} key="3"
                                             onClick={handleChangeComponent(2)}>关于我们</Menu.Item>
                                     </Menu>
                                 }

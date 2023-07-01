@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from 'antd';
+import { Button, message } from 'antd';
 
 import MainLayout from './components/MainLayout'
 import { request } from "./services/request";
@@ -44,6 +44,11 @@ const App = () => {
             }
         } catch (error) {
             console.error('Failed to exchange token:', error);
+            if (error.response && error.response.status === 403) {
+                message.error('登陆失败，该账户类型暂时无法访问', 2);
+            } else {
+                message.error('登陆失败', 2);
+            }
         }
     };
 

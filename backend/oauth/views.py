@@ -1,7 +1,6 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import AllowAny
-from authlib.integrations.base_client import OAuthError
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from authlib.jose import jwt
 from authlib.oidc.core import CodeIDToken
 from django.contrib.auth.decorators import login_required
@@ -13,18 +12,19 @@ from django.urls import reverse
 import requests
 import base64
 from oauth.utils import *
+from oauth.models import UserProfile
 
-@api_view(['POST'])
-@authentication_classes([SessionAuthentication])
-@permission_classes([AllowAny])
-def login_deviceID(request):
-    device_id = request.data.get('device_id')
-    if device_id:
-        user, created = User.objects.get_or_create(username=device_id)
-        if user:
-            login(request, user)
-            return JsonResponse({"message": "login success"})
-    return JsonResponse({"message": "login failed"}, status=400)
+# @api_view(['POST'])
+# @authentication_classes([SessionAuthentication])
+# @permission_classes([AllowAny])
+# def login_deviceID(request):
+#     device_id = request.data.get('device_id')
+#     if device_id:
+#         user, created = User.objects.get_or_create(username=device_id)
+#         if user:
+#             login(request, user)
+#             return JsonResponse({"message": "login success"})
+#     return JsonResponse({"message": "login failed"}, status=400)
 
 def login_jaccount(request):
     redirect_uri = request.GET.get('redirect_uri', '')
@@ -37,11 +37,6 @@ def login_jaccount(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([AllowAny])
 def auth_jaccount(request):
-    # try:
-    #     token = jaccount.authorize_access_token(request)
-    # except OAuthError as e:
-    #     print('OAuthError:', e)
-    #     return JsonResponse({'detail': '参数错误。'}, status=400)
     code = request.data.get('code')
     redirect_uri = request.data.get('redirect_uri')
     client_id = settings.AUTHLIB_OAUTH_CLIENTS['jaccount']['client_id']
@@ -70,11 +65,14 @@ def auth_jaccount(request):
     except jwt.JWTError as e:
         print('JWTError:', e)
         return JsonResponse({'detail': '参数错误。'}, status=400)
-    # claims = jwt.decode(token.get('id_token'),
-    #                     jaccount.client_secret, claims_cls=CodeIDToken)
-    user_type = claims['type']
-    account = claims['sub']
+
+    user_type = claims['type']  # 获取身份，仅教师、学生可用
+    if user_type not in AGREE_USERTYPE:
+        return JsonResponse({"message": "login failed, no permissions"}, status=403)
+    
+    account = claims['sub'] # 获取甲亢用户名作为用户名
     user, created = User.objects.get_or_create(username=account)
+    UserProfile.objects.update_or_create(user=user, defaults={'user_type': user_type})
     if user:
         login(request, user)
         return JsonResponse({"message": "login success"}, status=200)
@@ -82,16 +80,35 @@ def auth_jaccount(request):
 
 # 获取用户信息
 @api_view(['GET'])
-@login_required
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated]) 
 def get_user_info(request):
-    user = request.user
-    user_data = {
-        'username': user.username
-    }
-    return JsonResponse(user_data)
+    try:
+        user = request.user
+        profile = UserProfile.objects.get(user=request.user)
+        user_data = {
+            'username': user.username,
+            'usertype': profile.user_type
+        }
+        return JsonResponse(user_data)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User does not exist'}, status=404)
 
 # 登出
+@api_view(['POST'])
 @login_required
 def auth_logout(request):
     logout(request)
     return JsonResponse({'detail': '已登出。'})
+
+# 删除用户
+@api_view(['DELETE'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated]) 
+def logout_and_delete_user(request):
+    try:
+        request.user.delete()
+        logout(request)
+        return JsonResponse({'message': 'User deleted and logged out successfully'})
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User does not exist'}, status=404)

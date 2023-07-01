@@ -34,27 +34,24 @@ def sessions(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_session(request, session_id):
-    if request.method == 'DELETE':
-        try:
-            # 添加用户的权限验证，确保用户只能删除自己的会话
-            session = Session.objects.get(id=session_id, user=request.user)
-            session.delete()
-            return JsonResponse({'message': 'Session deleted successfully'})
-        except Session.DoesNotExist:
-            return JsonResponse({'error': 'Session does not exist'}, status=404)
+    try:
+        session = Session.objects.get(id=session_id, user=request.user)
+        session.delete()
+        return JsonResponse({'message': 'Session deleted successfully'})
+    except Session.DoesNotExist:
+        return JsonResponse({'error': 'Session does not exist'}, status=404)
 
 # 删除所有会话
 @api_view(['DELETE'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_all_sessions(request):
-    if request.method == 'DELETE':
-        try:
-            sessions = Session.objects.filter(user=request.user)
-            sessions.delete()
-            return JsonResponse({'message': 'All sessions deleted successfully'})
-        except Session.DoesNotExist:
-            return JsonResponse({'error': 'Session does not exist'}, status=404)
+    try:
+        sessions = Session.objects.filter(user=request.user)
+        sessions.delete()
+        return JsonResponse({'message': 'All sessions deleted successfully'})
+    except Session.DoesNotExist:
+        return JsonResponse({'error': 'Session does not exist'}, status=404)
 
 
 # 获取会话中的消息内容
@@ -62,7 +59,7 @@ def delete_all_sessions(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def session_messages(request, session_id):
-    if request.method == 'GET':
+    try:
         session = Session.objects.get(id=session_id, user=request.user)
         messages = Message.objects.filter(session=session)
         data = []
@@ -77,13 +74,15 @@ def session_messages(request, session_id):
                 'time': time_str
             })
         return JsonResponse(data, safe=False)
+    except Session.DoesNotExist:
+        return JsonResponse({'error': 'Session does not exist'}, status=404)
 
 # 发送消息
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def send_message(request, session_id):
-    if request.method == 'POST':
+    try:
         user_message = request.data.get('message')
         # 根据会话标识获取会话对象
         session = Session.objects.get(id=session_id, user=request.user)
@@ -109,3 +108,5 @@ def send_message(request, session_id):
             'send_timestamp': user_message_obj.timestamp.isoformat(),
             'response_timestamp': ai_message_obj.timestamp.isoformat()
             })
+    except Session.DoesNotExist:
+        return JsonResponse({'error': 'Session does not exist'}, status=404)

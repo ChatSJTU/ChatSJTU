@@ -1,8 +1,10 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from django.http import JsonResponse
-from .models import Session, Message, UserAccount
+from chat.models import Session, Message, UserAccount, UserPreference
+from chat.serializers import UserPreferenceSerializer
 from oauth.models import UserProfile
 from django.utils import timezone
 import pytz
@@ -131,10 +133,32 @@ def check_and_update_usage(user):
             account.usage_count += 1
         
         if account.usage_count > STUDENT_LIMIT:
-            return False, JsonResponse({'error': '到达使用上限'}, status=429)
+            return False, JsonResponse({'error': '到达今日使用上限'}, status=429)
         else:
             account.save()
             return True, None
     except UserAccount.DoesNotExist:
         return False, JsonResponse({'error': '用户不存在'}, status=404)
     
+# 偏好设置
+@api_view(['GET', 'PATCH'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def user_preference(request):
+    preference = UserPreference.objects.get(user=request.user)
+
+    if request.method == 'GET':
+        serializer = UserPreferenceSerializer(preference)
+        return Response(serializer.data)
+
+    elif request.method == 'PATCH':
+        field = request.data.get('field')
+        value = request.data.get('value')
+
+        if field is None or value is None:
+            return JsonResponse({'error': 'Missing field or value'}, status=400)
+        setattr(preference, field, value)
+        preference.save()
+        serializer = UserPreferenceSerializer(preference)
+        print(serializer.data)
+        return Response(serializer.data)

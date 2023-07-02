@@ -33,6 +33,31 @@ export async function fetchUserProfile() {
         return response.data;
     } catch (error) {
         console.error('Failed to fetch user data:', error);
-        throw error
+        throw error;
     }
 };
+
+//获取用户设置
+export async function getSettings() {
+    try {
+        const response = await fetcher('/api/user-preference/');
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+// 更新用户设置，这里使用 PATCH 请求来实现局部更新
+export async function updateSettings(data) {
+    try {
+        console.log(data);
+        const response = await request.patch('/api/user-preference/', { 
+            field: Object.keys(data)[0], 
+            value: Object.values(data)[0] });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}

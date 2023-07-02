@@ -15,6 +15,7 @@ const { TextArea } = Input;
 function ChatBox({ selectedSession }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
+    const [isWaiting, setIsWaiting] = useState(false);
     const messagesEndRef = useRef(null);
 
     const timeOptions = {
@@ -60,18 +61,30 @@ function ChatBox({ selectedSession }) {
 
     // 用户发送消息
     const sendUserMessage = async () => {
+        setIsWaiting(true);
         try {
             const messageData = { message: input };  // 存储请求数据到变量
+            const userMessage = input;
+            setInput('');
+            // 先显示用户发送消息，时间为sending
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    sender: 1,
+                    content: userMessage,
+                    time: '发送中...',
+                },
+            ]);
+
             // 发送消息到后端处理
             const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
             // 在前端显示用户发送的消息和服务端返回的消息
-            const userMessage = input;
             const aiMessage = response.data.message;
             const sendTime = new Date(response.data.send_timestamp);
             const responseTime = new Date(response.data.response_timestamp);
-
+            // 避免可能的时间先后错误，统一接收后端时间并显示
             setMessages((prevMessages) => [
-                ...prevMessages,
+                ...prevMessages.filter((message) => message.time !== '发送中...'),
                 {
                     sender: 1,
                     content: userMessage,
@@ -83,7 +96,7 @@ function ChatBox({ selectedSession }) {
                     time: responseTime.toLocaleString('default', timeOptions),
                 },
             ]);
-            setInput('');
+            
         } catch (error) {
             console.error('Failed to send message:', error);
             if (error.response.data) {
@@ -91,6 +104,8 @@ function ChatBox({ selectedSession }) {
             } else {
                 message.error('发送消息失败', 2);
             }
+        } finally {
+            setIsWaiting(false);
         }
     };
     
@@ -229,7 +244,8 @@ function ChatBox({ selectedSession }) {
                 <Button size="large" onClick={() => setInput('')}>
                     清空
                 </Button>
-                <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}>
+                <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
+                    loading={isWaiting}>
                     发送
                 </Button>
             </Space>

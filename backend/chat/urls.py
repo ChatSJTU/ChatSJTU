@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+
 from . import views
 
 router = DefaultRouter()
@@ -16,4 +17,6 @@ urlpatterns = [
     path('sessions/delete_all/', views.delete_all_sessions, name='delete_all_sessions'),
     # 发送消息 POST
     path('send-message/<int:session_id>/', views.send_message, name='send_message'),
+
+    path('user-preference/', views.user_preference, name='user_preference'),
 ]

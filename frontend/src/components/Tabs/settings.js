@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography} from 'antd';
+import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, Slider, InputNumber} from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import './style.css'
 import { request } from "../../services/request";
+import { getSettings, updateSettings } from "../../services/user";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -10,10 +11,37 @@ const { Title } = Typography;
 function TabSettings ({ onCloseTab }) {
 
     const [loaded, setLoaded] = useState(true);
+    const [settings, setSettings] = useState(null);
 
     useEffect(() => {
         setLoaded(true);
+        fetchSettings();
     }, []);
+
+    //获取设置项
+    const fetchSettings = async () => {
+        try{
+            const data = await getSettings();
+            setSettings(data);
+        } catch (error) {
+            console.error('Failed to fetch settings:', error);
+            message.error('请求失败',2);
+        }
+    };
+
+    //更改设置项
+    const handleChangeSettings = async (updatedSettings) => {
+        try {
+            setSettings((prevSettings) => ({
+                ...prevSettings,
+                ...updatedSettings
+            }));
+            await updateSettings(updatedSettings);
+        } catch (error) {
+            console.error('Failed to update settings:', error);
+            message.error('更新设置项失败', 2);
+        }
+    };
 
     const handleDeleteAllSessions = async () => {
         try {
@@ -22,6 +50,7 @@ function TabSettings ({ onCloseTab }) {
             window.location.href = newUrl;
         } catch (error) {
             console.error('Failed to delete sessions:', error);
+            message.error('请求失败',2);
         }
     };
 
@@ -31,6 +60,7 @@ function TabSettings ({ onCloseTab }) {
             window.location.reload();
         } catch (error) {
             console.error('Failed to delete account:', error);
+            message.error('请求失败',2);
         }
     };
 
@@ -42,6 +72,21 @@ function TabSettings ({ onCloseTab }) {
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0 50px', overflow: 'auto'}}>
                 <Typography>
+                    <Title level={4} style={{marginTop:'25px'}}>模型参数</Title>
+                    <Card style={{marginTop: '25px'}} >
+                        <Row>
+                            <Col span={12} className="setting-title">
+                                <div><span>附带历史消息数</span></div>
+                                <div>每次请求携带的历史消息数</div>
+                            </Col>
+                            <Col span={12} className="setting-item">
+                            <InputNumber min={1} max={32}
+                                value={settings?.attached_message_count}
+                                onChange={(value) => {handleChangeSettings({ attached_message_count: value });}}
+                            />
+                            </Col>
+                        </Row>
+                    </Card>
                     <Title level={4} style={{marginTop:'25px'}}>高风险</Title>
                     <Card style={{marginTop: '25px'}} >
                         <Row>

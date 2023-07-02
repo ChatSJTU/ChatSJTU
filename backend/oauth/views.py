@@ -76,6 +76,7 @@ def auth_jaccount(request):
     user, created = User.objects.get_or_create(username=account)
     UserProfile.objects.update_or_create(user=user, defaults={'user_type': user_type})
     UserAccount.objects.update_or_create(user=user)
+    UserPreference.objects.update_or_create(user=user)
     if user:
         login(request, user)
         return JsonResponse({"message": "login success"}, status=200)
@@ -119,6 +120,9 @@ def logout_and_delete_user(request):
         sessions.delete()
         profile = UserProfile.objects.filter(user=request.user)
         profile.delete()
+        preference = UserPreference.objects.get(user=request.user)
+        preference.delete()
+
         logout(request)
         return JsonResponse({'message': 'User deleted and logged out successfully'})
     except User.DoesNotExist:

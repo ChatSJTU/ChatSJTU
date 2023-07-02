@@ -2,10 +2,11 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
-from .models import Session, Message
+from .models import Session, Message, UserAccount
+from django.utils import timezone
 import pytz
+
+STUDENT_LIMIT = 20
 
 # def get_or_create_user(device_id):
 #     # 根据设备标识查找或创建对应的用户
@@ -39,7 +40,7 @@ def delete_session(request, session_id):
         session.delete()
         return JsonResponse({'message': 'Session deleted successfully'})
     except Session.DoesNotExist:
-        return JsonResponse({'error': 'Session does not exist'}, status=404)
+        return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 删除所有会话
 @api_view(['DELETE'])
@@ -51,7 +52,7 @@ def delete_all_sessions(request):
         sessions.delete()
         return JsonResponse({'message': 'All sessions deleted successfully'})
     except Session.DoesNotExist:
-        return JsonResponse({'error': 'Session does not exist'}, status=404)
+        return JsonResponse({'error': '会话不存在'}, status=404)
 
 
 # 获取会话中的消息内容
@@ -75,7 +76,7 @@ def session_messages(request, session_id):
             })
         return JsonResponse(data, safe=False)
     except Session.DoesNotExist:
-        return JsonResponse({'error': 'Session does not exist'}, status=404)
+        return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 发送消息
 @api_view(['POST'])
@@ -84,7 +85,9 @@ def session_messages(request, session_id):
 def send_message(request, session_id):
     try:
         user_message = request.data.get('message')
-        # 根据会话标识获取会话对象
+        permission, errorresp = check_and_update_usage(request.user)
+        if not permission:
+            return errorresp
         session = Session.objects.get(id=session_id, user=request.user)
         # 创建新的用户消息对象，并关联到会话
         user_message_obj = Message.objects.create(
@@ -109,4 +112,25 @@ def send_message(request, session_id):
             'response_timestamp': ai_message_obj.timestamp.isoformat()
             })
     except Session.DoesNotExist:
-        return JsonResponse({'error': 'Session does not exist'}, status=404)
+        return JsonResponse({'error': '会话不存在'}, status=404)
+    
+# 检查并更新使用次数
+def check_and_update_usage(user):
+    try:
+        account= UserAccount.objects.get(user=user)
+        today = timezone.now().date()
+
+        if account.last_used != today:
+            account.usage_count = 1
+            account.last_used = today
+        else:
+            account.usage_count += 1
+        
+        if account.usage_count > STUDENT_LIMIT:
+            return False, JsonResponse({'error': '到达使用上限'}, status=429)
+        else:
+            account.save()
+            return True, None
+    except UserAccount.DoesNotExist:
+        return False, JsonResponse({'error': '用户不存在'}, status=404)
+    

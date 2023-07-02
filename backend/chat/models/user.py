@@ -7,7 +7,7 @@ class UserAccount(models.Model):
         verbose_name = '账户'
         verbose_name_plural = verbose_name
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=False, blank=False)
     usage_count = models.IntegerField(default=0)
     last_used = models.DateField(default=timezone.now)
 

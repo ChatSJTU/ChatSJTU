@@ -44,7 +44,7 @@ function TabDisclaimers ({ onCloseTab }) {
                         我们尊重并保护您的信息安全，但无法完全防止信息泄露或不当使用。我们强烈建议您不要向 Chat SJTU 发送任何敏感信息。<br/>
                         由于技术原因或其他因素，服务可能中断、故障或延迟，对此我们不承担责任。
                     </Paragraph>
-                    <Text strong>感谢您的理解与合作，祝您使用愉快！</Text>
+                    <Text strong>感谢您的理解与合作，祝您使用愉快！😊</Text>
                 </Typography>
             </Content>
         </Layout>

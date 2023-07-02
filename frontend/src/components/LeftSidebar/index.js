@@ -64,8 +64,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             onSelectSession(nextSelectedSession); // 更新选定的会话
         } catch (error) {
             console.error('Failed to delete session:', error);
-            if (error.response && error.response.status === 404) {
-                message.error('删除会话失败：会话不存在', 2);
+            if (error.response.data) {
+                message.error(`删除会话失败：${error.response.data.error}`, 2);
             } else {
                 message.error('删除会话失败', 2);
             }

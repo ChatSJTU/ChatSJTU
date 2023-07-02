@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Typography, Button, Card, message, Badge, Space } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Layout, Typography, Button, Card, message, Badge, Space, Progress } from 'antd';
+import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { fetchUserProfile } from '../../services/user';
 
 import './style.css'
@@ -10,15 +10,10 @@ const { Title } = Typography;
 const { Meta } = Card;
 
 function TabWallet ({ onCloseTab }) {
+    console.log('TabWallet rendered');
 
     const [loaded, setLoaded] = useState(true);
     const [user, setUser] = useState(null);
-
-    const badgeStyle = {
-        faculty: { text: '教职工', color: '#3182CE' },
-        postphd: { text: '博士后', color: '#319795' },
-        student: { text: '学生', color: '#38A169' },
-    };
 
     useEffect(() => {
         setLoaded(true);
@@ -37,6 +32,45 @@ function TabWallet ({ onCloseTab }) {
         }
     };
 
+    const badgeStyle = {
+        faculty: { text: '教职工', color: '#3182CE' },
+        postphd: { text: '博士后', color: '#319795' },
+        student: { text: '学生', color: '#38A169' },
+    };
+    const badge = badgeStyle[user?.usertype] || { text: '未知', color: 'gray' };
+
+    const PermissionDisplay = {
+        faculty:
+        <div className="permission-display-container">
+            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
+            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用校园服务快捷命令</Space>
+        </div>,
+        postphd:
+        <div className="permission-display-container">
+            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
+            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用校园服务快捷命令</Space>
+        </div>,
+        student:
+        <div className="permission-display-container">
+            <Space><CheckOutlined style={{color:"#52c41a"}}/>每日限用20条默认模型对话</Space>
+            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用校园服务快捷命令</Space>
+        </div>,
+    }
+
+    const UsageDisplay=(
+        <Typography>
+            <Title level={4} style={{marginTop:'25px'}}>用量</Title>
+            <Card style={{marginTop: '25px'}}>
+                今日默认模型用量：
+                    <Progress percent={(100 * user?.usagecount / user?.usagelimit) || 0} 
+                        format={() => `已用 ${user?.usagecount} / ${user?.usagelimit} 条`}
+                        style={{paddingRight: '55px', flexGrow: 1}}
+                        status="active" strokeColor={{from: '#87d068',to: '#108ee9'}}/>
+            </Card>
+        </Typography>
+    )
+    
+
     return(
         <Layout style={{ height: '100%'}}>
             <Header className='Header' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -46,17 +80,20 @@ function TabWallet ({ onCloseTab }) {
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0px 50px', overflow: 'auto'}}>
                 <Typography>
                     <Title level={4} style={{marginTop:'25px'}}>权限</Title>
-                    <Card style={{marginTop: '25px'}}>
-                        <Meta
-                            title={<Space>{`用户名：${user?.username}`}
-                                <Badge className="solid-badge"
-                                    status={null}
-                                    count={badgeStyle[user?.usertype].text}
-                                    style={{background: badgeStyle[user?.usertype].color}}
-                                /></Space>}
-                        />
+                    <Card style={{marginTop: '25px'}}
+                        title={
+                            <Space>{`用户名：${user?.username}`}
+                            <Badge className="solid-badge"
+                                status={null}
+                                count={badge.text}
+                                style={{background: badge.color}}
+                            />
+                            </Space>}
+                        >
+                        {PermissionDisplay[user?.usertype] || null}
                     </Card>
                 </Typography>
+                {user?.usertype === 'student'? UsageDisplay:null}
             </Content>
         </Layout>
     )

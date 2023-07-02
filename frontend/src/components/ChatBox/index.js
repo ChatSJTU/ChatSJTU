@@ -42,8 +42,8 @@ function ChatBox({ selectedSession }) {
             })
             .catch(error => {
                 console.error('Error fetching messages:', error);
-                if (error.response && error.response.status === 404) {
-                    message.error('请求消息记录失败：会话不存在', 2);
+                if (error.response.data) {
+                    message.error(`请求消息记录失败：${error.response.data.error}`, 2);
                 } else {
                     message.error('请求消息记录失败', 2);
                 }
@@ -86,8 +86,8 @@ function ChatBox({ selectedSession }) {
             setInput('');
         } catch (error) {
             console.error('Failed to send message:', error);
-            if (error.response && error.response.status === 404) {
-                message.error('发送消息失败：会话不存在', 2);
+            if (error.response.data) {
+                message.error(`发送消息失败：${error.response.data.error}`, 2);
             } else {
                 message.error('发送消息失败', 2);
             }

@@ -13,6 +13,8 @@ import requests
 import base64
 from oauth.utils import *
 from oauth.models import UserProfile
+from chat.models import *
+from chat.views import STUDENT_LIMIT
 
 # @api_view(['POST'])
 # @authentication_classes([SessionAuthentication])
@@ -73,12 +75,13 @@ def auth_jaccount(request):
     account = claims['sub'] # 获取甲亢用户名作为用户名
     user, created = User.objects.get_or_create(username=account)
     UserProfile.objects.update_or_create(user=user, defaults={'user_type': user_type})
+    UserAccount.objects.update_or_create(user=user)
     if user:
         login(request, user)
         return JsonResponse({"message": "login success"}, status=200)
     return JsonResponse({"message": "login failed"}, status=400)
 
-# 获取用户信息
+# 获取用户信息和账户
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated]) 
@@ -86,9 +89,12 @@ def get_user_info(request):
     try:
         user = request.user
         profile = UserProfile.objects.get(user=request.user)
+        account = UserAccount.objects.get(user=request.user)
         user_data = {
             'username': user.username,
-            'usertype': profile.user_type
+            'usertype': profile.user_type,
+            'usagecount': account.usage_count,
+            'usagelimit': STUDENT_LIMIT if profile.user_type=='student' else -1
         }
         return JsonResponse(user_data)
     except User.DoesNotExist:
@@ -101,13 +107,18 @@ def auth_logout(request):
     logout(request)
     return JsonResponse({'detail': '已登出。'})
 
-# 删除用户
+# 重置用户
 @api_view(['DELETE'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated]) 
 def logout_and_delete_user(request):
     try:
-        request.user.delete()
+        # request.user.delete() 对学生账户直接删除会导致用量回满
+
+        sessions = Session.objects.filter(user=request.user)
+        sessions.delete()
+        profile = UserProfile.objects.filter(user=request.user)
+        profile.delete()
         logout(request)
         return JsonResponse({'message': 'User deleted and logged out successfully'})
     except User.DoesNotExist:

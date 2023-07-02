@@ -104,6 +104,10 @@ function ChatBox({ selectedSession }) {
             } else {
                 message.error('发送消息失败', 2);
             }
+
+            setMessages((prevMessages) =>
+                prevMessages.filter((message) => message.time !== '发送中...')
+            );
         } finally {
             setIsWaiting(false);
         }

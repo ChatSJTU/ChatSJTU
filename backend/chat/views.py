@@ -160,5 +160,4 @@ def user_preference(request):
         setattr(preference, field, value)
         preference.save()
         serializer = UserPreferenceSerializer(preference)
-        print(serializer.data)
         return Response(serializer.data)

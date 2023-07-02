@@ -60,7 +60,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Pingwu-y" />}
                                     title="Cradle"
-                                    description="电院，前端开发"
+                                    description="电院，参与前端开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -71,7 +71,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ToolmanP" />}
                                     title="ToolmanP"
-                                    description="电院，后端开发"
+                                    description="电院，参与后端开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -82,7 +82,18 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/VegetablesKimi" />}
                                     title="VegetablesKimi"
-                                    description="密院，模型插件开发"
+                                    description="密院，模型与插件开发"
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/xjxyys"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/xjxyys" />}
+                                    title="xjxyys"
+                                    description="密院，模型与插件开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -98,7 +109,7 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                         </div>
                     <Title level={4}>鸣谢</Title>
-                    <Paragraph>
+                    <Paragraph style={{marginBottom:'25px'}}>
                         特别感谢 <Text code>@topologica1</Text>、<Text code>@boar</Text> 等学长在开发过程中的帮助。
                     </Paragraph>
                 </Typography>

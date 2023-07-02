@@ -91,6 +91,11 @@ def get_user_info(request):
         user = request.user
         profile = UserProfile.objects.get(user=request.user)
         account = UserAccount.objects.get(user=request.user)
+        today = timezone.localtime(timezone.now()).date()
+        if account.last_used != today:
+            account.usage_count = 0
+            account.last_used = today
+            account.save()
         user_data = {
             'username': user.username,
             'usertype': profile.user_type,

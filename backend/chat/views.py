@@ -125,7 +125,7 @@ def check_and_update_usage(user):
             return True, None
         
         account= UserAccount.objects.get(user=user)
-        today = timezone.now().date()
+        today = timezone.localtime(timezone.now()).date()
         if account.last_used != today:
             account.usage_count = 1
             account.last_used = today

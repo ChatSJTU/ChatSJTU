@@ -68,7 +68,7 @@ function ChatBox({ selectedSession }) {
             setInput('');
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
-                ...prevMessages,
+                ...prevMessages.filter((message) => message.time !== '发送失败'),
                 {
                     sender: 1,
                     content: userMessage,
@@ -106,7 +106,7 @@ function ChatBox({ selectedSession }) {
             }
 
             setMessages((prevMessages) =>
-                prevMessages.filter((message) => message.time !== '发送中...')
+                prevMessages.map((message) => message.time === '发送中...' ? { ...message, time: '发送失败' } : message)
             );
         } finally {
             setIsWaiting(false);

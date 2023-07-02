@@ -65,7 +65,7 @@ function TabSettings ({ onCloseTab }) {
                         <Row>
                             <Col span={12} className="setting-title">
                                 <div><span>重置账户</span></div>
-                                <div>重置账户的所有数据，所有会话、设置与积分将被清除</div>
+                                <div>重置账户的所有数据，所有会话与设置将被清除。</div>
                             </Col>
                             <Col span={12} className="setting-item">
                                 <Popconfirm

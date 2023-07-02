@@ -3,6 +3,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from .models import Session, Message, UserAccount
+from oauth.models import UserProfile
 from django.utils import timezone
 import pytz
 
@@ -117,9 +118,12 @@ def send_message(request, session_id):
 # 检查并更新使用次数
 def check_and_update_usage(user):
     try:
+        profile = UserProfile.objects.get(user=user)
+        if profile.user_type != 'student':
+            return True, None
+        
         account= UserAccount.objects.get(user=user)
         today = timezone.now().date()
-
         if account.last_used != today:
             account.usage_count = 1
             account.last_used = today

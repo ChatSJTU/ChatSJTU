@@ -100,11 +100,11 @@ function ChatBox({ selectedSession }) {
         } catch (error) {
             console.error('Failed to send message:', error);
             if (error.response.data && error.response.status === 404) {
-                message.error(`消息发送失败：${error.response.data.error}`, 2);
+                message.error(`回复生成失败：${error.response.data.error}`, 2);
             } else if (error.response.data.error) {
                 showWarning(error.response.data.error)
             } else {
-                message.error('消息发送或回复生成失败', 2);
+                message.error('回复生成失败', 2);
             }
 
             setMessages((prevMessages) =>

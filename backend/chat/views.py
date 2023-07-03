@@ -3,13 +3,13 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import JsonResponse
+from django.utils import timezone
 from chat.models import Session, Message, UserAccount, UserPreference
 from chat.serializers import UserPreferenceSerializer
+from chat.core import STUDENT_LIMIT, handle_message
 from oauth.models import UserProfile
-from django.utils import timezone
 import pytz
-
-STUDENT_LIMIT = 20
+import time
 
 # def get_or_create_user(device_id):
 #     # 根据设备标识查找或创建对应的用户
@@ -85,32 +85,41 @@ def session_messages(request, session_id):
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def send_message(request, session_id):
+def send_message(request, session_id):    
+    user_message = request.data.get('message')
+    permission, errorresp = check_and_update_usage(request.user)
+    if not permission:
+        time.sleep(1)   # 避免处理太快前端显示闪烁
+        return errorresp
+
     try:
-        user_message = request.data.get('message')
-        permission, errorresp = check_and_update_usage(request.user)
-        if not permission:
-            return errorresp
         session = Session.objects.get(id=session_id, user=request.user)
-        # 创建新的用户消息对象，并关联到会话
+        # 将发送消息加入数据库
         user_message_obj = Message.objects.create(
             sender=1,
             session=session,
             content=user_message
         )
 
-        # 待替换逻辑
-        ai_message = "本网站正在开发中 😊 **敬请期待~**"
-
-        # 创建新的 AI 回复消息对象，并关联到会话
+        # 处理信息
+        flag, response = handle_message(
+            user=request.user, 
+            message=user_message,
+            session=session
+        )
+        if not flag:
+            session.delete_last_message()
+            return response # 出错，返回错误
+        
+        # 将返回消息加入数据库
         ai_message_obj = Message.objects.create(
             sender=0,
             session=session,
-            content=ai_message
+            content=response
         )
         # 返回服务端生成的回复消息
         return JsonResponse({
-            'message': ai_message, 
+            'message': response, 
             'send_timestamp': user_message_obj.timestamp.isoformat(),
             'response_timestamp': ai_message_obj.timestamp.isoformat()
             })
@@ -123,7 +132,10 @@ def check_and_update_usage(user):
         profile = UserProfile.objects.get(user=user)
         if profile.user_type != 'student':
             return True, None
+    except UserProfile.DoesNotExist:
+        return False, JsonResponse({'error': '用户信息错误'}, status=404)
         
+    try:
         account= UserAccount.objects.get(user=user)
         today = timezone.localtime(timezone.now()).date()
         if account.last_used != today:
@@ -133,12 +145,12 @@ def check_and_update_usage(user):
             account.usage_count += 1
         
         if account.usage_count > STUDENT_LIMIT:
-            return False, JsonResponse({'error': '到达今日使用上限'}, status=429)
+            return False, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
         else:
             account.save()
             return True, None
     except UserAccount.DoesNotExist:
-        return False, JsonResponse({'error': '用户不存在'}, status=404)
+        return False, JsonResponse({'error': '用户信息错误'}, status=404)
     
 # 偏好设置
 @api_view(['GET', 'PATCH'])

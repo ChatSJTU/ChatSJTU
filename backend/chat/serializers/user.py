@@ -5,4 +5,10 @@ from chat.models import UserPreference
 class UserPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPreference
-        fields = ['attached_message_count',]
+        fields = [
+            'attached_message_count',
+            'temperature',
+            'max_tokens',
+            'presence_penalty',
+            'frequency_penalty'
+            ]

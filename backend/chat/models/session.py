@@ -11,5 +11,13 @@ class Session(models.Model):
 
     def __str__(self):
         return f"{self.user} : {self.name}"
+    
+    def get_recent_n(self, n): # 获取最近n条
+        return list(self.message_set.order_by('-timestamp')[:n])[::-1]
+    
+    def delete_last_message(self): # 删去最新一条
+        recent_message = self.message_set.order_by('-timestamp').first()
+        if recent_message:
+            recent_message.delete()
 
     

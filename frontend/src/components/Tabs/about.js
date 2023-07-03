@@ -21,7 +21,7 @@ function TabAbout ({ onCloseTab }) {
                     <h2>关于我们</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
-            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0px 50px', overflow: 'auto'}}>
+            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
                 <Typography>
                     <Title level={4} style={{marginTop:'25px'}}>简介</Title>
                     <Paragraph>
@@ -93,7 +93,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/xjxyys" />}
                                     title="xjxyys"
-                                    description="密院，模型与插件开发"
+                                    description="安泰，模型与插件开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -109,7 +109,7 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                         </div>
                     <Title level={4}>鸣谢</Title>
-                    <Paragraph style={{marginBottom:'25px'}}>
+                    <Paragraph>
                         特别感谢 <Text code>@topologica1</Text>、<Text code>@boar</Text> 等学长在开发过程中的帮助。
                     </Paragraph>
                 </Typography>

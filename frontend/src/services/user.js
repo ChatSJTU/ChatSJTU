@@ -7,7 +7,6 @@ export async function jAccountAuth(code, state, basePath, next) {
     if (next) {
         redirect_uri += "?next=" + next;
     }
-    console.log(code, state, redirect_uri);
     const resp = await request.post("/oauth/jaccount/auth/", {
         code,
         state,

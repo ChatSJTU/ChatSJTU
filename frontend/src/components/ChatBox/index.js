@@ -68,7 +68,7 @@ function ChatBox({ selectedSession }) {
             setInput('');
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
-                ...prevMessages.filter((message) => message.time !== '发送失败'),
+                ...prevMessages.filter((message) => message.time !== '发送失败' && message.sender !== 2),
                 {
                     sender: 1,
                     content: userMessage,
@@ -99,8 +99,10 @@ function ChatBox({ selectedSession }) {
             
         } catch (error) {
             console.error('Failed to send message:', error);
-            if (error.response.data) {
+            if (error.response.data && error.response.status === 404) {
                 message.error(`发送消息失败：${error.response.data.error}`, 2);
+            } else if (error.response.data.error) {
+                showWarning(error.response.data.error)
             } else {
                 message.error('发送消息失败', 2);
             }
@@ -114,14 +116,15 @@ function ChatBox({ selectedSession }) {
     };
     
     //显示特殊信息（预留）
-    const showNotice = () => {
+    const showWarning = (content) => {
         const time_now = new Date();
         setMessages((prevMessages) => [
             ...prevMessages,
             {
                 sender: 2,
-                content: '预留信息',
-                time: time_now.toLocaleTimeString(),
+                content: content,
+                // time: time_now.toLocaleString('default', timeOptions),
+                time: '系统提示'
             },
         ]);
     }

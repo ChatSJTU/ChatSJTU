@@ -7,10 +7,8 @@ import './style.css'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
-const { Meta } = Card;
 
 function TabWallet ({ onCloseTab }) {
-    console.log('TabWallet rendered');
 
     const [loaded, setLoaded] = useState(true);
     const [user, setUser] = useState(null);
@@ -41,20 +39,20 @@ function TabWallet ({ onCloseTab }) {
 
     const PermissionDisplay = {
         faculty:
-        <div className="permission-display-container">
-            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
-            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用校园服务快捷命令</Space>
-        </div>,
+            <div className="permission-display-container">
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
+            </div>,
         postphd:
-        <div className="permission-display-container">
-            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
-            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用校园服务快捷命令</Space>
-        </div>,
+            <div className="permission-display-container">
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
+            </div>,
         student:
-        <div className="permission-display-container">
-            <Space><CheckOutlined style={{color:"#52c41a"}}/>每日限用20条默认模型对话</Space>
-            <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用校园服务快捷命令</Space>
-        </div>,
+            <div className="permission-display-container">
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>每日限用20条默认模型对话</Space>
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
+            </div>,
     }
 
     const UsageDisplay=(
@@ -77,18 +75,21 @@ function TabWallet ({ onCloseTab }) {
                     <h2>账户信息</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
-            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0px 50px', overflow: 'auto'}}>
+            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
                 <Typography>
                     <Title level={4} style={{marginTop:'25px'}}>权限</Title>
                     <Card style={{marginTop: '25px'}}
                         title={
-                            <Space>{`用户名：${user?.username}`}
-                            <Badge className="solid-badge"
-                                status={null}
-                                count={badge.text}
-                                style={{background: badge.color}}
-                            />
-                            </Space>}
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span>{`用户名：${user?.username}`}</span>
+                                    <Badge
+                                        className="solid-badge"
+                                        status={null}
+                                        count={badge.text}
+                                        style={{ background: badge.color, marginLeft: '10px' }}
+                                    />
+                            </div>
+                            }
                         >
                         {PermissionDisplay[user?.usertype] || null}
                     </Card>

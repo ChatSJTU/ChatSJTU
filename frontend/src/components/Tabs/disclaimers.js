@@ -21,7 +21,7 @@ function TabDisclaimers ({ onCloseTab }) {
                     <h2>免责声明与使用须知</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
-            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0px 50px', overflow: 'auto'}}>
+            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
                 <Typography>
                     <Paragraph style={{marginTop:'25px'}}>
                         欢迎使用 Chat SJTU ！在使用我们的服务之前，我们希望您能仔细阅读并理解以下内容。

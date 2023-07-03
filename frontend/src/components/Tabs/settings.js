@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, Slider, InputNumber} from 'antd';
+import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, InputNumber} from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import './style.css'
 import { request } from "../../services/request";
@@ -70,17 +70,43 @@ function TabSettings ({ onCloseTab }) {
                 <h2>偏好设置</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
-            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ padding: '0 50px', overflow: 'auto'}}>
+            <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
                 <Typography>
                     <Title level={4} style={{marginTop:'25px'}}>模型参数</Title>
                     <Card style={{marginTop: '25px'}} >
+                        <Row>
+                            <Col span={12} className="setting-title">
+                                <div><span>随机性（temperature）</span></div>
+                                <div>值越大，回复越随机</div>
+                            </Col>
+                            <Col span={12} className="setting-item">
+                            <InputNumber min={0} max={1} precision={1} step={0.1}
+                                value={settings?.temperature}
+                                onChange={(value) => {handleChangeSettings({ temperature: value });}}
+                            />
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider"/>
+                        <Row>
+                            <Col span={12} className="setting-title">
+                                <div><span>单次回复限制（max_tokens）</span></div>
+                                <div>单次交互所用的最大 Token 数</div>
+                            </Col>
+                            <Col span={12} className="setting-item">
+                            <InputNumber min={0} max={1000} step={100}
+                                value={settings?.max_tokens}
+                                onChange={(value) => {handleChangeSettings({ max_tokens: value });}}
+                            />
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider"/>
                         <Row>
                             <Col span={12} className="setting-title">
                                 <div><span>附带历史消息数</span></div>
                                 <div>每次请求携带的历史消息数</div>
                             </Col>
                             <Col span={12} className="setting-item">
-                            <InputNumber min={1} max={32}
+                            <InputNumber min={0} max={8}
                                 value={settings?.attached_message_count}
                                 onChange={(value) => {handleChangeSettings({ attached_message_count: value });}}
                             />

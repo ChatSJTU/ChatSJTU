@@ -1,5 +1,6 @@
 from authlib.integrations.django_client import OAuth
 from chat_sjtu import settings
+import os
 
 oauth = OAuth()
 oauth.register(
@@ -13,4 +14,10 @@ oauth.register(
 )
 jaccount = oauth.jaccount
 
-AGREE_USERTYPE=['faculty','postphd','student']
+AGREE_USERTYPE = ['faculty','postphd','student']
+
+USE_WHITELIST = False
+
+JACCOUNT_WHITELIST = []
+if os.environ.get('JACCOUNT_WHITELIST', None):
+    JACCOUNT_WHITELIST += os.environ.get('JACCOUNT_WHITELIST').split(',')

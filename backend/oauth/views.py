@@ -73,6 +73,9 @@ def auth_jaccount(request):
         return JsonResponse({"message": "login failed, no permissions"}, status=403)
     
     account = claims['sub'] # 获取甲亢用户名作为用户名
+    if USE_WHITELIST and account not in JACCOUNT_WHITELIST:
+        return JsonResponse({"message": "login failed, no permissions"}, status=403)
+    
     user, created = User.objects.get_or_create(username=account)
     UserProfile.objects.update_or_create(user=user, defaults={'user_type': user_type})
     UserAccount.objects.update_or_create(user=user)

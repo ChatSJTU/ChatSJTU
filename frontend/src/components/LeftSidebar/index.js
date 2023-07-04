@@ -77,7 +77,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         try {
             const response = await request.post('/api/sessions/');
             const newSession = response.data;
-            setSessions([...sessions, newSession]);
+            // setSessions([...sessions, newSession]);
+            fetchSessions();
             onSelectSession(newSession); // 进入新创建的会话
         } catch (error) {
             console.error('Failed to create session:', error);

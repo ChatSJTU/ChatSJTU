@@ -18,10 +18,24 @@ const MainLayout = ({handleLogout}) => {
     const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
 
+    //选中会话（在LeftSider中）
+    const handleSelectSession = (session) => {
+        setSelectedSession(session);
+        setCurRightComponent(1);    //切换为聊天框
+    };    
+
+    //会话改名
+    const handleChangeSessionName = (newName) => {
+        setSelectedSession((prevSession) => ({
+          ...prevSession,
+          name: newName,
+        }));
+    };
+    
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox selectedSession={selectedSession} />,
+        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
@@ -43,12 +57,6 @@ const MainLayout = ({handleLogout}) => {
             setCurRightComponent(0);
         }
     };
-
-    //选中会话（在LeftSider中）
-    const handleSelectSession = (session) => {
-        setSelectedSession(session);
-        setCurRightComponent(1);    //切换为聊天框
-    };    
 
     return (
         <div className="background"

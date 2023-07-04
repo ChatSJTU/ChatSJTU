@@ -86,6 +86,14 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
 
     //选中会话
     const handleSelectSession = (session) => {
+        // 同步改名selectSession到sessions中
+        if (selectedSession) {
+            const updatedSessions = sessions.map(session =>
+                session.id === selectedSession.id
+                    ? { ...session, name: selectedSession.name }: session
+            );
+            setSessions(updatedSessions);
+        }
         onSelectSession(session);
     };
 
@@ -140,7 +148,13 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 <MessageOutlined />
                                 <span>{session.name}</span>
                             </div> */}
-                            <span>{session.name}</span>
+                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                                style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    flex: '1',
+                            }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
 
                             {selectedSession && selectedSession.id === session.id && (
                                 <Button

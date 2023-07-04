@@ -51,3 +51,18 @@ def handle_message(user, message:str, session:Session.objects):
 
     return True, response
 
+
+def summary_title(message: str):
+    """
+    用于概括会话标题
+    """
+    input_list = [{'role':'user', 'content':message+' 用少于五个词概括上述请求为完整短标题'},]
+    flag, response = interact_with_gpt(
+        msg = input_list,
+        model_engine='gpt-3.5-turbo',
+        max_tokens = 20
+    )
+    if not flag:
+        return False, ''
+    
+    return True, response

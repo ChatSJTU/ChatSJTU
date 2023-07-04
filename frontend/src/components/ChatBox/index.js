@@ -12,7 +12,7 @@ import './index.css'
 
 const { TextArea } = Input;
 
-function ChatBox({ selectedSession }) {
+function ChatBox({ selectedSession, onChangeSessionName }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isWaiting, setIsWaiting] = useState(false);
@@ -97,6 +97,11 @@ function ChatBox({ selectedSession }) {
                 },
             ]);
             
+            //可能的会话名更改
+            if (response.data.session_rename !== ''){
+                onChangeSessionName(response.data.session_rename);
+            }
+
         } catch (error) {
             console.error('Failed to send message:', error);
             if (error.response.data && error.response.status === 404) {
@@ -117,7 +122,7 @@ function ChatBox({ selectedSession }) {
     
     //显示特殊信息（预留）
     const showWarning = (content) => {
-        const time_now = new Date();
+        // const time_now = new Date();
         setMessages((prevMessages) => [
             ...prevMessages,
             {

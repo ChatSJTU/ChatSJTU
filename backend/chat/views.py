@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from chat.models import Session, Message, UserAccount, UserPreference
 from chat.serializers import UserPreferenceSerializer
-from chat.core import STUDENT_LIMIT, handle_message
+from chat.core import STUDENT_LIMIT, handle_message, summary_title
 from oauth.models import UserProfile
 import pytz
 import time
@@ -29,7 +29,7 @@ def sessions(request):
     elif request.method == 'POST':
         # 创建新会话，并关联到当前用户
         user = request.user
-        session = Session.objects.create(name='New Session', user=user)
+        session = Session.objects.create(name='新会话', user=user)
         data = {'id': session.id, 'name': session.name}
         return JsonResponse(data)
 
@@ -117,11 +117,23 @@ def send_message(request, session_id):
             session=session,
             content=response
         )
+
+        # 查看session是否进行过改名（再次filter防止同步问题）
+        session_isrenamed = Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).first()
+        rename_flag = False
+        if not session_isrenamed:
+            rename_flag, rename_resp = summary_title(message=user_message)
+            if rename_flag:
+                session.name = rename_resp
+                session.is_renamed = True
+                session.save()
+
         # 返回服务端生成的回复消息
         return JsonResponse({
             'message': response, 
             'send_timestamp': user_message_obj.timestamp.isoformat(),
-            'response_timestamp': ai_message_obj.timestamp.isoformat()
+            'response_timestamp': ai_message_obj.timestamp.isoformat(),
+            'session_rename': rename_resp if rename_flag else ''
             })
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)

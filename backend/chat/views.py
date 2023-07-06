@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.utils import timezone
+from django.db.models import F
 from chat.models import Session, Message, UserAccount, UserPreference
 from chat.serializers import UserPreferenceSerializer
 from chat.core import STUDENT_LIMIT, handle_message, summary_title
@@ -109,6 +110,7 @@ def send_message(request, session_id):
         )
         if not flag:
             session.delete_last_message()
+            UserAccount.objects.filter(user=request.user).update(usage_count=F('usage_count') - 1)
             return response # 出错，返回错误
         
         # 将返回消息加入数据库
@@ -136,6 +138,7 @@ def send_message(request, session_id):
             'session_rename': rename_resp if rename_flag else ''
             })
     except Session.DoesNotExist:
+        UserAccount.objects.filter(user=request.user).update(usage_count=F('usage_count') - 1)
         return JsonResponse({'error': '会话不存在'}, status=404)
     
 # 检查并更新使用次数

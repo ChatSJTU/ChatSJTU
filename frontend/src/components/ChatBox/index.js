@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, List, Avatar, message, Space} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import MarkdownRenderer from '../MarkdownRenderer';
@@ -16,6 +16,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isWaiting, setIsWaiting] = useState(false);
+    const [retryMessage, setRetryMessage] = useState(null);
     const messagesEndRef = useRef(null);
 
     const timeOptions = {
@@ -59,12 +60,12 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         }
     };
 
-    // 用户发送消息
-    const sendUserMessage = async () => {
+    // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
+    const sendUserMessage = async (retryMsg) => {
         setIsWaiting(true);
+        const userMessage = retryMsg || input;
         try {
-            const messageData = { message: input };  // 存储请求数据到变量
-            const userMessage = input;
+            const messageData = { message: userMessage };  // 存储请求数据到变量
             setInput('');
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
@@ -96,6 +97,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     time: responseTime.toLocaleString('default', timeOptions),
                 },
             ]);
+            if (retryMessage) {setRetryMessage(null);}
             
             //可能的会话名更改
             if (response.data.session_rename !== ''){
@@ -107,7 +109,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
             if (error.response.data && error.response.status === 404) {
                 message.error(`回复生成失败：${error.response.data.error}`, 2);
             } else if (error.response.data.error) {
-                showWarning(error.response.data.error)
+                showWarning(error.response.data.error);
+                setRetryMessage(userMessage);
             } else {
                 message.error('回复生成失败', 2);
             }
@@ -120,6 +123,15 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         }
     };
     
+    //重试发送
+    const handleRetry = async () => {
+        if (retryMessage) {
+          await sendUserMessage(retryMessage);
+        } else {
+          message.error('无可重试的消息', 2);
+        }
+    };    
+
     //显示特殊信息（预留）
     const showWarning = (content) => {
         // const time_now = new Date();
@@ -142,6 +154,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     //检查发送消息是否为空，不为空则发送
     const handleSend = () => {
         if (input.trim() !== '') {
+            setRetryMessage(null);
             sendUserMessage();
         } else {
             message.error('发送消息不能为空', 2);
@@ -179,7 +192,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
     
-    // sender标识：AI-0，用户-1，预留提示信息-2（仅留在前端）
+    // sender标识：AI-0，用户-1，错误提示信息-2（仅留在前端）
 
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' ,minHeight: '100%',maxHeight: '100%'}}>
@@ -216,15 +229,11 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         </div>
                         ) : (
                         <MarkdownRenderer content={item.content}/>
-                        // <ReactMarkdown
-                        //     className='markdown-body'
-                        //     children={item.content}
-                        //     remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
-                        //     rehypePlugins={[rehypeKatex]}
-                        //     components={renderers}
-                        //     style={{ wordWrap: 'break-word', overflowWrap: 'break-word'}}
-                        // />
                     )}
+                    {item.sender === 2 && 
+                        <Button icon={<ReloadOutlined />} onClick={handleRetry}
+                            style={{marginTop:'15px'}} size='large'>重试</Button>
+                        }
                     </div>
                 </div>
                 <div ref={messagesEndRef} />
@@ -244,12 +253,21 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 onChange={handleUserInput}
                 //ctrl+enter发送
                 onKeyDown={e => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                          setInput(input + '\n');
+                        } else {
+                            if (!isWaiting)
+                            {handleSend();}
+                        }
+                      }
+                    // if (e.key === 'Enter' && e.ctrlKey) {
+                    //   e.preventDefault();
+                    //   handleSend();
+                    // }
                   }}
-                placeholder="在此输入您要发送的信息"
+                placeholder="在此输入您要发送的信息，Shift+Enter 换行；Enter 发送"
                 style={{resize: 'none', fontSize:'16px'}}
             />
             <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>

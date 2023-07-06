@@ -37,8 +37,10 @@ def interact_with_gpt(msg: list, model_engine = 'gpt-3.5-turbo', temperature=0, 
         print(response['usage'])
         return True, response['choices'][0]['message']['content']
     except openai.error.InvalidRequestError as e:
-        return False, {'error':'Invalid Request'}
+        print(e)
+        return False, {'error':'请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入'}
     except openai.error.AuthenticationError as e:
+        print(e)
         return False, {'error':'Invalid Authentication'}
     except openai.error.RateLimitError as e:
         print(e)

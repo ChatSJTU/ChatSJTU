@@ -6,10 +6,6 @@
     z-index: 4;
 }
 
-.Sider::-webkit-scrollbar{
-    display: none;
-}
-
 .background {
     z-index: 0;
 }
@@ -17,6 +13,5 @@
 .center-box{
     z-index: 1;
 }
-
 
   

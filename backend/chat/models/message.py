@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 from .session import Session
 
 class Message(models.Model):
@@ -9,9 +8,9 @@ class Message(models.Model):
 
     # AI-0 , User-1
     sender = models.IntegerField()
-    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, db_index=True)
     content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return self.content

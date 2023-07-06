@@ -1,28 +1,22 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Typography, Avatar, message, Space} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space} from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
-import axios from 'axios';
-
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex'
-import remarkHtml from 'remark-html';
+import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 
-import 'katex/dist/katex.min.css';
-import 'github-markdown-css/github-markdown-light.css';
 import './index.css'
 
 const { TextArea } = Input;
 
-function ChatBox({ selectedSession }) {
+function ChatBox({ selectedSession, onChangeSessionName }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
+    const [isWaiting, setIsWaiting] = useState(false);
+    const [retryMessage, setRetryMessage] = useState(null);
     const messagesEndRef = useRef(null);
 
     const timeOptions = {
@@ -50,6 +44,11 @@ function ChatBox({ selectedSession }) {
             })
             .catch(error => {
                 console.error('Error fetching messages:', error);
+                if (error.response.data) {
+                    message.error(`请求消息记录失败：${error.response.data.error}`, 2);
+                } else {
+                    message.error('请求消息记录失败', 2);
+                }
             });
         }
       }, [selectedSession]);
@@ -61,45 +60,88 @@ function ChatBox({ selectedSession }) {
         }
     };
 
-    // 用户发送消息
-    const sendUserMessage = async () => {
+    // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
+    const sendUserMessage = async (retryMsg) => {
+        setIsWaiting(true);
+        const userMessage = retryMsg || input;
         try {
-            const time_now = new Date();
-            const messageData = { message: input };  // 存储请求数据到变量
-            // 发送消息到后端处理
-            const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
-            // 在前端显示用户发送的消息和服务端返回的消息
-            const userMessage = input;
-            const aiMessage = response.data.message;
-            const aiTime = new Date(response.data.timestamp);
+            const messageData = { message: userMessage };  // 存储请求数据到变量
+            setInput('');
+            // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
-                ...prevMessages,
+                ...prevMessages.filter((message) => message.time !== '回复生成失败' && message.sender !== 2),
                 {
                     sender: 1,
                     content: userMessage,
-                    time: time_now.toLocaleString('default', timeOptions),
+                    time: '回复生成中...',
+                },
+            ]);
+
+            // 发送消息到后端处理
+            const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
+            // 在前端显示用户发送的消息和服务端返回的消息
+            const aiMessage = response.data.message;
+            const sendTime = new Date(response.data.send_timestamp);
+            const responseTime = new Date(response.data.response_timestamp);
+            // 避免可能的时间先后错误，统一接收后端时间并显示
+            setMessages((prevMessages) => [
+                ...prevMessages.filter((message) => message.time !== '回复生成中...'),
+                {
+                    sender: 1,
+                    content: userMessage,
+                    time: sendTime.toLocaleString('default', timeOptions),
                 },
                 {
                     sender: 0,
                     content: aiMessage,
-                    time: aiTime.toLocaleString('default', timeOptions),
+                    time: responseTime.toLocaleString('default', timeOptions),
                 },
             ]);
-            setInput('');
+            if (retryMessage) {setRetryMessage(null);}
+            
+            //可能的会话名更改
+            if (response.data.session_rename !== ''){
+                onChangeSessionName(response.data.session_rename);
+            }
+
         } catch (error) {
             console.error('Failed to send message:', error);
+            if (error.response.data && error.response.status === 404) {
+                message.error(`回复生成失败：${error.response.data.error}`, 2);
+            } else if (error.response.data.error) {
+                showWarning(error.response.data.error);
+                setRetryMessage(userMessage);
+            } else {
+                message.error('回复生成失败', 2);
+            }
+
+            setMessages((prevMessages) =>
+                prevMessages.map((message) => message.time === '回复生成中...' ? { ...message, time: '回复生成失败' } : message)
+            );
+        } finally {
+            setIsWaiting(false);
         }
     };
     
+    //重试发送
+    const handleRetry = async () => {
+        if (retryMessage) {
+          await sendUserMessage(retryMessage);
+        } else {
+          message.error('无可重试的消息', 2);
+        }
+    };    
+
     //显示特殊信息（预留）
-    const showNotice = () => {
-        const time_now = new Date();
+    const showWarning = (content) => {
+        // const time_now = new Date();
         setMessages((prevMessages) => [
             ...prevMessages,
             {
                 sender: 2,
-                content: '预留信息',
-                time: time_now.toLocaleTimeString(),
+                content: content,
+                // time: time_now.toLocaleString('default', timeOptions),
+                time: '系统提示'
             },
         ]);
     }
@@ -112,18 +154,12 @@ function ChatBox({ selectedSession }) {
     //检查发送消息是否为空，不为空则发送
     const handleSend = () => {
         if (input.trim() !== '') {
+            setRetryMessage(null);
             sendUserMessage();
         } else {
             message.error('发送消息不能为空', 2);
         }
       };
-
-    //聊天框中html渲染
-    const renderers = {
-        // inlineMath: ({value}) => <InlineMath>{value}</InlineMath>,
-        // math: ({value}) => <BlockMath>{value}</BlockMath>,
-        html: ({value}) => <div dangerouslySetInnerHTML={{ __html: value }} />
-    }
 
     //复制
     const handleCopy = (content) => {
@@ -156,7 +192,7 @@ function ChatBox({ selectedSession }) {
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
     
-    // sender标识：AI-0，用户-1，预留提示信息-2（仅留在前端）
+    // sender标识：AI-0，用户-1，错误提示信息-2（仅留在前端）
 
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' ,minHeight: '100%',maxHeight: '100%'}}>
@@ -192,15 +228,12 @@ function ChatBox({ selectedSession }) {
                             ))}
                         </div>
                         ) : (
-                        <ReactMarkdown
-                            className='markdown-body'
-                            children={item.content}
-                            remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
-                            rehypePlugins={[rehypeKatex]}
-                            components={renderers}
-                            style={{ wordWrap: 'break-word', overflowWrap: 'break-word'}}
-                        />
+                        <MarkdownRenderer content={item.content}/>
                     )}
+                    {item.sender === 2 && 
+                        <Button icon={<ReloadOutlined />} onClick={handleRetry}
+                            style={{marginTop:'15px'}} size='large'>重试</Button>
+                        }
                     </div>
                 </div>
                 <div ref={messagesEndRef} />
@@ -220,19 +253,29 @@ function ChatBox({ selectedSession }) {
                 onChange={handleUserInput}
                 //ctrl+enter发送
                 onKeyDown={e => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                          setInput(input + '\n');
+                        } else {
+                            if (!isWaiting)
+                            {handleSend();}
+                        }
+                      }
+                    // if (e.key === 'Enter' && e.ctrlKey) {
+                    //   e.preventDefault();
+                    //   handleSend();
+                    // }
                   }}
-                placeholder="在此输入您要发送的信息"
+                placeholder="在此输入您要发送的信息，Shift+Enter 换行；Enter 发送"
                 style={{resize: 'none', fontSize:'16px'}}
             />
             <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
                 <Button size="large" onClick={() => setInput('')}>
                     清空
                 </Button>
-                <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}>
+                <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
+                    loading={isWaiting}>
                     发送
                 </Button>
             </Space>

@@ -1,0 +1,106 @@
+.Header{
+    background-color: #ffffff !important;
+    padding-bottom: 40px;
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #cccccc;
+}
+
+@keyframes floatUp {
+    from {
+        transform: translateY(15px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }   
+}
+  
+.float-up {
+    animation: floatUp 0.3s ease-out forwards;
+}
+
+.tab-content{
+    background-color: #f8f8f8;
+    padding: 0px 50px 25px 50px;
+}
+
+/* 关于选项卡 */
+.developer-card-container{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: -12px;
+}
+
+.developer-card{
+    width: 240px; 
+    margin: 12px; 
+}
+
+.developer-card .ant-card-meta-avatar {
+    margin-top: 8px;
+    margin-left:4px;
+}
+  
+
+.developer-card .ant-card-meta-description {
+    margin-top: -8px;
+    margin-bottom: 4px;
+}   
+
+.developer-card .ant-card-meta-title {
+    margin-top: 4px;
+}   
+
+/* 设置选项卡 */
+.setting-title{
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.setting-title > div > span{
+    font-weight: bold;
+    font-size: 16px;
+}   
+
+.setting-title > div{
+    font-size: 12.5px;
+} 
+
+.setting-item{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.setting-divider {
+    margin: 16px 0 !important; /* 调整 Divider 的上下间距 */
+    height: 1px; /* 调整 Divider 的高度 */
+}
+
+/* Badge*/
+.solid-badge .ant-badge-count {
+    border-radius: 2px;
+    color: white;
+    font-weight: bold;
+    padding: 0px 6px;
+    letter-spacing: 1px;
+}
+
+/* 账户选项卡 */
+.permission-display-container{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: -18px;
+}
+
+.permission-display-container > .ant-space{
+    width: 240px; 
+    margin: 0px 18px; 
+}

@@ -1,30 +1,33 @@
-import React, {useRef, useState, useEffect} from 'react';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined} from '@ant-design/icons';
+import React, {useState, useEffect} from 'react';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message} from 'antd';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
-import { fetcher, request } from "../../services/request";
+import { request } from "../../services/request";
+import { fetchUserProfile } from '../../services/user';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
+function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent}) {
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
 
     useEffect(() => {
         fetchSessions();
-        fetchUserData();
+        fetchUserName();
     }, []);
 
-    //获取登录用户信息
-    const fetchUserData = async () => {
+    //获取登录用户名称
+    const fetchUserName = async () => {
         try {
-            const response = await request.get('/oauth/info/'); // 根据你的后端路由配置，请求获取用户信息
-            setUser(response.data);
+            const userData = await fetchUserProfile();
+            setUser(userData);
         } catch (error) {
-            console.error('Failed to fetch user data:', error);
+            if (error.response.status === 404){
+                message.error('用户不存在',2);
+            }
         }
     };
 
@@ -58,10 +61,14 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                 nextSelectedSession = sessions[sessionIndex - 1];
                 }
             }
-
             onSelectSession(nextSelectedSession); // 更新选定的会话
         } catch (error) {
             console.error('Failed to delete session:', error);
+            if (error.response.data) {
+                message.error(`删除会话失败：${error.response.data.error}`, 2);
+            } else {
+                message.error('删除会话失败', 2);
+            }
         }
     };
 
@@ -70,15 +77,30 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
         try {
             const response = await request.post('/api/sessions/');
             const newSession = response.data;
-            setSessions([...sessions, newSession]);
+            // setSessions([...sessions, newSession]);
+            fetchSessions();
             onSelectSession(newSession); // 进入新创建的会话
         } catch (error) {
             console.error('Failed to create session:', error);
         }
     };
 
+    //选中会话
     const handleSelectSession = (session) => {
+        // 同步改名selectSession到sessions中
+        if (selectedSession) {
+            const updatedSessions = sessions.map(session =>
+                session.id === selectedSession.id
+                    ? { ...session, name: selectedSession.name }: session
+            );
+            setSessions(updatedSessions);
+        }
         onSelectSession(session);
+    };
+
+    //选中帮助、关于、设置等
+    const handleChangeComponent = (index) => {
+        return () => onChangeComponent(index);
     };
 
     // useEffect(() => {
@@ -91,7 +113,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
         <Layout style={{ height: '100%'}}>
             <Header className='Sider-content'>
                 <Typography style={{margin:'0px 25px'}}>
-                    <Title level={2} style={{ fontWeight: 'bold', marginBottom: 5}}>Chat SJTU</Title>
+                    <Title className='chat-sjtu-title' level={2}>Chat SJTU</Title>
                     <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>交大人的AI助手</Paragraph>
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>
@@ -123,7 +145,17 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                             }}
                             onClick={() => handleSelectSession(session)}
                         >
-                            <span>{session.name}</span>
+                            {/* <div>
+                                <MessageOutlined />
+                                <span>{session.name}</span>
+                            </div> */}
+                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                                style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    flex: '1',
+                            }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
 
                             {selectedSession && selectedSession.id === session.id && (
                                 <Button
@@ -150,9 +182,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                             overlay={
                                 <Menu>
                                     <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
-                                    <Menu.Item icon={<SettingOutlined />} key="1">偏好设置</Menu.Item>
-                                    <Menu.Divider key="2"></Menu.Divider>
-                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="3"
+                                    <Menu.Item icon={<WalletOutlined />} key="1"
+                                        onClick={handleChangeComponent(6)}>账户信息</Menu.Item>
+                                    <Menu.Item icon={<SettingOutlined />} key="2"
+                                        onClick={handleChangeComponent(5)}>偏好设置</Menu.Item>
+                                    <Menu.Divider key="3"></Menu.Divider>
+                                    <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="4"
                                         onClick={onLogoutClick}>退出登录</Menu.Item>
                                 </Menu>
                             }
@@ -162,7 +197,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                     </Col>
                     {/* 帮助按钮 */}
                     <Col span={5} className='button-col'>
-                        <Button block size="large" type="text" icon={<QuestionCircleOutlined />}/>
+                        <Button block size="large" type="text" icon={<QuestionCircleOutlined />}
+                            onClick={handleChangeComponent(4)}/>
                     </Col>
                     <Col span={9} className='button-col'/>
                     {/* 更多按钮 */}
@@ -170,8 +206,11 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick }) {
                         <Dropdown placement="topRight"
                             overlay={
                                     <Menu>
-                                        <Menu.Item icon={<CodeOutlined />} key="1">扩展开发</Menu.Item>
-                                        <Menu.Item icon={<InfoCircleOutlined />} key="2">关于我们</Menu.Item>
+                                        <Menu.Item icon={<CodeOutlined />} key="1" disabled>扩展开发</Menu.Item>
+                                        <Menu.Item icon={<AlertOutlined />} key="2"
+                                            onClick={handleChangeComponent(3)}>免责声明</Menu.Item>
+                                        <Menu.Item icon={<InfoCircleOutlined />} key="3"
+                                            onClick={handleChangeComponent(2)}>关于我们</Menu.Item>
                                     </Menu>
                                 }
                         >

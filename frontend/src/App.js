@@ -1,27 +1,23 @@
-// import React, {useRef,useState} from 'react';
-// import MainLayout from './components/MainLayout'
-// import './App.css';
-
-// const App = () => {
-//     return (
-//         <div style={{ background: '#f0f2f5', height: '100%' }}>
-//             <MainLayout />
-//         </div>
-//     )
-// }
-// export default App;
-
 import React, { useState, useEffect } from 'react';
-import {Button, Space} from 'antd';
+import { Button, message } from 'antd';
 
 import MainLayout from './components/MainLayout'
-import { fetcher, request } from "./services/request";
+import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
 
 import './App.css';
 
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    //无需点击jac登录按钮
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const autologin = urlParams.get('autologin');
+        if (autologin === 'true') {
+            jAccountLogin('/');
+        }
+    });
 
     //分析URL中code参数（jac登录）
     useEffect(() => {
@@ -48,34 +44,40 @@ const App = () => {
             }
         } catch (error) {
             console.error('Failed to exchange token:', error);
+            if (error.response && error.response.status === 403) {
+                //message.error('登陆失败，该账户类型暂时无法访问', 2);
+                message.error('登陆失败，开发中仅白名单用户可登录', 2);
+            } else {
+                message.error('登陆失败', 2);
+            }
         }
     };
 
-    const getDeviceId = () => {
-        const { userAgent } = navigator;
-        const hashCode = (s) => {
-            let h = 0;
-            for (let i = 0; i < s.length; i++) {
-                h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-            }
-            return h;
-        };
-        return hashCode(userAgent).toString();
-    };
+    // const getDeviceId = () => {
+    //     const { userAgent } = navigator;
+    //     const hashCode = (s) => {
+    //         let h = 0;
+    //         for (let i = 0; i < s.length; i++) {
+    //             h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    //         }
+    //         return h;
+    //     };
+    //     return hashCode(userAgent).toString();
+    // };
 
-    //device-id登入
-    const handleLogin_DeviceId = async () => {
-        const deviceId = getDeviceId();
-        console.log(deviceId);
-        try {
-            const response = await request.post('/oauth/deviceid/login/', { device_id: deviceId });
-            if (response.status === 200) {
-                setIsLoggedIn(true);
-            }
-        } catch (error) {
-            console.error('Failed to login:', error);
-        }
-    };
+    // //device-id登入
+    // const handleLogin_DeviceId = async () => {
+    //     const deviceId = getDeviceId();
+    //     console.log(deviceId);
+    //     try {
+    //         const response = await request.post('/oauth/deviceid/login/', { device_id: deviceId });
+    //         if (response.status === 200) {
+    //             setIsLoggedIn(true);
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to login:', error);
+    //     }
+    // };
 
     //登出
     const handleLogout = async () => {
@@ -96,10 +98,8 @@ const App = () => {
     } else {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0f2f5', height: '100vh'}}>
-                <Space>
-                    <Button type="primary" onClick={handleLogin_DeviceId} size="large">使用 device_id 登录</Button>
-                    <Button type="primary" onClick={() => jAccountLogin('/')} size="large">使用 jAccount 登录</Button>
-                </Space>
+                {/* <Button type="primary" onClick={handleLogin_DeviceId} size="large">使用 device_id 登录</Button> */}
+                <Button type="primary" onClick={() => jAccountLogin('/')} size="large">使用 jAccount 登录</Button>
                 <div
                     style={{
                     position: 'absolute',

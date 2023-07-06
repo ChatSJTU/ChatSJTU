@@ -76,6 +76,7 @@ def session_messages(request, session_id):
                 'id': message.id, 
                 'content': message.content,
                 'sender': message.sender,
+                'flag_qcmd': message.flag_qcmd,
                 'time': time_str
             })
         return JsonResponse(data, safe=False)
@@ -88,7 +89,7 @@ def session_messages(request, session_id):
 @permission_classes([IsAuthenticated])
 def send_message(request, session_id):    
     user_message = request.data.get('message')
-    permission, errorresp = check_and_update_usage(request.user)
+    permission, isStu, errorresp = check_usage(request.user)
     if not permission:
         time.sleep(1)   # 避免处理太快前端显示闪烁
         return errorresp
@@ -103,69 +104,107 @@ def send_message(request, session_id):
         )
 
         # 处理信息
-        flag, response = handle_message(
+        flag_success, flag_qcmd, response = handle_message(
             user=request.user, 
             message=user_message,
             session=session
         )
-        if not flag:
+        if not flag_success:
             session.delete_last_message()
-            UserAccount.objects.filter(user=request.user).update(usage_count=F('usage_count') - 1)
             return response # 出错，返回错误
         
         # 将返回消息加入数据库
         ai_message_obj = Message.objects.create(
             sender=0,
             session=session,
-            content=response
+            content=response,
+            flag_qcmd=flag_qcmd
         )
 
         # 查看session是否进行过改名（再次filter防止同步问题）
-        session_isrenamed = Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).first()
         rename_flag = False
-        if not session_isrenamed:
-            rename_flag, rename_resp = summary_title(message=user_message)
-            if rename_flag:
-                session.name = rename_resp
-                session.is_renamed = True
-                session.save()
+        if not flag_qcmd:
+            session_isrenamed = Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).first()
+            if not session_isrenamed:
+                rename_flag, rename_resp = summary_title(message=user_message)
+                if rename_flag:
+                    session.name = rename_resp
+                    session.is_renamed = True
+                    session.save()
 
-        # 返回服务端生成的回复消息
+        # 增加次数，返回服务端生成的回复消息
+        if (isStu and not flag_qcmd): increase_usage(user = request.user)
         return JsonResponse({
             'message': response, 
+            'is_qcmd': flag_qcmd,
             'send_timestamp': user_message_obj.timestamp.isoformat(),
             'response_timestamp': ai_message_obj.timestamp.isoformat(),
             'session_rename': rename_resp if rename_flag else ''
             })
     except Session.DoesNotExist:
-        UserAccount.objects.filter(user=request.user).update(usage_count=F('usage_count') - 1)
         return JsonResponse({'error': '会话不存在'}, status=404)
-    
-# 检查并更新使用次数
-def check_and_update_usage(user):
+
+# 检查使用次数
+# 返回: flag（是否有权限）、isStu（是否为学生）、错误返回（可能有）
+def check_usage(user):
     try:
         profile = UserProfile.objects.get(user=user)
         if profile.user_type != 'student':
-            return True, None
+            return True, False, None
     except UserProfile.DoesNotExist:
-        return False, JsonResponse({'error': '用户信息错误'}, status=404)
-        
+        return False, False, JsonResponse({'error': '用户信息错误'}, status=404)
+    
     try:
         account= UserAccount.objects.get(user=user)
         today = timezone.localtime(timezone.now()).date()
         if account.last_used != today:
-            account.usage_count = 1
+            account.usage_count = 0
             account.last_used = today
-        else:
-            account.usage_count += 1
-        
-        if account.usage_count > STUDENT_LIMIT:
-            return False, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
-        else:
             account.save()
-            return True, None
+            return True, True, None
+        
+        if account.usage_count >= STUDENT_LIMIT:
+            return False, True, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
+        else:
+            return True, True, None
     except UserAccount.DoesNotExist:
-        return False, JsonResponse({'error': '用户信息错误'}, status=404)
+        return False, False, JsonResponse({'error': '用户信息错误'}, status=404)
+    except Exception as e:
+        print(e)
+        return False, False, JsonResponse({'error': e}, status=404)
+
+# 更新使用次数
+def increase_usage(user):
+    try:
+        UserAccount.objects.filter(user=user).update(usage_count=F('usage_count') + 1)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({'error': '用户信息错误'}, status=404)
+
+# 检查并更新使用次数
+# def check_and_update_usage(user):
+#     try:
+#         profile = UserProfile.objects.get(user=user)
+#         if profile.user_type != 'student':
+#             return True, None
+#     except UserProfile.DoesNotExist:
+#         return False, JsonResponse({'error': '用户信息错误'}, status=404)
+        
+#     try:
+#         account= UserAccount.objects.get(user=user)
+#         today = timezone.localtime(timezone.now()).date()
+#         if account.last_used != today:
+#             account.usage_count = 1
+#             account.last_used = today
+#         else:
+#             account.usage_count += 1
+        
+#         if account.usage_count > STUDENT_LIMIT:
+#             return False, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
+#         else:
+#             account.save()
+#             return True, None
+#     except UserAccount.DoesNotExist:
+#         return False, JsonResponse({'error': '用户信息错误'}, status=404)
     
 # 偏好设置
 @api_view(['GET', 'PATCH'])

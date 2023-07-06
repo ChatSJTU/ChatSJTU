@@ -45,12 +45,13 @@ const MainLayout = ({handleLogout}) => {
 
     const handleChangeComponent = (index) => {
         if (index !== 1){
-            setPrevSelectedSession(selectedSession);
+            if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
             setSelectedSession(null);
             setCurRightComponent(index);
         }
         else if (index === 1 && !selectedSession){
             setSelectedSession(prevSelectedSession);
+            setPrevSelectedSession(null);
             setCurRightComponent(index);
         }
         if (index === 1 && !prevSelectedSession){

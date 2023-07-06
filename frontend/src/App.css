@@ -10,3 +10,18 @@
 ::-webkit-scrollbar-thumb:hover {
     background-color: #aaa;
 }
+
+/* Badge*/
+.solid-badge .ant-badge-count {
+    border-radius: 2px;
+    color: white;
+    font-weight: bold;
+    padding: 0px 6px;
+    letter-spacing: 1px;
+}
+
+.normal-badge .ant-badge-count {
+    border-radius: 2px;
+    padding: 0px 6px;
+    letter-spacing: 0.5px;
+}

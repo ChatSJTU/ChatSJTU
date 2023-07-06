@@ -1,22 +1,26 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Avatar, message, Space} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Badge, Dropdown, Menu, Typography} from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
+import { qcmdsList } from '../../services/qcmd'
 
 import './index.css'
 
 const { TextArea } = Input;
+const { Text } = Typography;
 
 function ChatBox({ selectedSession, onChangeSessionName }) {
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
-    const [isWaiting, setIsWaiting] = useState(false);
+    const [isWaiting, setIsWaiting] = useState(false);      //是否正在加载
     const [retryMessage, setRetryMessage] = useState(null);
+    const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
+    const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
     const messagesEndRef = useRef(null);
 
     const timeOptions = {
@@ -60,20 +64,24 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         }
     };
 
+    const WaitingText = '回复生成中（若结果较长或遇用量高峰期，请耐心等待~）';
+    const ErrorText = '回复生成失败'
+
     // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
     const sendUserMessage = async (retryMsg) => {
         setIsWaiting(true);
+        setShowQcmdTips(false);
         const userMessage = retryMsg || input;
         try {
             const messageData = { message: userMessage };  // 存储请求数据到变量
             setInput('');
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
-                ...prevMessages.filter((message) => message.time !== '回复生成失败' && message.sender !== 2),
+                ...prevMessages.filter((message) => message.time !== ErrorText && message.sender !== 2),
                 {
                     sender: 1,
                     content: userMessage,
-                    time: '回复生成中...',
+                    time: WaitingText,
                 },
             ]);
 
@@ -83,9 +91,10 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
             const aiMessage = response.data.message;
             const sendTime = new Date(response.data.send_timestamp);
             const responseTime = new Date(response.data.response_timestamp);
+            const flagQcmd = response.data.is_qcmd;
             // 避免可能的时间先后错误，统一接收后端时间并显示
             setMessages((prevMessages) => [
-                ...prevMessages.filter((message) => message.time !== '回复生成中...'),
+                ...prevMessages.filter((message) => message.time !== WaitingText),
                 {
                     sender: 1,
                     content: userMessage,
@@ -94,6 +103,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 {
                     sender: 0,
                     content: aiMessage,
+                    flag_qcmd: flagQcmd,
                     time: responseTime.toLocaleString('default', timeOptions),
                 },
             ]);
@@ -116,7 +126,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
             }
 
             setMessages((prevMessages) =>
-                prevMessages.map((message) => message.time === '回复生成中...' ? { ...message, time: '回复生成失败' } : message)
+                prevMessages.map((message) => message.time === WaitingText ? { ...message, time: ErrorText } : message)
             );
         } finally {
             setIsWaiting(false);
@@ -149,6 +159,13 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     //保持input变量始终与文本框内容同步
     const handleUserInput = e => {
         setInput(e.target.value);
+        
+        if (e.target.value.startsWith('~')) {
+            setShowQcmdTips(true);
+            handleFilterQcmds(e.target.value);
+        } else {
+            setShowQcmdTips(false);
+        }
     };
 
     //检查发送消息是否为空，不为空则发送
@@ -166,6 +183,28 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         copy(content);
         message.success('已复制到剪贴板', 2);
       };
+
+    //快捷指令提示
+    const handleFilterQcmds = (value) => {
+        if (value[0] !== '~') {
+            setQcmdOptions([]);
+        } else {
+            setQcmdOptions(
+                qcmdsList.filter(({ command }) => command.startsWith(value))
+                    .map(({ command, description }) => ({
+                        value: command,
+                        label: (
+                            <Typography><Text keyboard>{command}</Text> - {description}</Typography>
+                        ),
+                    }))
+            );
+        }
+    };
+    // 当用户选择一个命令时，更新输入值并隐藏下拉框
+    const handleSelectQcmds = value => {
+        setInput(value);
+        setShowQcmdTips(false);
+    };
 
     //头像图标
     const aiIcon = <Avatar 
@@ -208,7 +247,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         // avatar={item.sender ? userIcon : aiIcon}
                         avatar = {AvatarList[item.sender]}
                         description={
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center'}}>
+                                {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
                                 <div style={{ flex: '1' }}>{item.time}</div>
                                 <Button type="text"
                                     icon={<CopyOutlined />}
@@ -230,10 +270,19 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         ) : (
                         <MarkdownRenderer content={item.content}/>
                     )}
+                    {(item.sender === 0 && item.flag_qcmd) &&
+                        <Badge
+                            className="normal-badge"
+                            status={null}
+                            count='本回复来自校园服务快捷命令'
+                            style={{ background: '#eeeeee', marginTop:'15px', color: '#555555'}}
+                        />
+                        }
                     {item.sender === 2 && 
                         <Button icon={<ReloadOutlined />} onClick={handleRetry}
                             style={{marginTop:'15px'}} size='large'>重试</Button>
                         }
+                    
                     </div>
                 </div>
                 <div ref={messagesEndRef} />
@@ -247,29 +296,40 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     style={{ position: 'absolute', top: -40, right: 10, zIndex: 10 }}
                     onClick={scrollToBottom}
                 />
-            <TextArea
-                rows={4}
-                value={input}
-                onChange={handleUserInput}
-                //ctrl+enter发送
-                onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (e.shiftKey) {
-                          setInput(input + '\n');
-                        } else {
-                            if (!isWaiting)
-                            {handleSend();}
+            <Dropdown placement="topLeft" overlay={
+                    <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {qcmdOptions.map(option => (
+                            <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value)}>
+                                {option.label}
+                            </Menu.Item>
+                        ))}
+                    </Menu>}
+                 open={showQcmdTips}
+            >
+                <TextArea
+                    rows={4}
+                    value={input}
+                    onChange={handleUserInput}
+                    //ctrl+enter发送
+                    onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                            setInput(input + '\n');
+                            } else {
+                                if (!isWaiting)
+                                {handleSend();}
+                            }
                         }
-                      }
-                    // if (e.key === 'Enter' && e.ctrlKey) {
-                    //   e.preventDefault();
-                    //   handleSend();
-                    // }
-                  }}
-                placeholder="在此输入您要发送的信息，Shift+Enter 换行；Enter 发送"
-                style={{resize: 'none', fontSize:'16px'}}
-            />
+                        // if (e.key === 'Enter' && e.ctrlKey) {
+                        //   e.preventDefault();
+                        //   handleSend();
+                        // }
+                    }}
+                    placeholder="在此输入您要发送的信息，Shift+Enter 换行，Enter 发送，~ 触发快捷命令"
+                    style={{resize: 'none', fontSize:'16px'}}
+                />
+            </Dropdown>
             <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
                 <Button size="large" onClick={() => setInput('')}>
                     清空

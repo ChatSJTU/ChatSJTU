@@ -10,6 +10,7 @@ class Message(models.Model):
     sender = models.IntegerField()
     session = models.ForeignKey(Session, on_delete=models.CASCADE, db_index=True)
     content = models.TextField()
+    flag_qcmd = models.BooleanField(default=False)   # 是否为快捷指令回复
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):

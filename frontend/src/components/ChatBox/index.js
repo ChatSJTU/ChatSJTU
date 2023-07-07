@@ -194,15 +194,16 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     .map(({ command, description }) => ({
                         value: command,
                         label: (
-                            <Typography><Text keyboard>{command}</Text> - {description}</Typography>
+                            <Typography><Text keyboard style={{fontWeight:'bold'}}>{command}</Text> - {description}</Typography>
                         ),
                     }))
             );
         }
     };
-    // 当用户选择一个命令时，更新输入值并隐藏下拉框
+    // 当用户选择一个命令时，发送并隐藏下拉框
     const handleSelectQcmds = value => {
-        setInput(value);
+        // setInput(value);
+        sendUserMessage(value);
         setShowQcmdTips(false);
     };
 
@@ -249,7 +250,15 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         description={
                             <div style={{ display: 'flex', alignItems: 'center'}}>
                                 {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
-                                <div style={{ flex: '1' }}>{item.time}</div>
+                                <div>{item.time}</div>
+                                {(item.sender === 0 && item.flag_qcmd) &&
+                                    <Badge
+                                        className="normal-badge" status={null}
+                                        count='🎓本回复来自校园服务快捷命令'
+                                        style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
+                                    />
+                                    }
+                                <div style={{ flex: '1' }}></div>
                                 <Button type="text"
                                     icon={<CopyOutlined />}
                                     onClick={() => handleCopy(item.content)}
@@ -270,14 +279,6 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         ) : (
                         <MarkdownRenderer content={item.content}/>
                     )}
-                    {(item.sender === 0 && item.flag_qcmd) &&
-                        <Badge
-                            className="normal-badge"
-                            status={null}
-                            count='本回复来自校园服务快捷命令'
-                            style={{ background: '#eeeeee', marginTop:'15px', color: '#555555'}}
-                        />
-                        }
                     {item.sender === 2 && 
                         <Button icon={<ReloadOutlined />} onClick={handleRetry}
                             style={{marginTop:'15px'}} size='large'>重试</Button>

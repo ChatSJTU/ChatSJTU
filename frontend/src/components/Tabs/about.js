@@ -4,7 +4,7 @@ import { CloseOutlined, GithubOutlined } from '@ant-design/icons';
 import './style.css'
 
 const { Header, Content } = Layout;
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph, Text, Link } = Typography;
 const { Meta } = Card;
 
 function TabAbout ({ onCloseTab }) {
@@ -25,7 +25,7 @@ function TabAbout ({ onCloseTab }) {
                 <Typography>
                     <Title level={4} style={{marginTop:'25px'}}>简介</Title>
                     <Paragraph>
-                        Chat SJTU 是由上海交通大学网络信息中心指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。
+                        Chat SJTU 是由<Link href="https://net.sjtu.edu.cn/" target="_blank">上海交通大学网络信息中心</Link>指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。
                     </Paragraph>
                     <Divider/>
                     <Title level={4}>开发团队</Title>

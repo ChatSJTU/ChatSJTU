@@ -54,13 +54,16 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             const sessionIndex = sessions.findIndex(session => session.id === sessionId);
             if (sessionIndex !== -1) {
                 if (sessionIndex < sessions.length - 1) {
-                // 如果删除的不是最后一个会话，则选择下一个会话
-                nextSelectedSession = sessions[sessionIndex + 1];
+                    // 如果删除的不是最后一个会话，则选择下一个会话
+                    nextSelectedSession = sessions[sessionIndex + 1];
                 } else if (sessionIndex > 0) {
-                // 如果删除的是最后一个会话且列表中还有其他会话，则选择上一个会话
-                nextSelectedSession = sessions[sessionIndex - 1];
+                    // 如果删除的是最后一个会话且列表中还有其他会话，则选择上一个会话
+                    nextSelectedSession = sessions[sessionIndex - 1];
+                } else {
+                    handleCreateSession(); // 如果会话列表为空，自动创建新会话
+                    nextSelectedSession = 0;
+                    }
                 }
-            }
             onSelectSession(nextSelectedSession); // 更新选定的会话
         } catch (error) {
             console.error('Failed to delete session:', error);
@@ -114,7 +117,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             <Header className='Sider-content'>
                 <Typography style={{margin:'0px 25px'}}>
                     <Title className='chat-sjtu-title' level={2}>Chat SJTU</Title>
-                    <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>交大人的AI助手</Paragraph>
+                    <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>交大人的 AI 助手</Paragraph>
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>
                     <Col span={12} className='button-col'>

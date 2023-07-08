@@ -3,14 +3,15 @@ from chat.models import UserPreference, Session
 from .utils import *
 from .configs import SYSTEM_ROLE
 from .plugins.qcmd import *
-from .gpt import interact_with_gpt
+from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
 
-def handle_message(user, message:str, session:Session.objects):
+def handle_message(user, message:str, selected_model:str, session:Session.objects):
     """消息处理的主入口
 
     Args:
         user: Django的user对象
         message: 用户输入的消息
+        selected_model: 用户选择的模型
         session: 当前会话
 
     Returns:
@@ -47,12 +48,23 @@ def handle_message(user, message:str, session:Session.objects):
     input_list.append({'role':'user', 'content':message})
 
     # API交互
-    flag, response = interact_with_gpt(
-        msg = input_list,
-        model_engine='gpt-3.5-turbo',
-        temperature = user_preference.temperature,
-        max_tokens = user_preference.max_tokens
-    )
+    flag = False
+    if selected_model == 'Azure GPT3.5':
+        flag, response = interact_with_azure_gpt(
+            msg = input_list,
+            model_engine='gpt-35-turbo-16k',
+            temperature = user_preference.temperature,
+            max_tokens = user_preference.max_tokens
+        )
+    elif selected_model == 'OpenAI GPT3.5':
+        flag, response = interact_with_openai_gpt(
+            msg = input_list,
+            model_engine='gpt-3.5-turbo',
+            temperature = user_preference.temperature,
+            max_tokens = user_preference.max_tokens
+        )
+    else:
+        return False, False, JsonResponse({'error': '模型名错误'}, status=500)
     if not flag:
         return False, False, JsonResponse(response, status=500)
     
@@ -66,9 +78,9 @@ def summary_title(message: str):
     用于概括会话标题
     """
     input_list = [{'role':'user', 'content':message+' 用少于五个词概括上述请求为完整短标题'},]
-    flag, response = interact_with_gpt(
+    flag, response = interact_with_azure_gpt(
         msg = input_list,
-        model_engine='gpt-3.5-turbo',
+        model_engine='gpt-35-turbo-16k',
         max_tokens = 20
     )
     if not flag:

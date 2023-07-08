@@ -1,7 +1,7 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Avatar, message, Space, Badge, Dropdown, Menu, Typography} from 'antd';
+import { Input, Button, List, Avatar, message, Space, Badge, Dropdown, Menu, Typography, Segmented} from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
@@ -17,10 +17,12 @@ const { Text } = Typography;
 function ChatBox({ selectedSession, onChangeSessionName }) {
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
+    const [selectedModel, setSelectedModel] = useState('Azure GPT3.5');  //选中模型
     const [isWaiting, setIsWaiting] = useState(false);      //是否正在加载
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
+    
     const messagesEndRef = useRef(null);
 
     const timeOptions = {
@@ -73,7 +75,10 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         setShowQcmdTips(false);
         const userMessage = retryMsg || input;
         try {
-            const messageData = { message: userMessage };  // 存储请求数据到变量
+            const messageData = { 
+                message: userMessage,
+                model: selectedModel
+            };  // 存储请求数据到变量
             setInput('');
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
@@ -88,10 +93,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
             // 发送消息到后端处理
             const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
             // 在前端显示用户发送的消息和服务端返回的消息
-            const aiMessage = response.data.message;
             const sendTime = new Date(response.data.send_timestamp);
             const responseTime = new Date(response.data.response_timestamp);
-            const flagQcmd = response.data.is_qcmd;
             // 避免可能的时间先后错误，统一接收后端时间并显示
             setMessages((prevMessages) => [
                 ...prevMessages.filter((message) => message.time !== WaitingText),
@@ -102,8 +105,9 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 },
                 {
                     sender: 0,
-                    content: aiMessage,
-                    flag_qcmd: flagQcmd,
+                    content: response.data.message,
+                    flag_qcmd: response.data.flag_qcmd,
+                    use_model: response.data.use_model,
                     time: responseTime.toLocaleString('default', timeOptions),
                 },
             ]);
@@ -194,7 +198,9 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     .map(({ command, description }) => ({
                         value: command,
                         label: (
-                            <Typography><Text keyboard style={{fontWeight:'bold'}}>{command}</Text> - {description}</Typography>
+                            <Typography>
+                                <Text keyboard style={{fontWeight:'bold'}}>{command}</Text> - {description}
+                            </Typography>
                         ),
                     }))
             );
@@ -211,7 +217,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const aiIcon = <Avatar 
         icon={<RobotOutlined/>}
         style={{
-                backgroundColor: '#aff392',
+                backgroundColor: '#c7ffaf',
                 color: '#62a645',
             }}
         />
@@ -240,55 +246,63 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
             style={{ flex: 1, overflow: 'auto'}}
             dataSource={messages}
             renderItem={item => (
-            <List.Item 
-                className={item.sender === 1 ? 'user-message' : 'bot-message'}  
-                style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
-                <div style={{ width: '100%'}}>
-                    <List.Item.Meta
-                        // avatar={item.sender ? userIcon : aiIcon}
-                        avatar = {AvatarList[item.sender]}
-                        description={
-                            <div style={{ display: 'flex', alignItems: 'center'}}>
-                                {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
-                                <div>{item.time}</div>
-                                {(item.sender === 0 && item.flag_qcmd) &&
-                                    <Badge
-                                        className="normal-badge" status={null}
-                                        count='🎓本回复来自校园服务快捷命令'
-                                        style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
+            <div ref={messagesEndRef}>
+                <List.Item 
+                    className={item.sender === 1 ? 'user-message' : 'bot-message'}  
+                    style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
+                    <div style={{ width: '100%'}}>
+                        <List.Item.Meta
+                            // avatar={item.sender ? userIcon : aiIcon}
+                            avatar = {AvatarList[item.sender]}
+                            description={
+                                <div style={{ display: 'flex', alignItems: 'center'}}>
+                                    {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
+                                    <div>{item.time}</div>
+                                    {(item.sender === 0 && item.flag_qcmd) &&
+                                        <Badge
+                                            className="normal-badge" status={null}
+                                            count='🎓本回复来自校园服务快捷命令'
+                                            style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
+                                        />
+                                        }
+                                    {(item.sender === 0 && !item.flag_qcmd) &&
+                                        <Badge
+                                            className="normal-badge" status={null}
+                                            count={item.use_model}
+                                            style={{ background: '#eeeeee', marginLeft:'15px', color: '#555555'}}
+                                        />
+                                        }
+                                    <div style={{ flex: '1' }}></div>
+                                    <Button type="text"
+                                        icon={<CopyOutlined />}
+                                        onClick={() => handleCopy(item.content)}
                                     />
-                                    }
-                                <div style={{ flex: '1' }}></div>
-                                <Button type="text"
-                                    icon={<CopyOutlined />}
-                                    onClick={() => handleCopy(item.content)}
-                                />
+                                </div>
+                            }
+                            
+                        />
+                        <div style={{ width: '100%', marginTop: 10}}>
+                        {item.sender === 1 ? (
+                            <div style={{ whiteSpace: 'pre-wrap' }}>
+                                {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                <span key={i}>
+                                    {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                </span>
+                                ))}
                             </div>
-                        }
+                            ) : (
+                            <MarkdownRenderer content={item.content}/>
+                        )}
+                        {item.sender === 2 && 
+                            <Button icon={<ReloadOutlined />} onClick={handleRetry}
+                                style={{marginTop:'15px'}} size='large'>重试</Button>
+                            }
                         
-                    />
-                    <div style={{ width: '100%', marginTop: 10}}>
-                    {item.sender === 1 ? (
-                        <div style={{ whiteSpace: 'pre-wrap' }}>
-                            {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
-                            <span key={i}>
-                                {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
-                            </span>
-                            ))}
                         </div>
-                        ) : (
-                        <MarkdownRenderer content={item.content}/>
-                    )}
-                    {item.sender === 2 && 
-                        <Button icon={<ReloadOutlined />} onClick={handleRetry}
-                            style={{marginTop:'15px'}} size='large'>重试</Button>
-                        }
-                    
                     </div>
-                </div>
-                <div ref={messagesEndRef} />
-            </List.Item>
-          )}
+                    <div/>
+                </List.Item>
+            </div>)}
         />
         
         <div className='sendbox-area' style={{ padding: '20px 50px', position: 'relative'}}>
@@ -313,14 +327,10 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     onChange={handleUserInput}
                     //ctrl+enter发送
                     onKeyDown={e => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !e.shiftKey){
                             e.preventDefault();
-                            if (e.shiftKey) {
-                            setInput(input + '\n');
-                            } else {
-                                if (!isWaiting)
+                            if (!isWaiting)
                                 {handleSend();}
-                            }
                         }
                         // if (e.key === 'Enter' && e.ctrlKey) {
                         //   e.preventDefault();
@@ -331,15 +341,23 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     style={{resize: 'none', fontSize:'16px'}}
                 />
             </Dropdown>
-            <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                <Button size="large" onClick={() => setInput('')}>
-                    清空
-                </Button>
-                <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
-                    loading={isWaiting}>
-                    发送
-                </Button>
-            </Space>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
+                    onChange={value => setSelectedModel(value)}
+                    options={[
+                        {label:'Azure GPT3.5', value:'Azure GPT3.5'},
+                        {label:'OpenAI GPT3.5', value:'OpenAI GPT3.5'}
+                ]}/>
+                <Space>
+                    <Button size="large" onClick={() => setInput('')}>
+                        清空
+                    </Button>
+                    <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
+                        loading={isWaiting}>
+                        发送
+                    </Button>
+                </Space>
+            </div>
         </div>
     </div>
     );

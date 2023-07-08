@@ -1,11 +1,13 @@
 from .utils import StandardPlugin
 from .canteenPlugin import CanteenPlugin
 from .sjmcPlugin import SjmcPlugin
+from .libraryPlugin import LibraryPlugin
 
 # 支持快捷命令的插件列表
 qcmd_plugins_list = [
     SjmcPlugin(),
     CanteenPlugin(),
+    LibraryPlugin()
 ]
 
 def check_and_exec_qcmds(msg:str):

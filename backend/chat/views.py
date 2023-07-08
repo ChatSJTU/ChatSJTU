@@ -77,6 +77,7 @@ def session_messages(request, session_id):
                 'content': message.content,
                 'sender': message.sender,
                 'flag_qcmd': message.flag_qcmd,
+                'use_model': message.use_model,
                 'time': time_str
             })
         return JsonResponse(data, safe=False)
@@ -89,6 +90,7 @@ def session_messages(request, session_id):
 @permission_classes([IsAuthenticated])
 def send_message(request, session_id):    
     user_message = request.data.get('message')
+    selected_model = request.data.get('model')
     permission, isStu, errorresp = check_usage(request.user)
     if not permission:
         time.sleep(1)   # 避免处理太快前端显示闪烁
@@ -107,6 +109,7 @@ def send_message(request, session_id):
         flag_success, flag_qcmd, response = handle_message(
             user=request.user, 
             message=user_message,
+            selected_model=selected_model,
             session=session
         )
         if not flag_success:
@@ -118,7 +121,8 @@ def send_message(request, session_id):
             sender=0,
             session=session,
             content=response,
-            flag_qcmd=flag_qcmd
+            flag_qcmd=flag_qcmd,
+            use_model=selected_model,
         )
 
         # 查看session是否进行过改名（再次filter防止同步问题）
@@ -136,7 +140,8 @@ def send_message(request, session_id):
         if (isStu and not flag_qcmd): increase_usage(user = request.user)
         return JsonResponse({
             'message': response, 
-            'is_qcmd': flag_qcmd,
+            'flag_qcmd': flag_qcmd,
+            'use_model': selected_model,
             'send_timestamp': user_message_obj.timestamp.isoformat(),
             'response_timestamp': ai_message_obj.timestamp.isoformat(),
             'session_rename': rename_resp if rename_flag else ''

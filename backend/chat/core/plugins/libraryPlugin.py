@@ -17,7 +17,10 @@ class LibraryPlugin(StandardPlugin):
         resp_str = "当前校内图书馆开放指数（在馆人数/总座位数）如下："
         try:
             for library in library_list:
-                resp_str += "\n* **\"%s\"**，在馆人数 %s/%s 人，负荷率 %.2f%%" % (library.get('areaName',''), library.get('inCounter',''), library.get('max',''), (library.get('inCounter','') / library.get('max','') * 100))
+                if library['inCounter'] == 0:
+                    resp_str += "\n* **\"%s\"**，闭馆中" % library.get('areaName','')
+                else:
+                    resp_str += "\n* **\"%s\"**，在馆人数 %s/%s 人，负荷率 %.2f%%" % (library.get('areaName',''), library.get('inCounter',''), library.get('max',''), (library.get('inCounter','') / library.get('max','') * 100))
             return True, resp_str
         except Exception as e:
             print(e)

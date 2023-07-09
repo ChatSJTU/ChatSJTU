@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, message, Typography } from 'antd';
 
 import MainLayout from './components/MainLayout'
+import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
 
@@ -99,20 +100,9 @@ const App = () => {
         );
     } else {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fafafa', height: '100vh'}}>
-                {/* <Button type="primary" onClick={handleLogin_DeviceId} size="large">使用 device_id 登录</Button> */}
-                <Button type="primary" onClick={() => jAccountLogin('/')} size="large">使用 jAccount 登录</Button>
-                <div
-                    style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    width: '100%',
-                    textAlign: 'center',
-                }}>
-                    <p style={{fontSize: '12px', color: '#aaaaaa'}}>© 2023 上海交通大学 沪交ICP备20230139</p>
-                </div>
+            <div style={{ background: '#f0f2f5', height: '100%' }}>
+                <LoginLayout />
             </div>
-            
         );
     }
 };

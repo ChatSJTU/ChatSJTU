@@ -14,7 +14,7 @@ oauth.register(
 )
 jaccount = oauth.jaccount
 
-AGREE_USERTYPE = ['faculty','postphd','student']
+AGREE_USERTYPE = ['faculty','postphd','student','team']
 
 USE_WHITELIST = False
 

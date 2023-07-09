@@ -1,8 +1,8 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Avatar, message, Space, Badge, Dropdown, Menu, Typography, Segmented} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented} from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import MarkdownRenderer from '../MarkdownRenderer';
@@ -259,18 +259,15 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
                                     <div>{item.time}</div>
                                     {(item.sender === 0 && item.flag_qcmd) &&
-                                        <Badge
-                                            className="normal-badge" status={null}
-                                            count='🎓本回复来自校园服务快捷命令'
-                                            style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
-                                        />
+                                        // <Badge
+                                        //     className="normal-badge" status={null}
+                                        //     count='🎓本回复来自校园服务快捷命令'
+                                        //     style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
+                                        // />
+                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓本回复来自校园服务快捷命令</Tag>
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd) &&
-                                        <Badge
-                                            className="normal-badge" status={null}
-                                            count={item.use_model}
-                                            style={{ background: '#eeeeee', marginLeft:'15px', color: '#555555'}}
-                                        />
+                                        <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
@@ -345,8 +342,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
                     onChange={value => setSelectedModel(value)}
                     options={[
-                        {label:'Azure GPT3.5', value:'Azure GPT3.5'},
-                        {label:'OpenAI GPT3.5', value:'OpenAI GPT3.5'}
+                        {label:'Azure GPT3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
+                        {label:'OpenAI GPT4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                 ]}/>
                 <Space>
                     <Button size="large" onClick={() => setInput('')}>

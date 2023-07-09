@@ -112,6 +112,11 @@ function TabAbout ({ onCloseTab }) {
                     <Paragraph>
                         特别感谢 <Text code>@topologica1</Text>、<Text code>@boar</Text> 等学长在开发过程中的帮助。
                     </Paragraph>
+                    <Divider/>
+                    <Title level={4}>联系我们</Title>
+                    <Paragraph>
+                        您可以通过邮件 <Link href="mailto:gpt@sjtu.edu.cn">gpt@sjtu.edu.cn</Link> 联系我们。
+                    </Paragraph>
                 </Typography>
             </Content>
         </Layout>

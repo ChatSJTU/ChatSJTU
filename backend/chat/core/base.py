@@ -56,10 +56,10 @@ def handle_message(user, message:str, selected_model:str, session:Session.object
             temperature = user_preference.temperature,
             max_tokens = user_preference.max_tokens
         )
-    elif selected_model == 'OpenAI GPT3.5':
+    elif selected_model == 'OpenAI GPT4':
         flag, response = interact_with_openai_gpt(
             msg = input_list,
-            model_engine='gpt-3.5-turbo',
+            model_engine='gpt-4',
             temperature = user_preference.temperature,
             max_tokens = user_preference.max_tokens
         )

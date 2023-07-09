@@ -5,11 +5,12 @@ from .configs import *
 @tenacity.retry(stop=tenacity.stop_after_attempt(3), 
                 wait=tenacity.wait_random_exponential(min=1, max=5),
                 retry=tenacity.retry_if_exception_type((openai.error.RateLimitError, openai.error.OpenAIError)))
-def interact_with_openai_gpt(msg: list, model_engine = 'gpt-3.5-turbo', temperature=0.5, max_tokens=1000) ->str:
+def interact_with_openai_gpt(msg: list, model_engine = 'gpt-4', temperature=0.5, max_tokens=1000) ->str:
     # 使用OpenAI API与GPT交互
     try:
-        openai.api_key = OPENAI_KEY
         openai.api_type = "open_ai"
+        openai.organization = OPENAI_ORGANIZATION
+        openai.api_key = OPENAI_KEY
         openai.api_base = "https://api.openai.com/v1"
         openai.api_version = None   
 
@@ -43,8 +44,9 @@ def interact_with_openai_gpt(msg: list, model_engine = 'gpt-3.5-turbo', temperat
 def interact_with_azure_gpt(msg: list, model_engine = 'gpt-35-turbo-16k', temperature=0.5, max_tokens=1000) ->str:
     # 使用Azure API与GPT交互
     try:
-        openai.api_key = AZURE_OPENAI_KEY
         openai.api_type = "azure"
+        openai.organization = None
+        openai.api_key = AZURE_OPENAI_KEY
         openai.api_base = AZURE_OPENAI_ENDPOINT
         openai.api_version = "2023-05-15"
 

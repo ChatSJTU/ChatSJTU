@@ -49,7 +49,7 @@ const App = () => {
             console.error('Failed to exchange token:', error);
             if (error.response && error.response.status === 403) {
                 //message.error('登陆失败，该账户类型暂时无法访问', 2);
-                message.error('登陆失败，开发中仅白名单用户可登录', 2);
+                message.error('开发中仅内测用户可登录', 2);
             } else {
                 message.error('登陆失败', 2);
             }
@@ -101,7 +101,7 @@ const App = () => {
     } else {
         return (
             <div style={{ background: '#f0f2f5', height: '100%' }}>
-                <LoginLayout />
+                <LoginLayout handleLogin={() => jAccountLogin('/')}/>
             </div>
         );
     }

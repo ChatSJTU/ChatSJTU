@@ -5,6 +5,7 @@ STUDENT_LIMIT = 20
 
 # OpenAI Key
 OPENAI_KEY = os.environ.get('OPENAI_KEY', None)
+OPENAI_ORGANIZATION = os.environ.get('OPENAI_ORGANIZATION', None)
 
 # Azure OpenAI Key
 AZURE_OPENAI_KEY = os.environ.get('AZURE_OPENAI_KEY', None)

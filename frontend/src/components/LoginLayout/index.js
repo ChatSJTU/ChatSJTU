@@ -17,7 +17,7 @@ function LoginLayout ({ handleLogin }) {
                             flexDirection: 'column',
                             alignItems: 'center', 
                             marginTop : '4vh',
-                            zIndex : '2',
+                            zIndex : '2', overflow:'hidden',
                             position: 'relative'}}>
                     <video style={{ clipPath: 'inset(2px 2px)',
                                 objectFit: 'contain',

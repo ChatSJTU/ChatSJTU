@@ -13,8 +13,10 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
+    const [loaded, setLoaded] = useState(true);
 
     useEffect(() => {
+        setLoaded(true);
         fetchSessions();
         fetchUserName();
     }, []);
@@ -36,6 +38,10 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         try {
             const response = await request.get('/api/sessions/');
             setSessions(response.data);
+            if (loaded && response.data.length > 0) {
+                onSelectSession(response.data[0]);
+                setLoaded(false);
+            }
         } catch (error) {
             console.error('Failed to fetch sessions:', error);
         }
@@ -56,15 +62,15 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 if (sessionIndex < sessions.length - 1) {
                     // 如果删除的不是最后一个会话，则选择下一个会话
                     nextSelectedSession = sessions[sessionIndex + 1];
+                    onSelectSession(nextSelectedSession); // 更新选定的会话
                 } else if (sessionIndex > 0) {
                     // 如果删除的是最后一个会话且列表中还有其他会话，则选择上一个会话
                     nextSelectedSession = sessions[sessionIndex - 1];
+                    onSelectSession(nextSelectedSession); // 更新选定的会话
                 } else {
                     handleCreateSession(); // 如果会话列表为空，自动创建新会话
-                    nextSelectedSession = 0;
                     }
                 }
-            onSelectSession(nextSelectedSession); // 更新选定的会话
         } catch (error) {
             console.error('Failed to delete session:', error);
             if (error.response.data) {
@@ -121,7 +127,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>
                     <Col span={12} className='button-col'>
-                        <Button block size="large" type="text" icon={<RocketOutlined />}>
+                        <Button block size="large" type="text" icon={<RocketOutlined />} disabled>
                             伴我学
                         </Button>
                     </Col>

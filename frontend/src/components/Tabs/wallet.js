@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Typography, Button, Card, message, Badge, Space, Progress } from 'antd';
+import { Layout, Typography, Button, Card, message, Tag, Space, Progress } from 'antd';
 import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { fetchUserProfile } from '../../services/user';
 
@@ -30,29 +30,34 @@ function TabWallet ({ onCloseTab }) {
         }
     };
 
-    const badgeStyle = {
-        faculty: { text: '教职工', color: '#3182CE' },
-        postphd: { text: '博士后', color: '#319795' },
-        student: { text: '学生', color: '#38A169' },
+    const tagStyle = {
+        faculty: { text: '教职工', color: 'blue' },
+        fsyyjzg: { text: '附属医院教职工', color: 'magenta'},
+        postphd: { text: '博士后', color: 'cyan' },
+        student: { text: '学生', color: 'green' },
+        team:    { text: '集体账号', color: 'volcano'},
+        vip:     { text: '贵宾', color: 'gold'},
+        yxy:     { text: '医学院教职工', color: 'purple'},
     };
-    const badge = badgeStyle[user?.usertype] || { text: '未知', color: 'gray' };
+    const tag = tagStyle[user?.usertype] || { text: '未知', color: 'default' };
+
+    const FacultyPermission = <div className="permission-display-container">
+        <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用模型对话</Space>
+        <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
+    </div>
 
     const PermissionDisplay = {
-        faculty:
-            <div className="permission-display-container">
-                <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
-                <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
-            </div>,
-        postphd:
-            <div className="permission-display-container">
-                <Space><CheckOutlined style={{color:"#52c41a"}}/>无限制使用默认模型对话</Space>
-                <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
-            </div>,
+        faculty: FacultyPermission,
+        fsyyjzg: FacultyPermission,
+        postphd: FacultyPermission,
         student:
             <div className="permission-display-container">
-                <Space><CheckOutlined style={{color:"#52c41a"}}/>每日限用20条默认模型对话</Space>
+                <Space><CheckOutlined style={{color:"#52c41a"}}/>每日限用20条模型对话</Space>
                 <Space><CheckOutlined style={{color:"#52c41a"}}/>使用校园服务快捷命令</Space>
             </div>,
+        team:    FacultyPermission,
+        vip:     FacultyPermission,
+        yxy:     FacultyPermission
     }
 
     const UsageDisplay=(
@@ -82,12 +87,10 @@ function TabWallet ({ onCloseTab }) {
                         title={
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <span>{`用户名：${user?.username}`}</span>
-                                    <Badge
-                                        className="solid-badge"
-                                        status={null}
-                                        count={badge.text}
-                                        style={{ background: badge.color, marginLeft: '10px' }}
-                                    />
+                                    <Tag
+                                        color={tag.color}
+                                        style={{marginLeft: '10px' }}
+                                    >{tag.text}</Tag>
                             </div>
                             }
                         >

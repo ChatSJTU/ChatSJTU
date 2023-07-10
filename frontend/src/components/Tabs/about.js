@@ -54,12 +54,12 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
-                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Pingwu-y"><GithubOutlined/></a>,
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Musicminion"><GithubOutlined/></a>,
                                     <span />
                                 ]}>
                                 <Meta
-                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Pingwu-y" />}
-                                    title="Cradle"
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
+                                    title="Musicminion"
                                     description="电院，参与前端开发"
                                 />
                             </Card>

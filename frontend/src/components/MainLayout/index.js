@@ -80,6 +80,7 @@ const MainLayout = ({handleLogout}) => {
                         overflow: 'hidden',
                         border: '1px solid #ccc',
                         boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
+                        marginTop: '-14px'
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>

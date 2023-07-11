@@ -16,8 +16,8 @@ const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     //移动端检测
-    const isDesktop = useMediaQuery({ query: '(min-width: 960px)' })
-    const isMobile = useMediaQuery({ query: '(max-width: 960px)' })
+    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
+    const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
 
     //无需点击jac登录按钮
     useEffect(() => {

@@ -5,6 +5,8 @@ import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typog
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
+import { useMediaQuery } from 'react-responsive'
+
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 import { qcmdsList } from '../../services/qcmd'
@@ -22,6 +24,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
+    const isFold = useMediaQuery({ minWidth: 768.1, maxWidth: 960 })
+    const isFoldMobile = useMediaQuery({ maxWidth: 432 })
     
     const messagesEndRef = useRef(null);
 
@@ -342,8 +346,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
                     onChange={value => setSelectedModel(value)}
                     options={[
-                        {label:'GPT3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
-                        {label:'GPT4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
+                        {label:`${isFold||isFoldMobile ? '3.5':'GPT3.5'}`, value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
+                        {label:`${isFold||isFoldMobile ? '4':'GPT4'}`, value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                 ]}/>
                 <Space>
                     <Button size="large" onClick={() => setInput('')}>
@@ -351,7 +355,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     </Button>
                     <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
                         loading={isWaiting}>
-                        发送
+                        {isFold || isFoldMobile ? '':'发送'}
                     </Button>
                 </Space>
             </div>

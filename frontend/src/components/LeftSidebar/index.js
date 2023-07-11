@@ -158,7 +158,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 <MessageOutlined />
                                 <span>{session.name}</span>
                             </div> */}
-                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name} title={selectedSession?.id === session.id ? selectedSession.name : session.name}
                                 style={{
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',

@@ -18,7 +18,7 @@ const MainLayoutMobile = ({handleLogout}) => {
     const [selectedSession, setSelectedSession] = useState(null);
     const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
-    const [isSiderCollapsed, setIsSiderCollapsed] = useState(false);
+    const [isSiderCollapsed, setIsSiderCollapsed] = useState(true);
 
     const toggleSider = () => {
         setIsSiderCollapsed(prevState => !prevState);

@@ -60,7 +60,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
                                     title="Musicminion"
-                                    description="生医工，参与前端开发"
+                                    description="生科，参与前端开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"

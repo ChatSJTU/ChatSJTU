@@ -58,24 +58,17 @@ function LoginLayout ({ handleLogin }) {
                         <Paragraph style={{ fontSize:'20px', marginTop: 14, textAlign : 'center'}}>由生成式人工智能技术驱动，为交大师生科研学习赋能</Paragraph>
                     </Typography>
                     <Button style={{ marginTop: 20}} type="primary" size="large" onClick={handleLogin}>使用 jAccount 登录</Button>
-                    <div
-                        style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        width: '100%',
-                        textAlign: 'center',
-                    }}>
-                    </div>
+                    <img style={{ width:'80vw', marginTop: 65 }} src={img_example} ></img>
                 </div>
-                <div style={{ display: 'flex', 
+                {/* <div style={{ display: 'flex', 
                             flexDirection: 'row',
                             justifyContent: 'center',
-                            marginTop: '-85px',
+                            marginTop: '-95px',
                             alignItems: 'center', 
                             zIndex : '4',
                             position: 'relative'}}>
                     <img style={{ width:'80vw' }} src={img_example} ></img>
-                </div>
+                </div> */}
             </div>
             <Footer style={{background: '#FFF', padding : '0'}}>
                 <div

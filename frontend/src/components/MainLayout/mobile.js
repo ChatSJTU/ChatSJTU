@@ -28,6 +28,7 @@ const MainLayoutMobile = ({handleLogout}) => {
     const handleSelectSession = (session) => {
         setSelectedSession(session);
         setCurRightComponent(1);    //切换为聊天框
+        setIsSiderCollapsed(true);  //sider折叠
     };    
 
     //会话改名

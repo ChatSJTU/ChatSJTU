@@ -255,7 +255,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                             // avatar={item.sender ? userIcon : aiIcon}
                             avatar = {AvatarList[item.sender]}
                             description={
-                                <div style={{ display: 'flex', alignItems: 'center'}}>
+                                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
                                     <div>{item.time}</div>
                                     {(item.sender === 0 && item.flag_qcmd) &&
@@ -264,7 +264,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                                         //     count='🎓本回复来自校园服务快捷命令'
                                         //     style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
                                         // />
-                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓本回复来自校园服务快捷命令</Tag>
+                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓校园服务快捷命令</Tag>
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
@@ -342,8 +342,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
                     onChange={value => setSelectedModel(value)}
                     options={[
-                        {label:'Azure GPT3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
-                        {label:'OpenAI GPT4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
+                        {label:'GPT3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
+                        {label:'GPT4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                 ]}/>
                 <Space>
                     <Button size="large" onClick={() => setInput('')}>

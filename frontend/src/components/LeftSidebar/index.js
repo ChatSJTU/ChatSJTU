@@ -158,7 +158,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 <MessageOutlined />
                                 <span>{session.name}</span>
                             </div> */}
-                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name} title={selectedSession?.id === session.id ? selectedSession.name : session.name}
                                 style={{
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -211,7 +211,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                     </Col>
                     <Col span={9} className='button-col'/>
                     {/* 更多按钮 */}
-                    <Col span={5} className='button-col'>
+                    <Col span={5} className='button-col' style={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
                         <Dropdown placement="topRight"
                             overlay={
                                     <Menu>

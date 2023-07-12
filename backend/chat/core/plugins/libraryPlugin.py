@@ -7,7 +7,7 @@ class LibraryPlugin(StandardPlugin):
     获取图书馆信息插件
     """
     def qcmd_trigger(self, msg: str) -> bool:
-        return msg == '~lib'
+        return msg == '/lib'
     def qcmd_response(self, msg: str):
         library_list = get_library_list()
         if (library_list == None):

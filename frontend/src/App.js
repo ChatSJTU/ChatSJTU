@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button, message, Typography, ConfigProvider} from 'antd';
 import { useTranslation, Trans, Translation } from 'react-i18next'
+import { useMediaQuery } from 'react-responsive'
 
-import MainLayout from './components/MainLayout'
+import MainLayout from './components/MainLayout/desktop'
+import MainLayoutMobile from './components/MainLayout/mobile';
 import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
@@ -27,6 +29,10 @@ const App = () => {
             i18n.changeLanguage('en');
         }
     }
+
+    //移动端检测
+    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
+    const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
 
     //无需点击jac登录按钮
     useEffect(() => {
@@ -111,10 +117,11 @@ const App = () => {
         return (
             <ConfigProvider locale={locale}>
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
-                    <MainLayout handleLogout={handleLogout} />
-                </div>
+                {isDesktop ? 
+                <MainLayout handleLogout={handleLogout} /> 
+                : <MainLayoutMobile handleLogout={handleLogout} />}
+            </div>
             </ConfigProvider>
-
         );
     } else {
         return (

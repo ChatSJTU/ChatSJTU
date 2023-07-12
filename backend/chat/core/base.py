@@ -20,7 +20,7 @@ def handle_message(user, message:str, selected_model:str, session:Session.object
         responce: 回复(若出错则为错误JSON)
     """
     # 快捷命令
-    if (message[0] == '~'):
+    if (message[0] == '/'):
         flag_trig, flag_success, resp = check_and_exec_qcmds(message)
         if (flag_trig):
             if flag_success:

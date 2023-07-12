@@ -6,7 +6,7 @@ class CanteenPlugin(StandardPlugin):
     获取就餐指数插件
     """
     def qcmd_trigger(self, msg: str) -> bool:
-        return msg == '~jczs'
+        return msg == '/jczs'
     def qcmd_response(self, msg: str):
         canteen_list = get_canteen_list()
         if (canteen_list == None):

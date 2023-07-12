@@ -1,5 +1,4 @@
 .Sider {
-    width: 260px !important;
     border-right: 1.5px solid #dddddd;
     overflow-y: auto;
     scrollbar-width: none;

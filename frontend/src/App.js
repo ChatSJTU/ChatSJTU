@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Button, message, Typography } from 'antd';
+import { Button, message, Typography, ConfigProvider} from 'antd';
+import { useTranslation, Trans, Translation } from 'react-i18next'
 
 import MainLayout from './components/MainLayout'
 import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
+import enUS from 'antd/locale/en_US';
+import zhCN from 'antd/locale/zh_CN';
+import i18n from './components/I18n/i18n';
 
 import './App.css';
 
@@ -12,6 +16,17 @@ const { Title } = Typography;
 
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [locale, setLocal] = useState(zhCN);
+
+    const changeLanguage = (e) => {
+        if (e === 'zh-CN') {
+            setLocal(zhCN);
+            i18n.changeLanguage('zh');
+        } else if (e === 'en-US') {
+            setLocal(enUS);
+            i18n.changeLanguage('en');
+        }
+    }
 
     //无需点击jac登录按钮
     useEffect(() => {
@@ -94,15 +109,23 @@ const App = () => {
 
     if (isLoggedIn) {
         return (
-            <div style={{ background: '#f0f2f5', height: '100%' }}>
-                <MainLayout handleLogout={handleLogout} />
-            </div>
+            <ConfigProvider locale={locale}>
+                <div style={{ background: '#f0f2f5', height: '100%' }}>
+                    <MainLayout handleLogout={handleLogout} />
+                </div>
+            </ConfigProvider>
+
         );
     } else {
         return (
-            <div style={{ background: '#f0f2f5', height: '100%' }}>
-                <LoginLayout handleLogin={() => jAccountLogin('/')}/>
-            </div>
+            <ConfigProvider locale={locale}>
+                <div style={{ background: '#f0f2f5', height: '100%' }}>
+                    <LoginLayout 
+                        handleLogin={() => jAccountLogin('/')}
+                        changeLanguage={changeLanguage}
+                    />
+                </div>
+            </ConfigProvider>
         );
     }
 };

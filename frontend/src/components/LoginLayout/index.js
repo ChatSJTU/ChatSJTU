@@ -1,37 +1,94 @@
 import React from 'react';
-import { Layout, Typography, Tag, Button, Dropdown, Space } from 'antd';
+import { Layout, Typography, Tag, Button, Dropdown, Space, Select} from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import background from '../../assets/main-gradient.png';
 import background_webm from '../../assets/new-main-gradient.webm'
 import img_example from '../../assets/main-example.png'
+import { GlobalOutlined } from '@ant-design/icons';
 
 const { Footer } = Layout;
 const { Title, Paragraph } = Typography;
 
-const items = [
-    {
-        key: 'zh-CN',
-        label: (
-            <center>中文/zh-CN</center>
-        ),
-    },
-    {
-        key: 'en-US',
-        label: (
-            <center>
-                English/en-US
-            </center>
-        ),
-    },
-];
+// const items = [
+//     {
+//         key: 'zh-CN',
+//         label: (
+//             <center>中文/zh-CN</center>
+//         ),
+//     },
+//     {
+//         key: 'en-US',
+//         label: (
+//             <center>
+//                 English/en-US
+//             </center>
+//         ),
+//     },
+// ];
 
 
 function LoginLayout({ handleLogin, changeLanguage }) {
+    const LoadLanguage = () => {
+        const { i18n } = useTranslation();
+        if (i18n.language === 'zh') {
+            return 'zh-CN';
+        }
+        else if (i18n.language === 'en') {
+            return 'en-US';
+        }
+    }
+
+
     let { t } = useTranslation();
 
     return (
         <Layout style={{ height: '100vh', background: '#FFF', position: 'relative' }}>
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    zIndex: '5',
+                }}
+            >
+                {/* <Dropdown
+                    menu={{
+                        items: items,
+                        onClick: ({ key }) => changeLanguage(key),
+                    }}
+                    // placement="bottomLeft"
+                    style={{
+                        position: 'absolute',
+                    }}
+                >
+                    <Button size="large"
+                        type='text'
+                    >
+                        <GlobalOutlined />
+                        {t('LoginLayout_ButtonText_ChangeLanguage')}
+                    </Button>
+                </Dropdown> */}
+                <Select
+                    defaultValue={LoadLanguage()}
+                    style={{
+                        width: 120,
+                    }}
+                    bordered={false}
+                    onChange={changeLanguage}
+                    options={[
+                        {
+                            value: 'zh-CN', 
+                            label: <><GlobalOutlined /> &nbsp;&nbsp;中文</>,
+                        },
+                        {
+                            value: 'en-US',
+                            label: <><GlobalOutlined /> &nbsp;&nbsp;English</>,
+                        },
+                    ]}
+                />
+            </div>
+
             <div style={{ background: '#FFF', position: 'relative' }}>
                 <div style={{
                     display: 'flex',
@@ -95,18 +152,10 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                         <Button style={{ marginTop: 20, minWidth: "170px" }} type="primary" size="large" onClick={handleLogin}>{
                             t('LoginLayout_ButtonText_LoginViaJAccount')
                         }</Button>
-                        <Dropdown
-                            menu={{
-                                items: items,
-                                onClick: ({ key }) => changeLanguage(key),
-                            }}
-                            placement="bottomLeft"
 
-                        >
-                            <Button size="large" style={{ marginTop: 20, minWidth: "170px" }}
-                            >{t('LoginLayout_ButtonText_ChangeLanguage')}</Button>
-                        </Dropdown>
                     </Space>
+
+
 
 
                     <div>

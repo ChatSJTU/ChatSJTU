@@ -21,6 +21,8 @@ const App = () => {
     const [locale, setLocal] = useState(zhCN);
 
     const changeLanguage = (e) => {
+        // 打印出来之前的语言
+        console.log(i18n.language);
         if (e === 'zh-CN') {
             setLocal(zhCN);
             i18n.changeLanguage('zh');

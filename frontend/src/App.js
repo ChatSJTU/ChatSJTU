@@ -101,8 +101,9 @@ const App = () => {
     if (isLoggedIn) {
         return (
             <div style={{ background: '#f0f2f5', height: '100%' }}>
-                {isDesktop && <MainLayout handleLogout={handleLogout} />}
-                {isMobile && <MainLayoutMobile handleLogout={handleLogout} />}
+                {isDesktop ? 
+                <MainLayout handleLogout={handleLogout} /> 
+                : <MainLayoutMobile handleLogout={handleLogout} />}
             </div>
         );
     } else {

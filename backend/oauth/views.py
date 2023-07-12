@@ -82,6 +82,8 @@ def auth_jaccount(request):
     UserPreference.objects.update_or_create(user=user)
     if user:
         login(request, user)
+        if created:
+            Session.objects.create(name='新会话', user=user)
         return JsonResponse({"message": "login success"}, status=200)
     return JsonResponse({"message": "login failed"}, status=400)
 

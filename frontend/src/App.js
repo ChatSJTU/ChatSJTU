@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Button, message } from 'antd';
+import { message, Typography } from 'antd';
+import { useMediaQuery } from 'react-responsive'
 
-import MainLayout from './components/MainLayout'
+import MainLayout from './components/MainLayout/desktop'
+import MainLayoutMobile from './components/MainLayout/mobile';
+import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
 
 import './App.css';
 
+const { Title } = Typography;
+
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    //移动端检测
+    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
+    const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
 
     //无需点击jac登录按钮
     useEffect(() => {
@@ -46,7 +55,7 @@ const App = () => {
             console.error('Failed to exchange token:', error);
             if (error.response && error.response.status === 403) {
                 //message.error('登陆失败，该账户类型暂时无法访问', 2);
-                message.error('登陆失败，开发中仅白名单用户可登录', 2);
+                message.error('开发中仅内测用户可登录', 2);
             } else {
                 message.error('登陆失败', 2);
             }
@@ -92,25 +101,15 @@ const App = () => {
     if (isLoggedIn) {
         return (
             <div style={{ background: '#f0f2f5', height: '100%' }}>
-                <MainLayout handleLogout={handleLogout} />
+                {isDesktop && <MainLayout handleLogout={handleLogout} />}
+                {isMobile && <MainLayoutMobile handleLogout={handleLogout} />}
             </div>
         );
     } else {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0f2f5', height: '100vh'}}>
-                {/* <Button type="primary" onClick={handleLogin_DeviceId} size="large">使用 device_id 登录</Button> */}
-                <Button type="primary" onClick={() => jAccountLogin('/')} size="large">使用 jAccount 登录</Button>
-                <div
-                    style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    width: '100%',
-                    textAlign: 'center',
-                }}>
-                <p style={{fontSize: '12px', color: '#aaaaaa'}}>© 2023 上海交通大学 沪交ICP备20230139</p>
+            <div style={{ background: '#f0f2f5', height: '100%' }}>
+                <LoginLayout handleLogin={() => jAccountLogin('/')}/>
             </div>
-            </div>
-            
         );
     }
 };

@@ -83,15 +83,6 @@
     height: 1px; /* 调整 Divider 的高度 */
 }
 
-/* Badge*/
-.solid-badge .ant-badge-count {
-    border-radius: 2px;
-    color: white;
-    font-weight: bold;
-    padding: 0px 6px;
-    letter-spacing: 1px;
-}
-
 /* 账户选项卡 */
 .permission-display-container{
     display: flex;

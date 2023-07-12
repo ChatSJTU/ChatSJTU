@@ -4,7 +4,7 @@ import { CloseOutlined, GithubOutlined } from '@ant-design/icons';
 import './style.css'
 
 const { Header, Content } = Layout;
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph, Text, Link } = Typography;
 const { Meta } = Card;
 
 function TabAbout ({ onCloseTab }) {
@@ -25,7 +25,7 @@ function TabAbout ({ onCloseTab }) {
                 <Typography>
                     <Title level={4} style={{marginTop:'25px'}}>简介</Title>
                     <Paragraph>
-                        Chat SJTU 是由上海交通大学网络信息中心指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。
+                        Chat SJTU 是由<Link href="https://net.sjtu.edu.cn/" target="_blank">上海交通大学网络信息中心</Link>指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。
                     </Paragraph>
                     <Divider/>
                     <Title level={4}>开发团队</Title>
@@ -54,13 +54,13 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
-                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Pingwu-y"><GithubOutlined/></a>,
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Musicminion"><GithubOutlined/></a>,
                                     <span />
                                 ]}>
                                 <Meta
-                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Pingwu-y" />}
-                                    title="Cradle"
-                                    description="电院，参与前端开发"
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
+                                    title="Musicminion"
+                                    description="生科，参与前端开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -111,6 +111,11 @@ function TabAbout ({ onCloseTab }) {
                     <Title level={4}>鸣谢</Title>
                     <Paragraph>
                         特别感谢 <Text code>@topologica1</Text>、<Text code>@boar</Text> 等学长在开发过程中的帮助。
+                    </Paragraph>
+                    <Divider/>
+                    <Title level={4}>联系我们</Title>
+                    <Paragraph>
+                        您可以通过邮件 <Link href="mailto:gpt@sjtu.edu.cn">gpt@sjtu.edu.cn</Link> 联系我们。
                     </Paragraph>
                 </Typography>
             </Content>

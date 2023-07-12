@@ -11,7 +11,7 @@ import TabWallet from '../Tabs/wallet';
 
 import './index.css'
 
-const { Content, Sider } = Layout;
+const { Content, Sider, Footer } = Layout;
 
 const MainLayout = ({handleLogout}) => {
     const [selectedSession, setSelectedSession] = useState(null);
@@ -45,12 +45,13 @@ const MainLayout = ({handleLogout}) => {
 
     const handleChangeComponent = (index) => {
         if (index !== 1){
-            setPrevSelectedSession(selectedSession);
+            if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
             setSelectedSession(null);
             setCurRightComponent(index);
         }
         else if (index === 1 && !selectedSession){
             setSelectedSession(prevSelectedSession);
+            setPrevSelectedSession(null);
             setCurRightComponent(index);
         }
         if (index === 1 && !prevSelectedSession){
@@ -59,7 +60,7 @@ const MainLayout = ({handleLogout}) => {
     };
 
     return (
-        <div className="background"
+        <Layout className="background fade-in"
             style={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -73,12 +74,13 @@ const MainLayout = ({handleLogout}) => {
                 <div
                     style={{
                         width: '80%',
-                        height: '90%',
+                        height: '88%',
                         background: '#fff',
                         borderRadius: '12px',
                         overflow: 'hidden',
                         border: '1px solid #ccc',
-                        boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.08)',
+                        boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
+                        marginTop: '-14px'
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
@@ -106,9 +108,9 @@ const MainLayout = ({handleLogout}) => {
                 width: '100%',
                 textAlign: 'center',
                 }}>
-                <p style={{fontSize: '12px', color: '#aaaaaa'}}>© 2023 上海交通大学 沪交ICP备20230139</p>
+                <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>版权所有 © 2023 上海交通大学网络信息中心 沪交ICP备20230139<br/>技术支持：ChatSJTU 学生开发团队 <a href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">联系我们</a></p>
             </div>
-        </div>
+        </Layout>
     );
   };
 

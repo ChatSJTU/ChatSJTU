@@ -5,6 +5,8 @@ import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typog
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
+import { useMediaQuery } from 'react-responsive'
+
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 import { qcmdsList } from '../../services/qcmd'
@@ -22,6 +24,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
+    const isFold = useMediaQuery({ minWidth: 768.1, maxWidth: 960 })
+    const isFoldMobile = useMediaQuery({ maxWidth: 432 })
     
     const messagesEndRef = useRef(null);
 
@@ -164,7 +168,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const handleUserInput = e => {
         setInput(e.target.value);
         
-        if (e.target.value.startsWith('~')) {
+        if (e.target.value.startsWith('/')) {
             setShowQcmdTips(true);
             handleFilterQcmds(e.target.value);
         } else {
@@ -190,7 +194,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
 
     //快捷指令提示
     const handleFilterQcmds = (value) => {
-        if (value[0] !== '~') {
+        if (value[0] !== '/') {
             setQcmdOptions([]);
         } else {
             setQcmdOptions(
@@ -255,7 +259,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                             // avatar={item.sender ? userIcon : aiIcon}
                             avatar = {AvatarList[item.sender]}
                             description={
-                                <div style={{ display: 'flex', alignItems: 'center'}}>
+                                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
                                     <div>{item.time}</div>
                                     {(item.sender === 0 && item.flag_qcmd) &&
@@ -264,7 +268,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                                         //     count='🎓本回复来自校园服务快捷命令'
                                         //     style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
                                         // />
-                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓本回复来自校园服务快捷命令</Tag>
+                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓校园服务快捷命令</Tag>
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
@@ -334,7 +338,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         //   handleSend();
                         // }
                     }}
-                    placeholder="在此输入您要发送的信息，Shift+Enter 换行，Enter 发送，~ 触发快捷命令"
+                    placeholder="在此输入您要发送的信息，Shift+Enter 换行，Enter 发送，/ 触发快捷命令"
                     style={{resize: 'none', fontSize:'16px'}}
                 />
             </Dropdown>
@@ -342,8 +346,8 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
                     onChange={value => setSelectedModel(value)}
                     options={[
-                        {label:'Azure GPT3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
-                        {label:'OpenAI GPT4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
+                        {label:`${isFold||isFoldMobile ? '3.5':'GPT3.5'}`, value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
+                        {label:`${isFold||isFoldMobile ? '4':'GPT4'}`, value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                 ]}/>
                 <Space>
                     <Button size="large" onClick={() => setInput('')}>
@@ -351,7 +355,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     </Button>
                     <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
                         loading={isWaiting}>
-                        发送
+                        {isFold || isFoldMobile ? '':'发送'}
                     </Button>
                 </Space>
             </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, message, Typography } from 'antd';
+import { message, Typography } from 'antd';
+import { useMediaQuery } from 'react-responsive'
 
-import MainLayout from './components/MainLayout'
+import MainLayout from './components/MainLayout/desktop'
+import MainLayoutMobile from './components/MainLayout/mobile';
 import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
@@ -12,6 +14,10 @@ const { Title } = Typography;
 
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    //移动端检测
+    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
+    const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
 
     //无需点击jac登录按钮
     useEffect(() => {
@@ -95,7 +101,8 @@ const App = () => {
     if (isLoggedIn) {
         return (
             <div style={{ background: '#f0f2f5', height: '100%' }}>
-                <MainLayout handleLogout={handleLogout} />
+                {isDesktop && <MainLayout handleLogout={handleLogout} />}
+                {isMobile && <MainLayoutMobile handleLogout={handleLogout} />}
             </div>
         );
     } else {

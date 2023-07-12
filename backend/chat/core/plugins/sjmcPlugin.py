@@ -6,7 +6,7 @@ class SjmcPlugin(StandardPlugin):
     获取SJMC服务器信息插件
     """
     def qcmd_trigger(self, msg: str) -> bool:
-        return msg == '~sjmc'
+        return msg == '/sjmc'
     def qcmd_response(self, msg: str):
         server_list = get_server_list()
         if (server_list == None) or (len(server_list) == 0):

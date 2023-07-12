@@ -168,7 +168,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const handleUserInput = e => {
         setInput(e.target.value);
         
-        if (e.target.value.startsWith('~')) {
+        if (e.target.value.startsWith('/')) {
             setShowQcmdTips(true);
             handleFilterQcmds(e.target.value);
         } else {
@@ -194,7 +194,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
 
     //快捷指令提示
     const handleFilterQcmds = (value) => {
-        if (value[0] !== '~') {
+        if (value[0] !== '/') {
             setQcmdOptions([]);
         } else {
             setQcmdOptions(
@@ -338,7 +338,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         //   handleSend();
                         // }
                     }}
-                    placeholder="在此输入您要发送的信息，Shift+Enter 换行，Enter 发送，~ 触发快捷命令"
+                    placeholder="在此输入您要发送的信息，Shift+Enter 换行，Enter 发送，/ 触发快捷命令"
                     style={{resize: 'none', fontSize:'16px'}}
                 />
             </Dropdown>

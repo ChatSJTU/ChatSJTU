@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Typography, Tag, Button, Dropdown, Space, Select} from 'antd';
+import { Layout, Typography, Tag, Button, Space, Select} from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import background from '../../assets/main-gradient.png';
@@ -37,6 +37,7 @@ function LoginLayout({ handleLogin, changeLanguage }) {
         else if (i18n.language === 'en') {
             return 'en-US';
         }
+        return 'zh-CN';
     }
 
 
@@ -69,24 +70,27 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                         {t('LoginLayout_ButtonText_ChangeLanguage')}
                     </Button>
                 </Dropdown> */}
-                <Select
-                    defaultValue={LoadLanguage()}
-                    style={{
-                        width: 95,
-                    }}
-                    bordered={false}
-                    onChange={changeLanguage}
-                    options={[
-                        {
-                            value: 'zh-CN', 
-                            label: <>中文</>,
-                        },
-                        {
-                            value: 'en-US',
-                            label: <>English</>,
-                        },
-                    ]}
-                />
+                <div>
+                    <GlobalOutlined />
+                    <Select
+                        defaultValue={LoadLanguage()}
+                        style={{
+                            width: 90,
+                        }}
+                        bordered={false}
+                        onChange={changeLanguage}
+                        options={[
+                            {
+                                value: 'zh-CN', 
+                                label: <>中文</>,
+                            },
+                            {
+                                value: 'en-US',
+                                label: <>English</>,
+                            },
+                        ]}
+                    />
+                </div>
             </div>
 
             <div style={{ background: '#FFF', position: 'relative' }}>

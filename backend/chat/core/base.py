@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from chat.models import UserPreference, Session
-from .utils import *
-from .configs import SYSTEM_ROLE
-from .plugins.qcmd import *
+from .utils import senword_detector, senword_detector_strict
+from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
+from .qcmd import *
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
+import time
 
 def handle_message(user, message:str, selected_model:str, session:Session.objects):
     """消息处理的主入口
@@ -29,7 +30,11 @@ def handle_message(user, message:str, selected_model:str, session:Session.object
                 return False, True, JsonResponse({'error': resp}, status = 500)
             
     # 输入关键词检测
-    
+    if (senword_detector_strict.find(message)):
+        time.sleep(1)   # 避免处理太快前端显示闪烁
+        return False, False, JsonResponse({'error': '请求存在敏感词'}, status=500)
+    use_strict_prompt = senword_detector.find(message)
+
     # 获取用户偏好设置
     try: 
         user_preference = UserPreference.objects.get(user=user)
@@ -39,7 +44,7 @@ def handle_message(user, message:str, selected_model:str, session:Session.object
     # 获取并处理历史消息
     raw_recent_msgs = session.get_recent_n(n = user_preference.attached_message_count)
     role = ['assistant', 'user']
-    input_list = [{'role':'system', 'content':SYSTEM_ROLE},]
+    input_list = [{'role':'system', 'content':SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE},]
     input_list.extend([{
         'role': role[message.sender],
         'content': message.content,
@@ -69,6 +74,8 @@ def handle_message(user, message:str, selected_model:str, session:Session.object
         return False, False, JsonResponse(response, status=500)
     
     # 输出关键词检测
+    if (senword_detector_strict.find(response)):
+        return False, False, JsonResponse({'error': '回复存在敏感词，已屏蔽'}, status=500)
 
     return True, False, response
 

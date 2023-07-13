@@ -94,12 +94,12 @@ function TabSettings({ onCloseTab }) {
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto' }}>
                 <Typography>
-                    <Title level={4} style={{ marginTop: '25px' }}>语言设置</Title>
+                    <Title level={4} style={{ marginTop: '25px' }}>基本设置</Title>
                     <Card style={{ marginTop: '25px' }} >
                         <Row>
                             <Col span={12} className="setting-title">
-                                <div><span>语言</span></div>
-                                <div>选择您的界面语言</div>
+                                <div><span>语言（language）</span></div>
+                                {/* <div>选择您的界面语言</div> */}
                             </Col>
                             <Col span={12} className="setting-item">
                                 <Select
@@ -140,8 +140,8 @@ function TabSettings({ onCloseTab }) {
                         <Divider className="setting-divider" />
                         <Row>
                             <Col span={12} className="setting-title">
-                                <div><span>单次回复限制（max_tokens）</span></div>
-                                <div>单次交互所用的最大 Token 数</div>
+                                <div><span>单次回复限制</span></div>
+                                <div>单次交互回复所用的最大 Token 数</div>
                             </Col>
                             <Col span={12} className="setting-item">
                                 <InputNumber min={0} max={1000} step={100}

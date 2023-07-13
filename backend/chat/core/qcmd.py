@@ -1,7 +1,7 @@
-from .utils import StandardPlugin
-from .canteenPlugin import CanteenPlugin
-from .sjmcPlugin import SjmcPlugin
-from .libraryPlugin import LibraryPlugin
+from .plugins.utils import StandardPlugin
+from .plugins.canteenPlugin import CanteenPlugin
+from .plugins.sjmcPlugin import SjmcPlugin
+from .plugins.libraryPlugin import LibraryPlugin
 
 # 支持快捷命令的插件列表
 qcmd_plugins_list = [

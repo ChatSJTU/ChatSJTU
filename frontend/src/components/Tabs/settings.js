@@ -104,18 +104,18 @@ function TabSettings({ onCloseTab }) {
                             <Col span={12} className="setting-item">
                                 <Select
                                     defaultValue={LoadLanguage()}
-                                    // style={{
-                                    //     width: 120,
-                                    // }}
+                                    style={{
+                                        width: 90,
+                                    }}
                                     onChange={handleLanguageChange}
                                     options={[
                                         {
                                             value: 'zh-CN',
-                                            label: <><GlobalOutlined /> &nbsp;&nbsp;中文</>,
+                                            label: <>中文</>,
                                         },
                                         {
                                             value: 'en-US',
-                                            label: <><GlobalOutlined /> &nbsp;&nbsp;English</>,
+                                            label: <>English</>,
                                         },
                                     ]}
                                 />

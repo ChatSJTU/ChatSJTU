@@ -72,18 +72,18 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                 <Select
                     defaultValue={LoadLanguage()}
                     style={{
-                        width: 120,
+                        width: 95,
                     }}
                     bordered={false}
                     onChange={changeLanguage}
                     options={[
                         {
                             value: 'zh-CN', 
-                            label: <><GlobalOutlined /> &nbsp;&nbsp;中文</>,
+                            label: <>中文</>,
                         },
                         {
                             value: 'en-US',
-                            label: <><GlobalOutlined /> &nbsp;&nbsp;English</>,
+                            label: <>English</>,
                         },
                     ]}
                 />

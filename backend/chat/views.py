@@ -92,7 +92,7 @@ def send_message(request, session_id):
     user_message = request.data.get('message')
     selected_model = request.data.get('model')
     permission, isStu, errorresp = check_usage(request.user)
-    if not permission:
+    if not permission and user_message[0]!='/': # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
         time.sleep(1)   # 避免处理太快前端显示闪烁
         return errorresp
 
@@ -115,6 +115,10 @@ def send_message(request, session_id):
         if not flag_success:
             session.delete_last_message()
             return response # 出错，返回错误
+        if not flag_qcmd and not permission:    # 达到用量，以/开头但不是快捷命令
+            session.delete_last_message()
+            return errorresp
+
         
         # 将返回消息加入数据库
         ai_message_obj = Message.objects.create(

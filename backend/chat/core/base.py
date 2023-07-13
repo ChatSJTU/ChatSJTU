@@ -6,6 +6,24 @@ from .qcmd import *
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
 import time
 
+def check_and_handle_qcmds(message:str):
+    """检查并处理是否为快捷命令
+    
+    Args:
+        message: 用户输入的消息
+    Returns:
+        flag_success: 是否出错(False为错误)
+        flag_qcmd: 是否为快捷命令的结果
+        responce: 回复(若出错则为错误JSON)
+    """
+    flag_trig, flag_success, resp = check_and_exec_qcmds(message)
+    if (flag_trig):
+        if flag_success:
+            return True, True, resp
+        else:
+            return False, True, JsonResponse({'error': resp}, status = 500)
+    return True, False, None
+
 def handle_message(user, message:str, selected_model:str, session:Session.objects):
     """消息处理的主入口
 

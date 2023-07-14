@@ -102,11 +102,12 @@ def summary_title(message: str):
     """
     用于概括会话标题
     """
-    input_list = [{'role':'user', 'content':message+' 用少于五个词概括上述请求为完整短标题'},]
+    input_list = [{'role':'user', 'content':message+'\n用小于五个词概括上述文字'},]
     flag, response = interact_with_azure_gpt(
         msg = input_list,
         model_engine='gpt-35-turbo-16k',
-        max_tokens = 20
+        max_tokens = 20,
+        temperature = 0.1
     )
     if not flag:
         return False, ''

@@ -31,13 +31,17 @@ const { Title, Paragraph } = Typography;
 function LoginLayout({ handleLogin, changeLanguage }) {
     const LoadLanguage = () => {
         const { i18n } = useTranslation();
+        let defaultLanguage = 'zh-CN';
+        if (navigator.language.startsWith('en')) {
+            defaultLanguage = 'en-US';
+        }
         if (i18n.language === 'zh') {
             return 'zh-CN';
         }
         else if (i18n.language === 'en') {
             return 'en-US';
         }
-        return 'zh-CN';
+        return defaultLanguage;
     }
 
 

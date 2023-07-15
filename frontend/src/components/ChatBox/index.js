@@ -1,7 +1,7 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented} from 'antd';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
@@ -235,7 +235,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const NoticeIcon = <Avatar
         icon={<InfoCircleOutlined />}
         style={{
-                backgroundColor: '#debfff',
+                backgroundColor: '#e8d3ff',
                 color: '#7945af',
             }}
         />
@@ -283,22 +283,25 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                             
                         />
                         <div style={{ width: '100%', marginTop: 10}}>
-                        {item.sender === 1 ? (
-                            <div style={{ whiteSpace: 'pre-wrap' }}>
-                                {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
-                                <span key={i}>
-                                    {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
-                                </span>
-                                ))}
-                            </div>
-                            ) : (
-                            <MarkdownRenderer content={item.content}/>
-                        )}
-                        {item.sender === 2 && 
-                            <Button icon={<ReloadOutlined />} onClick={handleRetry}
-                                style={{marginTop:'15px'}} size='large'>重试</Button>
+                            {item.sender === 0 && 
+                                <MarkdownRenderer content={item.content}/>}
+                            {item.sender === 1 &&
+                                <div style={{ whiteSpace: 'pre-wrap' }}>
+                                    {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                    <span key={i}>
+                                        {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                    </span>
+                                    ))}
+                                </div>
                             }
-                        
+                            {item.sender === 2 && 
+                            <Alert type="error" style={{fontSize:'16px'}} message={
+                                <Space>
+                                    {item.content}
+                                    <Button icon={<ReloadOutlined />} onClick={handleRetry}
+                                        >重试</Button>
+                                </Space>}/>
+                            }
                         </div>
                     </div>
                     <div/>

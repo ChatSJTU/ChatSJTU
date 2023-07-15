@@ -5,6 +5,7 @@
   
 .bot-message {
     background-color: #ffffff; /* 机器人回复的背景颜色 */
+    font-size: 16px;
 }
 
 .sendbox-area{

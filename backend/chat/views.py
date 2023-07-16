@@ -1,15 +1,16 @@
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import authentication_classes, permission_classes
+from adrf.decorators import api_view
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from asgiref.sync import sync_to_async
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import F
+from chat.serializers import UserPreferenceSerializer, SessionSerializer, MessageSerializer
 from chat.models import Session, Message, UserAccount, UserPreference
-from chat.serializers import UserPreferenceSerializer
 from chat.core import STUDENT_LIMIT, handle_message, summary_title
 from oauth.models import UserProfile
-import pytz
+from datetime import datetime
 import time
 
 # def get_or_create_user(device_id):
@@ -18,30 +19,33 @@ import time
 #     return user
 
 # 获取会话列表或创建会话
+
 @api_view(['GET', 'POST'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated]) 
-def sessions(request):
+async def sessions(request):
     if request.method == 'GET':
         user = request.user  # 从request.user获取当前用户
-        sessions = Session.objects.filter(user=user)  # 基于当前用户过滤会话
-        data = [{'id': session.id, 'name': session.name} for session in sessions]
-        return JsonResponse(data, safe=False)
+        # sessions = await Session.objects.filter(user=user)  # 基于当前用户过滤会话
+        sessions = [session async for session in Session.objects.filter(user=user)]
+     
+        return JsonResponse(SessionSerializer(sessions,many=True).data, safe=False)
     elif request.method == 'POST':
         # 创建新会话，并关联到当前用户
         user = request.user
-        session = Session.objects.create(name='新会话', user=user)
-        data = {'id': session.id, 'name': session.name}
-        return JsonResponse(data)
+        session = await Session.objects.acreate(name='新会话', user=user)
+        return JsonResponse(SessionSerializer(session).data)
+    else:
+        return JsonResponse({"error":"Method not supported"},status=404)
 
 # 删除会话
 @api_view(['DELETE'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def delete_session(request, session_id):
+async def delete_session(request, session_id):
     try:
-        session = Session.objects.get(id=session_id, user=request.user)
-        session.delete()
+        session = await Session.objects.aget(id=session_id, user=request.user)
+        await session.adelete()
         return JsonResponse({'message': 'Session deleted successfully'})
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
@@ -50,10 +54,10 @@ def delete_session(request, session_id):
 @api_view(['DELETE'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def delete_all_sessions(request):
+async def delete_all_sessions(request):
     try:
-        sessions = Session.objects.filter(user=request.user)
-        sessions.delete()
+        async for session in Session.objects.filter(user=request.user):
+            await session.adelete()
         return JsonResponse({'message': 'All sessions deleted successfully'})
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
@@ -63,24 +67,12 @@ def delete_all_sessions(request):
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def session_messages(request, session_id):
+async def session_messages(request, session_id):
+        
     try:
-        session = Session.objects.get(id=session_id, user=request.user)
-        messages = Message.objects.filter(session=session)
-        data = []
-        for message in messages:
-            # 转换时区和格式
-            time_str = message.timestamp.astimezone(pytz.timezone('Asia/Shanghai'))
-            time_str = time_str.strftime("%Y/%m/%d %H:%M:%S")
-            data.append({
-                'id': message.id, 
-                'content': message.content,
-                'sender': message.sender,
-                'flag_qcmd': message.flag_qcmd,
-                'use_model': message.use_model,
-                'time': time_str
-            })
-        return JsonResponse(data, safe=False)
+        messages = [message async for message in Message.objects.filter(session__id=session_id, session__user=request.user)]
+        serializer = MessageSerializer(messages,many=True)
+        return JsonResponse(serializer.data, safe=False)
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
 
@@ -88,40 +80,44 @@ def session_messages(request, session_id):
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def send_message(request, session_id):    
+async def send_message(request, session_id):    
     user_message = request.data.get('message')
     selected_model = request.data.get('model')
-    permission, isStu, errorresp = check_usage(request.user)
+    permission, isStu, errorresp = await check_usage(request.user)
     if not permission and user_message[0]!='/': # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
         time.sleep(1)   # 避免处理太快前端显示闪烁
         return errorresp
 
     try:
-        session = Session.objects.get(id=session_id, user=request.user)
-        # 将发送消息加入数据库
-        user_message_obj = Message.objects.create(
-            sender=1,
-            session=session,
-            content=user_message
-        )
+        session = await Session.objects.aget(id=session_id, user=request.user)
+        
+        sendTimestamp = datetime.now()
 
         # 处理信息
-        flag_success, flag_qcmd, response = handle_message(
+        flag_success, flag_qcmd, response = await handle_message(
             user=request.user, 
             message=user_message,
             selected_model=selected_model,
             session=session
         )
+        
         if not flag_success:
-            session.delete_last_message()
+            # session.delete_last_message()
             return response # 出错，返回错误
         if not flag_qcmd and not permission:    # 达到用量，以/开头但不是快捷命令
-            session.delete_last_message()
+            # session.delete_last_message()
             return errorresp
-
         
+        # 将发送消息加入数据库
+        user_message_obj = await Message.objects.acreate(
+            sender=1,
+            session=session,
+            content=user_message,
+            timestamp=sendTimestamp
+        )
+
         # 将返回消息加入数据库
-        ai_message_obj = Message.objects.create(
+        ai_message_obj = await Message.objects.acreate(
             sender=0,
             session=session,
             content=response,
@@ -132,16 +128,17 @@ def send_message(request, session_id):
         # 查看session是否进行过改名（再次filter防止同步问题）
         rename_flag = False
         if not flag_qcmd:
-            session_isrenamed = Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).first()
+            session_isrenamed = await Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).afirst()
             if not session_isrenamed:
-                rename_flag, rename_resp = summary_title(message=user_message)
+                rename_flag, rename_resp = await summary_title(message=user_message)
                 if rename_flag:
                     session.name = rename_resp
                     session.is_renamed = True
-                    session.save()
+                    await session.asave()
 
         # 增加次数，返回服务端生成的回复消息
-        if (isStu and not flag_qcmd): increase_usage(user = request.user)
+        if (isStu and not flag_qcmd): 
+            await increase_usage(user = request.user)
         return JsonResponse({
             'message': response, 
             'flag_qcmd': flag_qcmd,
@@ -155,21 +152,21 @@ def send_message(request, session_id):
 
 # 检查使用次数
 # 返回: flag（是否有权限）、isStu（是否为学生）、错误返回（可能有）
-def check_usage(user):
+async def check_usage(user):
     try:
-        profile = UserProfile.objects.get(user=user)
+        profile = await UserProfile.objects.aget(user=user)
         if profile.user_type != 'student':
             return True, False, None
     except UserProfile.DoesNotExist:
         return False, False, JsonResponse({'error': '用户信息错误'}, status=404)
     
     try:
-        account= UserAccount.objects.get(user=user)
+        account= await UserAccount.objects.aget(user=user)
         today = timezone.localtime(timezone.now()).date()
         if account.last_used != today:
             account.usage_count = 0
             account.last_used = today
-            account.save()
+            await account.asave()
             return True, True, None
         
         if account.usage_count >= STUDENT_LIMIT:
@@ -183,9 +180,10 @@ def check_usage(user):
         return False, False, JsonResponse({'error': e}, status=404)
 
 # 更新使用次数
-def increase_usage(user):
+async def increase_usage(user):
     try:
-        UserAccount.objects.filter(user=user).update(usage_count=F('usage_count') + 1)
+        accounts = UserAccount.objects.filter(user=user)
+        await sync_to_async(accounts.update)(usage_count=F('usage_count') + 1)
     except UserAccount.DoesNotExist:
         return JsonResponse({'error': '用户信息错误'}, status=404)
 
@@ -219,12 +217,12 @@ def increase_usage(user):
 @api_view(['GET', 'PATCH'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def user_preference(request):
-    preference = UserPreference.objects.get(user=request.user)
+async def user_preference(request):
+    preference = await UserPreference.objects.aget(user=request.user)
 
     if request.method == 'GET':
         serializer = UserPreferenceSerializer(preference)
-        return Response(serializer.data)
+        return JsonResponse(serializer.data)
 
     elif request.method == 'PATCH':
         field = request.data.get('field')
@@ -233,6 +231,6 @@ def user_preference(request):
         if field is None or value is None:
             return JsonResponse({'error': 'Missing field or value'}, status=400)
         setattr(preference, field, value)
-        preference.save()
+        sync_to_async(sync_topreference.asave)()
         serializer = UserPreferenceSerializer(preference)
-        return Response(serializer.data)
+        return JsonResponse(serializer.data)

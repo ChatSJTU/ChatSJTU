@@ -5,7 +5,7 @@ from .configs import *
 @tenacity.retry(stop=tenacity.stop_after_attempt(3), 
                 wait=tenacity.wait_random_exponential(min=1, max=5),
                 retry=tenacity.retry_if_exception_type((openai.error.RateLimitError, openai.error.OpenAIError)))
-def interact_with_openai_gpt(msg: list, model_engine = 'gpt-4', temperature=0.5, max_tokens=1000) ->str:
+async def interact_with_openai_gpt(msg: list, model_engine = 'gpt-4', temperature=0.5, max_tokens=1000) ->str:
     # 使用OpenAI API与GPT交互
     try:
         openai.api_type = "open_ai"
@@ -14,7 +14,7 @@ def interact_with_openai_gpt(msg: list, model_engine = 'gpt-4', temperature=0.5,
         openai.api_base = "https://api.openai.com/v1"
         openai.api_version = None   
 
-        response = openai.ChatCompletion.create(
+        response = await openai.ChatCompletion.acreate(
             model = model_engine,
             messages = msg,
             temperature = temperature,
@@ -41,7 +41,7 @@ def interact_with_openai_gpt(msg: list, model_engine = 'gpt-4', temperature=0.5,
 @tenacity.retry(stop=tenacity.stop_after_attempt(3), 
                 wait=tenacity.wait_random_exponential(min=1, max=5),
                 retry=tenacity.retry_if_exception_type((openai.error.RateLimitError, openai.error.OpenAIError)))
-def interact_with_azure_gpt(msg: list, model_engine = 'gpt-35-turbo-16k', temperature=0.5, max_tokens=1000) ->str:
+async def interact_with_azure_gpt(msg: list, model_engine = 'gpt-35-turbo-16k', temperature=0.5, max_tokens=1000) ->str:
     # 使用Azure API与GPT交互
     try:
         openai.api_type = "azure"
@@ -50,7 +50,7 @@ def interact_with_azure_gpt(msg: list, model_engine = 'gpt-35-turbo-16k', temper
         openai.api_base = AZURE_OPENAI_ENDPOINT
         openai.api_version = "2023-05-15"
 
-        response = openai.ChatCompletion.create(
+        response = await openai.ChatCompletion.acreate(
             engine = model_engine,
             messages = msg,
             temperature = temperature,

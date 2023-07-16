@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from asgiref.sync import sync_to_async
 
 class Session(models.Model):
     class Meta:
@@ -13,10 +14,15 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.user} : {self.name}"
     
-    def get_recent_n(self, n): # 获取最近n条
-        return list(self.message_set.order_by('-timestamp')[:n])[::-1]
+    async def get_recent_n(self, n:int): # 获取最近n条
+        def wrapper(n:int):
+            return list(self.message_set.order_by('-timestamp')[:n])
+
+        messages = await sync_to_async(wrapper)(n)
+
+        return messages[::-1]
     
-    def delete_last_message(self): # 删去最新一条
-        recent_message = self.message_set.order_by('-timestamp').first()
-        if recent_message:
-            recent_message.delete()
+    # def delete_last_message(self): # 删去最新一条
+    #     recent_message = self.message_set.order_by('-timestamp').first()
+    #     if recent_message:
+    #         recent_message.delete()

@@ -1,36 +1,34 @@
 from .utils import StandardPlugin
-import requests
 
 SUMMER_INFO = """<details>
 <summary>暑期生活信息详情</summary>
 <p>    </p>
 <table border="0" cellspacing="0" align="center">
 <tr>
-    <th colspan="3">
-        01 餐饮与商业服务
-    </th>
+    <td colspan="2">
+        <b>
+            01 餐饮服务
+        </b>
+    </td>
 </tr>
 <tr>
-    <th>
-        地点
-    </th>
-    <th>
-        服务时间
-    </th> 
-    <th>
-        联系电话
-    </th>
+    <td>
+        <b>
+            地点
+        </b>
+    </td>
+    <td>
+        <b>
+            服务时间
+        </b>
+    </td>
 </tr>
 <tr>
     <td rowspan="3" align="center">
-    第一餐饮大楼
+    一餐
     </td>
     <td>
     一楼（含麦当劳）：正常服务（其中7月21日-23日除四害暂停服务）
-    </td>
-    <td rowspan="9" align="center">
-    <p>一餐、二餐、三餐：</p>
-    <p>13918571097</p>
     </td>
 </tr>
 <tr>
@@ -45,7 +43,7 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td rowspan="4" align="center">
-    第二餐饮大楼
+    二餐
     </td>
     <td>
     一楼小吃广场、绿园餐厅：正常服务（其中7月17日-19日除四害暂停服务）
@@ -68,7 +66,7 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td rowspan="2" align="center">
-        第三餐饮大楼
+        三餐
     </td>
     <td>
         学生餐厅、外婆桥餐厅：正常服务（其中8月5日-7日除四害暂停服务）
@@ -81,19 +79,15 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td align="center">
-        第四餐饮大楼
+        四餐
     </td>
     <td>
         正常服务（其中7月29日-8月4日设施维护，暂停服务）
     </td>
-    <td rowspan="9" align="center">
-        <p>四餐、五餐、六餐、七餐、玉兰苑、哈乐：</p>
-        <p>15001992458</p>
-    </td>
 </tr>
 <tr>
     <td rowspan="2" align="center">
-        第五餐饮大楼
+        五餐
     </td>
     <td>
         正常服务（其中7月24日-28日设施维护，暂停服务）
@@ -106,7 +100,7 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td rowspan="3" align="center">
-        第六餐饮大楼
+        六餐
     </td>
     <td>
         一楼：正常服务（其中8月11日-13日除四害暂停服务）
@@ -124,7 +118,7 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td align="center">
-        第七餐饮大楼
+        七餐
     </td>
     <td>
         正常服务（其中8月14日-16日除四害暂停服务）
@@ -132,7 +126,7 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td align="center">
-        玉兰苑餐饮
+        玉兰苑
     </td>
     <td>
         正常服务（其中8月8日-10日除四害暂停服务）
@@ -150,99 +144,30 @@ SUMMER_INFO = """<details>
     <td align="center">
         南洋北苑餐厅
     </td>
-    <td align="center">
-        正常服务
-    </td>
-    <td rowspan="10" align="center">
-        <p>南洋北苑餐厅：</p>
-        <p>13120862016</p>
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        西区教超
-    </td>
-    <td align="center">
+    <td>
         正常服务
     </td>
 </tr>
 <tr>
-    <td align="center">
-        蓁蓁楼教超
-    </td>
-    <td align="center">
-        正常服务
+    <td colspan="2"></td>
+</tr>
+<tr>
+    <td colspan="2">
+        <b>
+            02 交通保障
+        </b>
     </td>
 </tr>
 <tr>
-    <td align="center">
-        四餐全家
-    </td>
-    <td align="center">
-        正常服务
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        八期公寓罗森
-    </td>
-    <td align="center">
-        正常服务
+    <td colspan="2">
+        <b>
+            02-1 教工班车
+        </b>
     </td>
 </tr>
 <tr>
-    <td align="center">
-        二餐便利店
-    </td>
-    <td align="center">
-        正常服务
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        捭阖坊思源便利店
-    </td>
-    <td align="center">
-        正常服务
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        二餐理发店
-    </td>
-    <td align="center">
-        正常服务
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        三餐理发店
-    </td>
-    <td align="center">
-        正常服务
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        四餐理发店
-    </td>
-    <td align="center">
-        正常服务
-    </td>
-</tr>
-<tr>
-    <th colspan="3">
-        02 交通保障
-    </th>
-</tr>
-<tr>
-    <th colspan="3">
-        02-1 教工班车
-    </th>
-</tr>
-<tr>
-    <td colspan="3" align="center">
-        <p>校内教工班车运行时间（2023年7月17日至9月6日）</p>
+    <td colspan="2" align="center">
+        <p>★校内教工班车运行时间（2023年7月17日至9月6日）</p>
     </td>
 </tr>
 <tr>
@@ -250,13 +175,6 @@ SUMMER_INFO = """<details>
         <b>
             周一至周五
         </b>
-    </td>
-    <td rowspan="24" align="center">
-        <p>用车联系电话：</p>
-        <p>54742488</p>
-        <p>54745978</p>
-        <p>13916213322</p>
-        <p>13681600518</p>
     </td>
 </tr>
 <tr>
@@ -295,10 +213,6 @@ SUMMER_INFO = """<details>
 <tr>
     <td align="center">
         21:30直达
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
     </td>
 </tr>
 <tr>
@@ -347,6 +261,9 @@ SUMMER_INFO = """<details>
     </td>
 </tr>
 <tr>
+    <td colspan="2"></td>
+</tr>
+<tr>
     <td colspan="2" align="center">
         <b>
             双休日、节假日 
@@ -365,9 +282,11 @@ SUMMER_INFO = """<details>
     <td align="center">
         08:30直达
     </td>
-    <th rowspan="2" align="center">
-        徐汇校区→闵行校区
-    </th>
+    <td rowspan="2" align="center">
+        <b>
+            徐汇校区→闵行校区
+        </b>
+    </td>
 </tr>
 <tr>
     <td align="center">
@@ -375,16 +294,14 @@ SUMMER_INFO = """<details>
     </td>
 </tr>
 <tr>
-    <td colspan="2">
-    </td>
-</tr>
-<tr>
     <td align="center">
         07:30直达
     </td>
-    <th rowspan="2" align="center">
-        闵行校区→徐汇校区
-    </th>
+    <td rowspan="2" align="center">
+        <b>
+            闵行校区→徐汇校区
+        </b>
+    </td>
 </tr>
 <tr>
     <td align="center">
@@ -397,9 +314,14 @@ SUMMER_INFO = """<details>
     </td>
 </tr>
 <tr>
-    <th colspan="3">
-        02-2 校园巴士
-    </th>
+    <td colspan="2"></td>
+</tr>
+<tr>
+    <td colspan="2">
+        <b>
+            02-2 校园巴士
+        </b>
+    </td>
 </tr>
 <tr>
     <td align="center">
@@ -408,7 +330,6 @@ SUMMER_INFO = """<details>
     <td align="center">
         时间
     </td>
-    <td rowspan="6"></td>
 </tr>
 <tr>
     <td align="center">
@@ -444,9 +365,14 @@ SUMMER_INFO = """<details>
     </td>
 </tr>
 <tr>
-    <th colspan="3">
-        03 维修服务
-    </th>
+    <td colspan="2"></td>
+</tr>
+<tr>
+    <td colspan="2">
+        <b>
+            03 维修服务
+        </b>
+    </td>
 </tr>
 <tr>
     <td align="center">
@@ -455,7 +381,6 @@ SUMMER_INFO = """<details>
     <td>
         24小时服务，电话：34204215、64932786
     </td>
-    <td rowspan="2"></td>
 </tr>
 <tr>
     <td align="center">

@@ -1,27 +1,22 @@
 from .utils import StandardPlugin
+import requests
 
 SUMMER_INFO = """<details>
 <summary>暑期生活信息详情</summary>
 <p>    </p>
 <table border="0" cellspacing="0" align="center">
 <tr>
-    <td colspan="2">
-        <b>
-            01 餐饮服务
-        </b>
-    </td>
+    <th colspan="2">
+    01 餐饮服务
+    </th>
 </tr>
 <tr>
-    <td>
-        <b>
-            地点
-        </b>
-    </td>
-    <td>
-        <b>
-            服务时间
-        </b>
-    </td>
+    <th style="width: 200px;">
+        地点
+    </th>
+    <th style="width: 300px;">
+        服务时间
+    </th>
 </tr>
 <tr>
     <td rowspan="3" align="center">
@@ -152,23 +147,9 @@ SUMMER_INFO = """<details>
     <td colspan="2"></td>
 </tr>
 <tr>
-    <td colspan="2">
-        <b>
-            02 交通保障
-        </b>
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
-        <b>
-            02-1 教工班车
-        </b>
-    </td>
-</tr>
-<tr>
-    <td colspan="2" align="center">
-        <p>★校内教工班车运行时间（2023年7月17日至9月6日）</p>
-    </td>
+    <th colspan="2">
+        02 教工班车（运行时间：2023年7月17日至9月6日）
+    </th>
 </tr>
 <tr>
     <td colspan="2" align="center">
@@ -179,75 +160,26 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td align="center">
-        发车时间
-    </td>
-    <td align="center">
         起止地点
     </td>
-</tr>
-<tr>
     <td align="center">
-        07:30直达
-    </td>
-    <td rowspan="5" align="center">
-        <b>
-            徐汇校区→闵行校区 
-        </b>
+        发车时间
     </td>
 </tr>
 <tr>
     <td align="center">
-        08:30直达
+        徐汇校区→闵行校区
+    </td>
+    <td align="center">
+        07:30、08:30、13:15、16:30、21:30
     </td>
 </tr>
 <tr>
     <td align="center">
-        13:15直达
+        闵行校区→徐汇校区
     </td>
-</tr>
-<tr>
     <td align="center">
-        16:30直达
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        21:30直达
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        07:30直达
-    </td>
-    <td rowspan="5" align="center">
-        <b>
-            闵行校区→徐汇校区 
-        </b>
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        12:15直达
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        16:30直达（2辆）
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        17:30直达
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        20:00直达
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
-        备注说明：
+        07:30、12:15、16:30（2辆）、17:30、20:00
     </td>
 </tr>
 <tr>
@@ -261,9 +193,6 @@ SUMMER_INFO = """<details>
     </td>
 </tr>
 <tr>
-    <td colspan="2"></td>
-</tr>
-<tr>
     <td colspan="2" align="center">
         <b>
             双休日、节假日 
@@ -272,40 +201,26 @@ SUMMER_INFO = """<details>
 </tr>
 <tr>
     <td align="center">
-        发车时间	
+        起止地点	
     </td>
     <td align="center">
-        起止地点
+        发车时间
     </td>
 </tr>
 <tr>
     <td align="center">
-        08:30直达
+        徐汇校区→闵行校区
     </td>
-    <td rowspan="2" align="center">
-        <b>
-            徐汇校区→闵行校区
-        </b>
+    <td align="center">
+        08:30、17:30
     </td>
 </tr>
 <tr>
     <td align="center">
-        17:30直达
+        闵行校区→徐汇校区
     </td>
-</tr>
-<tr>
     <td align="center">
-        07:30直达
-    </td>
-    <td rowspan="2" align="center">
-        <b>
-            闵行校区→徐汇校区
-        </b>
-    </td>
-</tr>
-<tr>
-    <td align="center">
-        16:30直达
+        07:30、16:30
     </td>
 </tr>
 <tr>
@@ -317,11 +232,9 @@ SUMMER_INFO = """<details>
     <td colspan="2"></td>
 </tr>
 <tr>
-    <td colspan="2">
-        <b>
-            02-2 校园巴士
-        </b>
-    </td>
+    <th colspan="2">
+        03 校园巴士
+    </th>
 </tr>
 <tr>
     <td align="center">
@@ -368,11 +281,9 @@ SUMMER_INFO = """<details>
     <td colspan="2"></td>
 </tr>
 <tr>
-    <td colspan="2">
-        <b>
-            03 维修服务
-        </b>
-    </td>
+    <th colspan="2">
+        04 维修服务
+    </th>
 </tr>
 <tr>
     <td align="center">

@@ -22,13 +22,8 @@ const handleCopy = (content) => {
 
 //运行HTML
 const handleRun = (code) => {
-    const sanitizedCode = DOMPurify.sanitize(code, {ALLOWED_TAGS: []}); 
-    
-    let blob = new Blob([`"use strict";\n${sanitizedCode}`], {type: 'text/javascript'});
-    let url = URL.createObjectURL(blob);
-
     const newWindow = window.open();
-    newWindow.document.write('<scr' + 'ipt src="' + url + '"><\/scr' + 'ipt>');
+    newWindow.document.write(code);
 }
       
 const CodeBlock = {

@@ -1,0 +1,12 @@
+{
+    "Test_Text": "测试文本",
+    "LoginLayout_Title": "Chat SJTU",
+    "LoginLayout_Subtitle": "交大人的 AI 助手",
+    "LoginLayout_SubtitleDescription": "由生成式人工智能技术驱动，为交大师生科研学习赋能",
+    "LoginLayout_TitleBetaTag": "内测版",
+    "LoginLayout_ButtonText_LoginViaJAccount": "使用 jAccount 登录",
+    "LoginLayout_ButtonText_ChangeLanguage": "更换语言",
+    "LoginLayout_Footer_Copyright": "版权所有 © 2023 上海交通大学网络信息中心 沪交ICP备20230139",
+    "LoginLayout_Footer_TechSupport": "技术支持：ChatSJTU 学生开发团队",
+    "LoginLayout_Footer_ContactLinkText": "联系我们"
+}

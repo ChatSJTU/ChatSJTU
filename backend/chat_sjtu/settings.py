@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$ggno&vd4x%9nv1j1cz-rr=gu$^38g&snc5^153en*k&bxiv28'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 if os.environ.get('ALLOWED_HOSTS', None):
@@ -34,9 +34,32 @@ CSRF_TRUSTED_ORIGINS = []
 if os.environ.get('CSRF_TRUSTED_ORIGINS', None):
     CSRF_TRUSTED_ORIGINS += os.environ.get('CSRF_TRUSTED_ORIGINS').split(',')
 
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}
+
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,6 +70,7 @@ INSTALLED_APPS = [
     'oauth',
     'corsheaders',
     'rest_framework',
+    'adrf'
 ]
 
 MIDDLEWARE = [
@@ -79,6 +103,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'chat_sjtu.wsgi.application'
+ASGI_APPLICATION = 'chat_sjtu.asgi.application'
 
 
 # Database

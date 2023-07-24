@@ -1,6 +1,9 @@
+from django.utils.autoreload import logging
 import openai
 import tenacity
 from .configs import *
+
+logger = logging.getLogger(__name__)
 
 @tenacity.retry(stop=tenacity.stop_after_attempt(3), 
                 wait=tenacity.wait_random_exponential(min=1, max=5),
@@ -20,7 +23,8 @@ async def interact_with_openai_gpt(msg: list, model_engine = 'gpt-4', temperatur
             temperature = temperature,
             max_tokens = max_tokens,
         )
-        print(response['usage'])
+
+
         return True, response['choices'][0]['message']['content']
     except openai.error.InvalidRequestError as e:
         print(e)
@@ -56,7 +60,9 @@ async def interact_with_azure_gpt(msg: list, model_engine = 'gpt-35-turbo-16k', 
             temperature = temperature,
             max_tokens = max_tokens,
         )
-        print(response['usage'])
+        
+        logger.info('Azure gpt usage response: {0}'.format(response['usage']))
+
         return True, response['choices'][0]['message']['content']
     except openai.error.InvalidRequestError as e:
         print(e)

@@ -19,6 +19,7 @@ const { Text } = Typography;
 function ChatBox({ selectedSession, onChangeSessionName }) {
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
+    const [rows, setRows] = useState(3);        //行数
     const [selectedModel, setSelectedModel] = useState('Azure GPT3.5');  //选中模型
     const [isWaiting, setIsWaiting] = useState(false);      //是否正在加载
     const [retryMessage, setRetryMessage] = useState(null);
@@ -84,6 +85,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                 model: selectedModel
             };  // 存储请求数据到变量
             setInput('');
+            handleCalcRows('');
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
                 ...prevMessages.filter((message) => message.time !== ErrorText && message.sender !== 2),
@@ -174,7 +176,20 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         } else {
             setShowQcmdTips(false);
         }
+
+        handleCalcRows(e.target.value);
     };
+
+    const handleCalcRows = (content) => {
+        const lineCount = content.split("\n").length;
+        if (lineCount <= 3) {
+            setRows(3);
+        } else if (lineCount > 10) {
+            setRows(10);
+        } else {
+            setRows(lineCount);
+        }
+    }
 
     //检查发送消息是否为空，不为空则发送
     const handleSend = () => {
@@ -326,7 +341,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                  open={showQcmdTips}
             >
                 <TextArea
-                    rows={4}
+                    rows={rows}
                     value={input}
                     onChange={handleUserInput}
                     //ctrl+enter发送
@@ -353,7 +368,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                         {label:`${isFold||isFoldMobile ? '4':'GPT4'}`, value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                 ]}/>
                 <Space>
-                    <Button size="large" onClick={() => setInput('')}>
+                    <Button size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
                         清空
                     </Button>
                     <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}

@@ -16,4 +16,10 @@
     display: flex;
     flex-direction: column;
 }
+
+.sendbox{
+    min-height: 72px;   /* 初始高度为三行，每行高度为 24px */
+    max-height: 144px;  /* 高于六行时不再变化 */
+    overflow-y: auto;
+}
   

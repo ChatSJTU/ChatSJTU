@@ -10,7 +10,7 @@ from chat.serializers import UserPreferenceSerializer, SessionSerializer, Messag
 from chat.models import Session, Message, UserAccount, UserPreference
 from chat.core import STUDENT_LIMIT, handle_message, summary_title
 from oauth.models import UserProfile
-from datetime import datetime
+from django.utils import timezone
 import time
 
 # def get_or_create_user(device_id):
@@ -91,7 +91,7 @@ async def send_message(request, session_id):
     try:
         session = await Session.objects.aget(id=session_id, user=request.user)
         
-        sendTimestamp = datetime.now()
+        sendTimestamp = timezone.now()
 
         # 处理信息
         flag_success, flag_qcmd, response = await handle_message(

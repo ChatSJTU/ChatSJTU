@@ -1,5 +1,6 @@
 from django.db import models
 from .session import Session
+from datetime import datetime
 
 class Message(models.Model):
     class Meta:
@@ -12,7 +13,7 @@ class Message(models.Model):
     content = models.TextField()
     flag_qcmd = models.BooleanField(verbose_name='是否为快捷指令回复', default=False)
     use_model = models.CharField(verbose_name='使用模型', max_length=50, default='')
-    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    timestamp = models.DateTimeField(default=datetime.now, db_index=True, editable=True)
 
     def __str__(self):
         return self.content

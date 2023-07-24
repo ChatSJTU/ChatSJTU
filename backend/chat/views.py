@@ -231,6 +231,6 @@ async def user_preference(request):
         if field is None or value is None:
             return JsonResponse({'error': 'Missing field or value'}, status=400)
         setattr(preference, field, value)
-        sync_to_async(sync_topreference.asave)()
+        await preference.asave()
         serializer = UserPreferenceSerializer(preference)
         return JsonResponse(serializer.data)

@@ -18,8 +18,7 @@ async def __interact_openai(
         retry=tenacity.retry_if_exception_type(
             (openai.error.RateLimitError, openai.error.OpenAIError, Exception)
         ),
-        before=tenacity.before_log(logger,logging.DEBUG),
-        reraise=True,
+        before=tenacity.before_log(logger,logging.DEBUG), reraise=True,
     )
     async def __interact_with_retry() -> tuple[bool, str | dict[str, str]]:
         try:
@@ -44,6 +43,10 @@ async def __interact_openai(
         except openai.error.AuthenticationError as e:
             logger.error(e)
             return False, {'error': 'Invalid Authentication'}
+
+        except Exception as e:
+            logger.error(e)
+            return False, {'error': '服务器遇到未知错误'}
 
     try:
         return await __interact_with_retry()

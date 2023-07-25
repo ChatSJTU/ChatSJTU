@@ -16,7 +16,7 @@ import './index.css'
 const { TextArea } = Input;
 const { Text } = Typography;
 
-function ChatBox({ selectedSession, onChangeSessionName }) {
+function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //行数
@@ -211,9 +211,9 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const handleFilterQcmds = (value) => {
         if (value[0] !== '/') {
             setQcmdOptions([]);
+            setShowQcmdTips(false);
         } else {
-            setQcmdOptions(
-                qcmdsList.filter(({ command }) => command.startsWith(value))
+            let filterList = qcmdsList.filter(({ command }) => command.startsWith(value))
                     .map(({ command, description }) => ({
                         value: command,
                         label: (
@@ -222,7 +222,10 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                             </Typography>
                         ),
                     }))
-            );
+            setQcmdOptions(filterList);
+            if (filterList.length === 0) {
+                setShowQcmdTips(false);
+            }
         }
     };
     // 当用户选择一个命令时，发送并隐藏下拉框
@@ -326,14 +329,16 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     onClick={scrollToBottom}
                 /> */}
             <Dropdown placement="topLeft" overlay={
-                    <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                        {qcmdOptions.map(option => (
-                            <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value)}>
-                                {option.label}
-                            </Menu.Item>
-                        ))}
-                    </Menu>}
-                 open={showQcmdTips}
+                    <div style={{display: curRightComponent === 1 ? '' : 'none',}}>
+                        <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                            {qcmdOptions.map(option => (
+                                <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value)}>
+                                    {option.label}
+                                </Menu.Item>
+                            ))}
+                        </Menu>
+                    </div>}
+                open={showQcmdTips}
             >
                 <TextArea
                     rows={rows}

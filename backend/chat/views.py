@@ -75,7 +75,7 @@ async def session_messages(request, session_id):
         user_preference = await UserPreference.objects.aget(user=request.user)
         filters = {"session__id": session_id, "session__user": request.user}
 
-        if not user_preference.with_qcmd:
+        if not user_preference.attach_with_qcmd:
             filters["flag_qcmd"] = False
 
         messages = [message async for message in Message.objects.filter(**filters)]

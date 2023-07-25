@@ -10,5 +10,6 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
             'temperature',
             'max_tokens',
             'presence_penalty',
-            'frequency_penalty'
+            'frequency_penalty',
+            'attach_with_qcmd'
             ]

@@ -1,26 +1,28 @@
-import openai
+from typing import Union
 import tenacity
 import logging
+import openai
 
 from .configs import *
 
 logger = logging.getLogger(__name__)
+
 
 async def __interact_openai(
     msg: list,
     model_engine: str,
     temperature: float,
     max_tokens: int
-) -> tuple[bool, str | dict[str, str]]:
+) -> tuple[bool, Union[str, dict[str, str]]]:
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_random_exponential(min=1, max=5),
         retry=tenacity.retry_if_exception_type(
             (openai.error.RateLimitError, openai.error.OpenAIError, Exception)
         ),
-        before=tenacity.before_log(logger,logging.DEBUG), reraise=True,
+        before=tenacity.before_log(logger, logging.DEBUG), reraise=True,
     )
-    async def __interact_with_retry() -> tuple[bool, str | dict[str, str]]:
+    async def __interact_with_retry() -> tuple[bool, Union[str, dict[str, str]]]:
         try:
             response = await openai.ChatCompletion.acreate(
                 engine=model_engine,
@@ -62,7 +64,7 @@ async def __interact_openai(
 
 async def interact_with_openai_gpt(
     msg: list, model_engine='gpt-4', temperature=0.5, max_tokens=1000
-) -> tuple[bool, str | dict[str, str]]:
+) -> tuple[bool, Union[str, dict[str, str]]]:
     # 使用OpenAI API与GPT交互
 
     openai.api_type = 'open_ai'
@@ -75,7 +77,7 @@ async def interact_with_openai_gpt(
 
 async def interact_with_azure_gpt(
     msg: list, model_engine='gpt-35-turbo-16k', temperature=0.5, max_tokens=1000
-) -> tuple[bool, str | dict[str, str]]:
+) -> tuple[bool, Union[str, dict[str, str]]]:
     # 使用Azure API与GPT交互
     openai.api_type = 'azure'
     openai.organization = None

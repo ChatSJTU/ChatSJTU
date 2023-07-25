@@ -18,7 +18,7 @@ async def __interact_openai(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_random_exponential(min=1, max=5),
         retry=tenacity.retry_if_exception_type(
-            (openai.error.RateLimitError, openai.error.OpenAIError, Exception)
+            (openai.error.RateLimitError, openai.error.OpenAIError)
         ),
         before=tenacity.before_log(logger, logging.DEBUG), reraise=True,
     )

@@ -42,7 +42,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     //发送消息自动滚动到底部
     useEffect(() => {
         if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
         }
     }, [messages]);
 
@@ -67,7 +67,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     //回到List底部
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
         }
     };
 
@@ -278,11 +278,6 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
                                     <div>{item.time}</div>
                                     {(item.sender === 0 && item.flag_qcmd) &&
-                                        // <Badge
-                                        //     className="normal-badge" status={null}
-                                        //     count='🎓本回复来自校园服务快捷命令'
-                                        //     style={{ background: '#e8f2ff', marginLeft:'15px', color: '#296cc4'}}
-                                        // />
                                         <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓校园服务快捷命令</Tag>
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd) &&
@@ -325,11 +320,11 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
         />
         
         <div className='sendbox-area' style={{ padding: '20px 50px', position: 'relative'}}>
-                <Button 
+                {/* <Button 
                     icon={<ArrowDownOutlined />} 
                     style={{ position: 'absolute', top: -40, right: 10, zIndex: 10 }}
                     onClick={scrollToBottom}
-                />
+                /> */}
             <Dropdown placement="topLeft" overlay={
                     <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
                         {qcmdOptions.map(option => (

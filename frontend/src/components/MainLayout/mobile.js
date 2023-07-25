@@ -16,7 +16,7 @@ const { Content, Sider, Footer, Header } = Layout;
 
 const MainLayoutMobile = ({handleLogout}) => {
     const [selectedSession, setSelectedSession] = useState(null);
-    const [prevSelectedSession, setPrevSelectedSession] = useState(null);
+    // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
     const [isSiderCollapsed, setIsSiderCollapsed] = useState(true);
 
@@ -51,19 +51,20 @@ const MainLayoutMobile = ({handleLogout}) => {
     ];
 
     const handleChangeComponent = (index) => {
-        if (index !== 1){
-            if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
-            setSelectedSession(null);
-            setCurRightComponent(index);
-        }
-        else if (index === 1 && !selectedSession){
-            setSelectedSession(prevSelectedSession);
-            setPrevSelectedSession(null);
-            setCurRightComponent(index);
-        }
-        if (index === 1 && !prevSelectedSession){
-            setCurRightComponent(0);
-        }
+        // if (index !== 1){
+        //     if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
+        //     setSelectedSession(null);
+        //     setCurRightComponent(index);
+        // }
+        // else if (index === 1 && !selectedSession){
+        //     setSelectedSession(prevSelectedSession);
+        //     setPrevSelectedSession(null);
+        //     setCurRightComponent(index);
+        // }
+        // if (index === 1 && !prevSelectedSession){
+        //     setCurRightComponent(0);
+        // }
+        setCurRightComponent(index);
         setIsSiderCollapsed(true);
     };
 
@@ -90,7 +91,11 @@ const MainLayoutMobile = ({handleLogout}) => {
                         />
                 </Sider>
                 <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
-                    {componentList[curRightComponent]}
+                    {selectedSession  && 
+                        <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
+                            <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} />
+                        </div>}
+                    {curRightComponent !== 1 && componentList[curRightComponent]}
                 </Content>
             </Layout>
             <Footer style={{

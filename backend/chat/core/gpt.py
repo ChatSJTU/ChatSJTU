@@ -35,9 +35,6 @@ async def __interact_openai(
             assert isinstance(content, str)
             return True, content
 
-        except (openai.error.RateLimitError, openai.error.OpenAIError) as e:
-            raise
-
         except openai.error.InvalidRequestError as e:
             logger.error(e)
             return False, {'error': '请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入'}
@@ -45,6 +42,9 @@ async def __interact_openai(
         except openai.error.AuthenticationError as e:
             logger.error(e)
             return False, {'error': 'Invalid Authentication'}
+
+        except (openai.error.RateLimitError, openai.error.OpenAIError) as e:
+            raise
 
         except Exception as e:
             logger.error(e)

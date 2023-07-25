@@ -29,7 +29,7 @@ DEBUG = False
 ALLOWED_HOSTS = []
 if os.environ.get('ALLOWED_HOSTS', None):
     ALLOWED_HOSTS += os.environ.get('ALLOWED_HOSTS').split(',')
-    
+
 CSRF_TRUSTED_ORIGINS = []
 if os.environ.get('CSRF_TRUSTED_ORIGINS', None):
     CSRF_TRUSTED_ORIGINS += os.environ.get('CSRF_TRUSTED_ORIGINS').split(',')
@@ -39,24 +39,24 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-            'verbose': {
-                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-                'style': '{',
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
         },
-            'simple': {
-                'format': '{levelname} {message}',
-                'style': '{',
+        'simple': {
+            'format': '[{levelname}] ({module}) <{asctime}> {message}',
+            'style': '{',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
-        'formatter': 'simple',
     },
     'loggers': {
         'django': {
@@ -65,8 +65,13 @@ LOGGING = {
             'propagate': False
         },
         'chat': {
-            'handlers' : ['console'],
+            'handlers': ['console'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'openai': {
+            'handlers': ['console'],
+            'level': 'WARNING',
             'propagate': True
         }
     },

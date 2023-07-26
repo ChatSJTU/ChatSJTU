@@ -7,12 +7,13 @@ from .configs import *
 
 logger = logging.getLogger(__name__)
 
+openai.proxy = os.getenv("OPENAI_PROXY", None)
 
 async def __interact_openai(
     msg: list,
-    model_engine: str,
     temperature: float,
-    max_tokens: int
+    max_tokens: int,
+    **kwargs,
 ) -> tuple[bool, Union[str, dict[str, str]]]:
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -25,10 +26,10 @@ async def __interact_openai(
     async def __interact_with_retry() -> tuple[bool, Union[str, dict[str, str]]]:
         try:
             response = await openai.ChatCompletion.acreate(
-                engine=model_engine,
                 messages=msg,
                 temperature=temperature,
                 max_tokens=max_tokens,
+                **kwargs
             )
             assert isinstance(response, dict)
             content = response['choices'][0]['message']['content']
@@ -72,7 +73,7 @@ async def interact_with_openai_gpt(
     openai.api_key = OPENAI_KEY
     openai.api_base = 'https://api.openai.com/v1'
     openai.api_version = None
-    return await __interact_openai(msg, model_engine, temperature, max_tokens)
+    return await __interact_openai(msg, temperature, max_tokens, model=model_engine)
 
 
 async def interact_with_azure_gpt(
@@ -85,7 +86,7 @@ async def interact_with_azure_gpt(
     openai.api_base = AZURE_OPENAI_ENDPOINT
     openai.api_version = '2023-05-15'
 
-    return await __interact_openai(msg, model_engine, temperature, max_tokens)
+    return await __interact_openai(msg, temperature, max_tokens, engine=model_engine)
 
 
 '''

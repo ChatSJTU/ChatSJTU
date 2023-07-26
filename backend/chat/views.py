@@ -72,18 +72,15 @@ async def delete_all_sessions(request):
 @permission_classes([IsAuthenticated])
 async def session_messages(request, session_id):
     try:
-        user_preference = await UserPreference.objects.aget(user=request.user)
-        filters = {"session__id": session_id, "session__user": request.user}
 
-        if not user_preference.attach_with_qcmd:
-            filters["flag_qcmd"] = False
+        filters = {"session__id": session_id, "session__user": request.user}
 
         messages = [message async for message in Message.objects.filter(**filters)]
 
         serializer = MessageSerializer(messages, many=True)
         return JsonResponse(serializer.data, safe=False)
     except UserPreference.DoesNotExist:
-        return JSONResponse({'error': '用户不存在'}, status=404)
+        return JsonResponse({'error': '用户不存在'}, status=404)
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
 

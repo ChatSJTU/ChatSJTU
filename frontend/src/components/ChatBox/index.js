@@ -9,27 +9,29 @@ import { useMediaQuery } from 'react-responsive'
 
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
-import { qcmdsList } from '../../services/qcmd'
+import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
 
 import './index.css'
 
 const { TextArea } = Input;
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
-    const [rows, setRows] = useState(3);        //行数
+    const [rows, setRows] = useState(3);        //textarea行数
+    const [textareaWidth, setTextareaWidth] = useState(0);
     const [selectedModel, setSelectedModel] = useState('Azure GPT3.5');  //选中模型
     const [isWaiting, setIsWaiting] = useState(false);      //是否正在加载
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
+    
     const isFold = useMediaQuery({ minWidth: 768.1, maxWidth: 960 })
     const isFoldMobile = useMediaQuery({ maxWidth: 432 })
     
     const messagesEndRef = useRef(null);
-    const dropdownRef = useRef(null);
+    const textareaRef = useRef(null);
 
     const timeOptions = {
         year: 'numeric',
@@ -64,6 +66,23 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
             });
         }
       }, [selectedSession]);
+
+    useEffect(() => {
+        function handleResize() {
+          if (textareaRef.current) {
+            setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
+            console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
+          }
+        }
+        
+        // Initial resize
+        handleResize();
+        // Handle resize when window size changes
+        window.addEventListener('resize', handleResize);
+    
+        // Clean up event listener on unmount
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     //回到List底部
     const scrollToBottom = () => {
@@ -171,7 +190,7 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
     const handleUserInput = e => {
         setInput(e.target.value);
         
-        if (e.target.value.startsWith('/')) {
+        if (e.target.value.startsWith('/') || e.target.value.startsWith('+')) {
             setShowQcmdTips(true);
             handleFilterQcmds(e.target.value);
         } else {
@@ -208,32 +227,72 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
         message.success('已复制到剪贴板', 2);
       };
 
-    //快捷指令提示
+    //快捷指令、快捷补全提示菜单
     const handleFilterQcmds = (value) => {
-        if (value[0] !== '/') {
-            setQcmdOptions([]);
-            setShowQcmdTips(false);
-        } else {
+        if (value[0] === '/') {
             let filterList = qcmdsList.filter(({ command }) => command.startsWith(value))
                     .map(({ command, description }) => ({
                         value: command,
-                        label: (
-                            <Typography>
+                        label_render: (
+                            <Typography >
                                 <Text keyboard style={{fontWeight:'bold'}}>{command}</Text> - {description}
                             </Typography>
                         ),
+                        label: command
                     }))
             setQcmdOptions(filterList);
             if (filterList.length === 0) {
                 setShowQcmdTips(false);
             }
-        }
+        } else if (value[0] === '+') {
+            let filterList = qcmdPromptsList.filter(({ role }) => role.includes(value.substring(1)))
+                    .map(({ role, prompt }) => {
+                        // 使用正则表达式将字符串分割为数组
+                        let promptArray = prompt.split(/(%userinput%)/g);
+                        return {
+                            value: role,
+                            label_render: (
+                                <Typography>
+                                    <Text strong>{role}</Text><br/>
+                                        {promptArray.map((item, index) => {
+                                            if (item === '%userinput%') {
+                                                return <Tag color="geekblue" style={{margin:'2px'}}>USER INPUT</Tag>;
+                                            }
+                                            return item;
+                                        })}
+                                </Typography>
+                            ),
+                            label: prompt
+                        };
+                    })
+            setQcmdOptions(filterList);
+            if (filterList.length === 0) {
+                setShowQcmdTips(false);
+            }
+        } else {
+            setQcmdOptions([]);
+            setShowQcmdTips(false);
+        } 
     };
-    // 当用户选择一个命令时，发送并隐藏下拉框
-    const handleSelectQcmds = value => {
+    // 用户选择命令时
+    const handleSelectQcmds = (value, label) => {
         // setInput(value);
-        sendUserMessage(value);
-        setShowQcmdTips(false);
+        if (value[0] === '/') { //快捷命令，发送并关闭菜单
+            sendUserMessage(value);
+            setShowQcmdTips(false);
+        }
+        else {
+            let position = label.indexOf("%userinput%");
+            setInput(label.replace("%userinput%",""));
+            setShowQcmdTips(false);
+            setTimeout(() => { // 使用setTimeout确保DOM已经更新
+                if (textareaRef.current) {
+                    //文本框获得焦点并移动光标到原%userinput%位置
+                    textareaRef.current.resizableTextArea.textArea.focus();
+                    textareaRef.current.resizableTextArea.textArea.setSelectionRange(position, position);
+                }
+            }, 0);
+        }
     };
 
     //头像图标
@@ -330,19 +389,19 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
                     onClick={scrollToBottom}
                 /> */}
             <Dropdown placement="topLeft" overlay={
-                    <div style={{display: curRightComponent === 1 ? '' : 'none',}}>
-                        <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    <div style={{display: curRightComponent === 1 ? '' : 'none', width: `${textareaWidth}px`}}>
+                        <Menu style={{maxHeight: '300px', overflowY: 'auto' }}>
                             {qcmdOptions.map(option => (
-                                <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value)}>
-                                    {option.label}
+                                <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value, option.label)}>
+                                        {option.label_render}
                                 </Menu.Item>
                             ))}
                         </Menu>
                     </div>}
                 open={showQcmdTips}
             >
-                <div ref={dropdownRef}>
-                <TextArea
+                <div style={{ position: 'relative', width: '100%' }}>
+                <TextArea ref={textareaRef}
                     rows={rows}
                     value={input}
                     onChange={handleUserInput}
@@ -354,7 +413,7 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
                                 {handleSend();}
                         }
                     }}
-                    placeholder="Shift+Enter 换行，Enter 发送，/ 触发快捷命令"
+                    placeholder="Shift+Enter 换行，Enter 发送，+ 触发自动补全，/ 触发校园服务快捷命令"
                     style={{resize: 'none', fontSize:'16px', width: '100%'}}
                 /></div>
             </Dropdown>

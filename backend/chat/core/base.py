@@ -79,17 +79,17 @@ async def handle_message(user, message: str, selected_model: str, session: Sessi
     flag = False
     if selected_model == 'Azure GPT3.5':
         flag, response = await interact_with_azure_gpt(
-            msg = input_list,
-            model_engine='gpt-35-turbo-0613',
-            temperature = user_preference.temperature,
-            max_tokens = user_preference.max_tokens
+            msg=input_list,
+            model_engine='gpt-35-turbo-16k',
+            temperature=user_preference.temperature,
+            max_tokens=user_preference.max_tokens
         )
     elif selected_model == 'OpenAI GPT4':
         flag, response = await interact_with_openai_gpt(
-            msg = input_list,
-            model_engine='gpt-4-0613',
-            temperature = user_preference.temperature,
-            max_tokens = user_preference.max_tokens
+            msg=input_list,
+            model_engine='gpt-4',
+            temperature=user_preference.temperature,
+            max_tokens=user_preference.max_tokens
         )
     else:
         return False, False, JsonResponse({'error': '模型名错误'}, status=500)
@@ -109,10 +109,10 @@ async def summary_title(message: str):
     """
     input_list = [{'role': 'user', 'content': message+'\n用小于五个词概括上述文字'},]
     flag, response = await interact_with_azure_gpt(
-        msg = input_list,
-        model_engine='gpt-35-turbo-0613',
-        max_tokens = 20,
-        temperature = 0.1
+        msg=input_list,
+        model_engine='gpt-35-turbo-16k',
+        max_tokens=20,
+        temperature=0.1
     )
     if not flag:
         return False, ''

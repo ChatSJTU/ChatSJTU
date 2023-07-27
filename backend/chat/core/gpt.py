@@ -4,6 +4,8 @@ import logging
 import openai
 
 from .configs import *
+from .qcmd import *
+from .externalPlugin import *
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +27,31 @@ async def __interact_openai(
     async def __interact_with_retry() -> tuple[bool, Union[str, dict[str, str]]]:
         try:
             response = await openai.ChatCompletion.acreate(
-                engine=model_engine,
+                deployment_id=model_engine,
                 messages=msg,
                 temperature=temperature,
                 max_tokens=max_tokens,
+                functions=all_plugin,
             )
             assert isinstance(response, dict)
+            while (response['choices'][0]['finish_reason'] == 'function_call'):
+                logger.info("triggered function_call");
+                logger.info(response['choices'][0]);
+                fc_info = response['choices'][0]['message']['function_call'];
+                success, fc_res = fc_execute(fc_info['name'], fc_info['arguments']);
+                if (success != True):
+                    return False, {'error': fc_res};
+                logger.info("get res: "+fc_res);
+                msg.append({'role':'function', 'name': fc_info['name'],'content':fc_res});
+                response = await openai.ChatCompletion.acreate(
+                    deployment_id=model_engine,
+                    messages=msg,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    functions=all_plugin,
+                )
+                assert isinstance(response, dict)
+
             content = response['choices'][0]['message']['content']
             assert isinstance(content, str)
             return True, content
@@ -76,14 +97,14 @@ async def interact_with_openai_gpt(
 
 
 async def interact_with_azure_gpt(
-    msg: list, model_engine='gpt-35-turbo-16k', temperature=0.5, max_tokens=1000
+    msg: list, model_engine='gpt-35-turbo-0613', temperature=0.5, max_tokens=1000
 ) -> tuple[bool, Union[str, dict[str, str]]]:
     # 使用Azure API与GPT交互
     openai.api_type = 'azure'
     openai.organization = None
     openai.api_key = AZURE_OPENAI_KEY
     openai.api_base = AZURE_OPENAI_ENDPOINT
-    openai.api_version = '2023-05-15'
+    openai.api_version = '2023-07-01-preview'
 
     return await __interact_openai(msg, model_engine, temperature, max_tokens)
 

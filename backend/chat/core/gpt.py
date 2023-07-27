@@ -28,11 +28,11 @@ async def __interact_openai(
     async def __interact_with_retry() -> tuple[bool, Union[str, dict[str, str]]]:
         try:
             response = await openai.ChatCompletion.acreate(
-                deployment_id=model_engine,
                 messages=msg,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 functions=all_plugin,
+                **kwargs
             )
             assert isinstance(response, dict)
             while (response['choices'][0]['finish_reason'] == 'function_call'):
@@ -45,11 +45,11 @@ async def __interact_openai(
                 logger.info("get res: "+fc_res);
                 msg.append({'role':'function', 'name': fc_info['name'],'content':fc_res});
                 response = await openai.ChatCompletion.acreate(
-                    deployment_id=model_engine,
                     messages=msg,
                     temperature=temperature,
                     max_tokens=max_tokens,
                     functions=all_plugin,
+                    **kwargs
                 )
                 assert isinstance(response, dict)
 
@@ -107,7 +107,7 @@ async def interact_with_azure_gpt(
     openai.api_base = AZURE_OPENAI_ENDPOINT
     openai.api_version = '2023-07-01-preview'
 
-    return await __interact_openai(msg, temperature, max_tokens, engine=model_engine)
+    return await __interact_openai(msg, temperature, max_tokens, deployment_id=model_engine)
 
 
 '''

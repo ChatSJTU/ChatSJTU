@@ -7,9 +7,10 @@ from chat.models import UserPreference, Session
 from django.http import JsonResponse
 import time
 
-async def check_and_handle_qcmds(message:str):
+
+async def check_and_handle_qcmds(message: str):
     """检查并处理是否为快捷命令
-    
+
     Args:
         message: 用户输入的消息
     Returns:
@@ -22,10 +23,11 @@ async def check_and_handle_qcmds(message:str):
         if flag_success:
             return True, True, resp
         else:
-            return False, True, JsonResponse({'error': resp}, status = 500)
+            return False, True, JsonResponse({'error': resp}, status=500)
     return True, False, None
 
-async def handle_message(user, message:str, selected_model:str, session:Session.objects):
+
+async def handle_message(user, message: str, selected_model: str, session: Session.objects):
     """消息处理的主入口
 
     Args:
@@ -46,8 +48,8 @@ async def handle_message(user, message:str, selected_model:str, session:Session.
             if flag_success:
                 return True, True, resp
             else:
-                return False, True, JsonResponse({'error': resp}, status = 500)
-            
+                return False, True, JsonResponse({'error': resp}, status=500)
+
     # 输入关键词检测
     if (senword_detector_strict.find(message)):
         time.sleep(1)   # 避免处理太快前端显示闪烁
@@ -55,21 +57,23 @@ async def handle_message(user, message:str, selected_model:str, session:Session.
     use_strict_prompt = senword_detector.find(message)
 
     # 获取用户偏好设置
-    try: 
+    try:
         user_preference = await UserPreference.objects.aget(user=user)
     except UserPreference.DoesNotExist:
         return False, False, JsonResponse({'error': '用户信息错误'}, status=404)
-    
+
     # 获取并处理历史消息
-    raw_recent_msgs = await session.get_recent_n(n = user_preference.attached_message_count)
+    raw_recent_msgs = await session.get_recent_n(n=user_preference.attached_message_count, attach_with_qcmd=user_preference.attach_with_qcmd)
+
     role = ['assistant', 'user']
-    input_list = [{'role':'system', 'content':SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE},]
+    input_list = [
+        {'role': 'system', 'content': SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE},]
     input_list.extend([{
         'role': role[message.sender],
         'content': message.content,
-        } for message in raw_recent_msgs
+    } for message in raw_recent_msgs
     ])
-    input_list.append({'role':'user', 'content':message})
+    input_list.append({'role': 'user', 'content': message})
 
     # API交互
     flag = False
@@ -91,7 +95,7 @@ async def handle_message(user, message:str, selected_model:str, session:Session.
         return False, False, JsonResponse({'error': '模型名错误'}, status=500)
     if not flag:
         return False, False, JsonResponse(response, status=500)
-    
+
     # 输出关键词检测
     if (senword_detector_strict.find(response)):
         return False, False, JsonResponse({'error': '回复存在敏感词，已屏蔽'}, status=500)
@@ -103,7 +107,7 @@ async def summary_title(message: str):
     """
     用于概括会话标题
     """
-    input_list = [{'role':'user', 'content':message+'\n用小于五个词概括上述文字'},]
+    input_list = [{'role': 'user', 'content': message+'\n用小于五个词概括上述文字'},]
     flag, response = await interact_with_azure_gpt(
         msg = input_list,
         model_engine='gpt-35-turbo-0613',
@@ -112,5 +116,5 @@ async def summary_title(message: str):
     )
     if not flag:
         return False, ''
-    
+
     return True, response

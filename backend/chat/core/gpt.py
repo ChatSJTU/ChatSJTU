@@ -9,18 +9,19 @@ from .externalPlugin import *
 
 logger = logging.getLogger(__name__)
 
+openai.proxy = os.getenv("OPENAI_PROXY", None)
 
 async def __interact_openai(
     msg: list,
-    model_engine: str,
     temperature: float,
-    max_tokens: int
+    max_tokens: int,
+    **kwargs,
 ) -> tuple[bool, Union[str, dict[str, str]]]:
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_random_exponential(min=1, max=5),
         retry=tenacity.retry_if_exception_type(
-            (openai.error.RateLimitError, openai.error.OpenAIError, Exception)
+            (openai.error.RateLimitError, openai.error.OpenAIError)
         ),
         before=tenacity.before_log(logger, logging.DEBUG), reraise=True,
     )
@@ -56,9 +57,6 @@ async def __interact_openai(
             assert isinstance(content, str)
             return True, content
 
-        except (openai.error.RateLimitError, openai.error.OpenAIError) as e:
-            raise
-
         except openai.error.InvalidRequestError as e:
             logger.error(e)
             return False, {'error': '请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入'}
@@ -66,6 +64,9 @@ async def __interact_openai(
         except openai.error.AuthenticationError as e:
             logger.error(e)
             return False, {'error': 'Invalid Authentication'}
+
+        except (openai.error.RateLimitError, openai.error.OpenAIError) as e:
+            raise
 
         except Exception as e:
             logger.error(e)
@@ -93,7 +94,7 @@ async def interact_with_openai_gpt(
     openai.api_key = OPENAI_KEY
     openai.api_base = 'https://api.openai.com/v1'
     openai.api_version = None
-    return await __interact_openai(msg, model_engine, temperature, max_tokens)
+    return await __interact_openai(msg, temperature, max_tokens, model=model_engine)
 
 
 async def interact_with_azure_gpt(
@@ -106,7 +107,7 @@ async def interact_with_azure_gpt(
     openai.api_base = AZURE_OPENAI_ENDPOINT
     openai.api_version = '2023-07-01-preview'
 
-    return await __interact_openai(msg, model_engine, temperature, max_tokens)
+    return await __interact_openai(msg, temperature, max_tokens, engine=model_engine)
 
 
 '''

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, InputNumber, Select} from 'antd';
+import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, InputNumber, Select, Switch} from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import './style.css'
@@ -97,11 +97,11 @@ function TabSettings({ onCloseTab }) {
                     <Title level={4} style={{ marginTop: '25px' }}>基本设置</Title>
                     <Card style={{ marginTop: '25px' }} >
                         <Row>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <div><span>语言（language）</span></div>
                                 {/* <div>选择您的界面语言</div> */}
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <Select
                                     defaultValue={LoadLanguage()}
                                     style={{
@@ -123,14 +123,14 @@ function TabSettings({ onCloseTab }) {
                         </Row>
                     </Card>
 
-                    <Title level={4} style={{ marginTop: '25px' }}>模型参数</Title>
+                    <Title level={4} style={{ marginTop: '25px' }}>模型</Title>
                     <Card style={{ marginTop: '25px' }} >
                         <Row>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <div><span>随机性（temperature）</span></div>
                                 <div>值越大，回复越随机</div>
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <InputNumber min={0} max={1} precision={1} step={0.1}
                                     value={settings?.temperature}
                                     onChange={(value) => { handleChangeSettings({ temperature: value }); }}
@@ -139,11 +139,11 @@ function TabSettings({ onCloseTab }) {
                         </Row>
                         <Divider className="setting-divider" />
                         <Row>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <div><span>单次回复限制</span></div>
                                 <div>单次交互回复所用的最大 Token 数</div>
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <InputNumber min={0} max={2000} step={100}
                                     value={settings?.max_tokens}
                                     onChange={(value) => { handleChangeSettings({ max_tokens: value }); }}
@@ -152,26 +152,37 @@ function TabSettings({ onCloseTab }) {
                         </Row>
                         <Divider className="setting-divider" />
                         <Row>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <div><span>附带历史消息数</span></div>
                                 <div>每次请求携带的历史消息数</div>
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <InputNumber min={0} max={8}
                                     value={settings?.attached_message_count}
                                     onChange={(value) => { handleChangeSettings({ attached_message_count: value }); }}
                                 />
                             </Col>
                         </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={16} className="setting-title">
+                                <div><span>附带快捷命令消息</span></div>
+                                <div>请求携带的历史消息是否包含校园服务快捷命令</div>
+                            </Col>
+                            <Col span={8} className="setting-item">
+                                <Switch checked={settings?.attach_with_qcmd}
+                                onChange={(checked) => { handleChangeSettings({ attach_with_qcmd: checked }); }}/>
+                            </Col>
+                        </Row>
                     </Card>
                     <Title level={4} style={{ marginTop: '25px' }}>高风险</Title>
                     <Card style={{ marginTop: '25px' }} >
                         <Row>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <div><span>清除会话</span></div>
                                 <div>清除所有会话、消息数据</div>
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <Popconfirm
                                     title="确认"
                                     description="确认清除所有会话、消息数据？"
@@ -185,11 +196,11 @@ function TabSettings({ onCloseTab }) {
                         </Row>
                         <Divider className="setting-divider" />
                         <Row>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <div><span>重置账户</span></div>
                                 <div>重置账户的所有数据，所有会话与设置将被清除。</div>
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <Popconfirm
                                     title="确认"
                                     description="确认重置账户的所有数据？"
@@ -203,10 +214,10 @@ function TabSettings({ onCloseTab }) {
                         </Row>
                         {/* <Divider className="setting-divider"/>
                         <Row gutter={16}>
-                            <Col span={12} className="setting-title">
+                            <Col span={16} className="setting-title">
                                 <span>Option 2:</span>
                             </Col>
-                            <Col span={12} className="setting-item">
+                            <Col span={8} className="setting-item">
                                 <Input defaultValue="Input Value"/>
                             </Col>
                         </Row> */}

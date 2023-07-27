@@ -15,6 +15,7 @@ from oauth.utils import *
 from oauth.models import UserProfile
 from chat.models import *
 from chat.views import STUDENT_LIMIT
+from chat_sjtu.settings import CSRF_TRUSTED_ORIGINS
 
 # @api_view(['POST'])
 # @authentication_classes([SessionAuthentication])
@@ -30,6 +31,7 @@ from chat.views import STUDENT_LIMIT
 
 def login_jaccount(request):
     redirect_uri = request.GET.get('redirect_uri', '')
+    assert redirect_uri.strip('/') in CSRF_TRUSTED_ORIGINS
     if redirect_uri == '':
         redirect_uri = request.build_absolute_uri(reverse('auth_jaccount'))
     response = jaccount.authorize_redirect(request, redirect_uri)

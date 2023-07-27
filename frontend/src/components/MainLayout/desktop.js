@@ -82,7 +82,7 @@ const MainLayout = ({handleLogout}) => {
                         border: '1px solid #ccc',
                         boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
                         marginTop: '-14px',
-                        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+                        // WebkitMaskImage: '-webkit-radial-gradient(white, black)',
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
@@ -98,7 +98,7 @@ const MainLayout = ({handleLogout}) => {
                                 <Content style={{ minHeight: '0', flex: '1' }}>
                                 {selectedSession  && 
                                     <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                                        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} />
+                                        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} curRightComponent={curRightComponent}/>
                                     </div>}
                                 {curRightComponent !== 1 && componentList[curRightComponent]}
                                 </Content>

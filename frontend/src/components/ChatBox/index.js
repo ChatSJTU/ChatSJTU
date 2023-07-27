@@ -16,7 +16,7 @@ import './index.css'
 const { TextArea } = Input;
 const { Text } = Typography;
 
-function ChatBox({ selectedSession, onChangeSessionName }) {
+function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //行数
@@ -29,6 +29,7 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const isFoldMobile = useMediaQuery({ maxWidth: 432 })
     
     const messagesEndRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     const timeOptions = {
         year: 'numeric',
@@ -211,9 +212,9 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
     const handleFilterQcmds = (value) => {
         if (value[0] !== '/') {
             setQcmdOptions([]);
+            setShowQcmdTips(false);
         } else {
-            setQcmdOptions(
-                qcmdsList.filter(({ command }) => command.startsWith(value))
+            let filterList = qcmdsList.filter(({ command }) => command.startsWith(value))
                     .map(({ command, description }) => ({
                         value: command,
                         label: (
@@ -222,7 +223,10 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                             </Typography>
                         ),
                     }))
-            );
+            setQcmdOptions(filterList);
+            if (filterList.length === 0) {
+                setShowQcmdTips(false);
+            }
         }
     };
     // 当用户选择一个命令时，发送并隐藏下拉框
@@ -326,15 +330,18 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                     onClick={scrollToBottom}
                 /> */}
             <Dropdown placement="topLeft" overlay={
-                    <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                        {qcmdOptions.map(option => (
-                            <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value)}>
-                                {option.label}
-                            </Menu.Item>
-                        ))}
-                    </Menu>}
-                 open={showQcmdTips}
+                    <div style={{display: curRightComponent === 1 ? '' : 'none',}}>
+                        <Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                            {qcmdOptions.map(option => (
+                                <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value)}>
+                                    {option.label}
+                                </Menu.Item>
+                            ))}
+                        </Menu>
+                    </div>}
+                open={showQcmdTips}
             >
+                <div ref={dropdownRef}>
                 <TextArea
                     rows={rows}
                     value={input}
@@ -346,14 +353,10 @@ function ChatBox({ selectedSession, onChangeSessionName }) {
                             if (!isWaiting)
                                 {handleSend();}
                         }
-                        // if (e.key === 'Enter' && e.ctrlKey) {
-                        //   e.preventDefault();
-                        //   handleSend();
-                        // }
                     }}
-                    placeholder="在此输入您要发送的信息，Shift+Enter 换行，Enter 发送，/ 触发快捷命令"
-                    style={{resize: 'none', fontSize:'16px'}}
-                />
+                    placeholder="Shift+Enter 换行，Enter 发送，/ 触发快捷命令"
+                    style={{resize: 'none', fontSize:'16px', width: '100%'}}
+                /></div>
             </Dropdown>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                 <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}

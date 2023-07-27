@@ -93,7 +93,7 @@ const MainLayoutMobile = ({handleLogout}) => {
                 <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
                     {selectedSession  && 
                         <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                            <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} />
+                            <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} curRightComponent={curRightComponent}/>
                         </div>}
                     {curRightComponent !== 1 && componentList[curRightComponent]}
                 </Content>

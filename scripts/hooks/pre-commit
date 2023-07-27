@@ -1,0 +1,32 @@
+#!/bin/sh
+
+GIT_DIR=$(git rev-parse --show-toplevel)
+GIT_STAGED_FILES=$(git diff --name-only --cached)
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+NC="\033[0m"
+
+function strip_field(){
+  echo $(cat ${GIT_DIR}/$1 | grep $2 | cut -d '=' -f 2 | tr -d '[:space:]')
+}
+
+for staged in $GIT_STAGED_FILES
+do
+  if [[ $staged == *"settings.py" ]]; then
+    if [[ $(strip_field $staged "DEBUG") == "True" ]]; then
+      echo -e "${RED}Detected DEBUG=True in $staged. Exiting...${NC}"
+      echo -e "${RED}Please set ${GREEN}DEBUG=False${RED} before committing.${NC}"
+      exit 1
+    elif [[ $(strip_field $staged "CSRF_TRUSTED_ORIGINS") != "[]" ]]; then
+      echo -e "${RED}Detected CSRF_TRUSTED_ORIGINS != [] in $staged. Exiting...${NC}"
+      echo -e "${RED}Please set ${GREEN}CSRF_TRUSTED_ORIGINS = []${RED} before committing.${NC}"
+      exit 1
+    fi
+  elif [[ $staged == "backend/oauth/utils.py" ]]; then
+    if [[ $(strip_field $staged "USE_WHITELIST") == "False" ]]; then
+      echo -e "${RED}Detected USE_WHITELIST=False in $staged. Exiting...${NC}"
+      echo -e "${RED}Please set ${GREEN}USE_WHITELIST=True${RED} before committing.${NC}"
+      exit 1
+    fi
+  fi
+done

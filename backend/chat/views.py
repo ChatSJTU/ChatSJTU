@@ -1,3 +1,4 @@
+from django.forms.utils import ValidationError
 from rest_framework.decorators import authentication_classes, permission_classes
 from adrf.decorators import api_view
 from rest_framework.authentication import SessionAuthentication
@@ -240,15 +241,28 @@ async def user_preference(request):
     preference = await UserPreference.objects.aget(user=request.user)
 
     if request.method == 'GET':
+
         serializer = UserPreferenceSerializer(preference)
         return JsonResponse(serializer.data)
 
     elif request.method == 'PATCH':
+
         field = request.data.get('field')
         value = request.data.get('value')
+
         if field is None or value is None:
-            return JsonResponse({'error': 'Missing field or value'}, status=400)
+            return JsonResponse({'error': '缺少参数'}, status=400)
+
+        if field not in preference.__dict__.keys():
+            return JsonResponse({'error': '修改域不存在'}, status=400)
+        
         setattr(preference, field, value)
+
+        try:
+            await sync_to_async(preference.full_clean)()
+        except ValidationError:
+            return JsonResponse({'error': '修改域不合法'}, status=400)
+
         await preference.asave()
         serializer = UserPreferenceSerializer(preference)
         return JsonResponse(serializer.data)

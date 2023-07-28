@@ -17,7 +17,19 @@ async def __interact_openai(
     max_tokens: int,
     **kwargs,
 ) -> Message:
-
+   '''
+        使用openai包与openai api进行交互
+        Args:
+            msg: 用户输入的消息
+            temperature: 生成文本的多样性
+            max_tokens: 生成文本的长度
+            **kwargs: 其他参数
+        Returns:
+            response: Message对象
+        Error:
+            ChatError: 若出错则抛出以及对应的status code
+   '''
+    # 重试装饰器
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_random_exponential(min=1, max=5),
@@ -75,6 +87,7 @@ async def interact_with_openai_gpt(
     temperature=0.5,
     max_tokens=1000
 ) -> Message:
+
     # 使用OpenAI API与GPT交互
 
     openai.api_type = 'open_ai'
@@ -92,6 +105,7 @@ async def interact_with_azure_gpt(
     temperature=0.5,
     max_tokens=1000
 ) -> Message:
+
     # 使用Azure API与GPT交互
     openai.api_type = 'azure'
     openai.organization = None

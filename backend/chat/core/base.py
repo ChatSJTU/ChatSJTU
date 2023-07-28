@@ -1,3 +1,4 @@
+from typing import Union
 from chat.models import UserPreference, Session, Message
 from chat.core.errors import ChatError
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
@@ -10,14 +11,16 @@ from django.contrib.auth.models import User
 import time
 
 
-async def check_and_handle_qcmds(msg: str) -> Message | None:
+async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
+
     """检查并处理是否为快捷命令
 
     Args:
-        message: 用户输入的消息
+        msg: 用户输入的消息
     Returns:
-        flag_qcmd: 是否为快捷命令的结果
-        responce: 回复(若出错则为错误JSON)
+        message: Message对象
+    Error:
+        ChatError: 若出错则抛出
     """
     flag_trig, flag_success, resp = check_and_exec_qcmds(msg)
 
@@ -45,9 +48,10 @@ async def handle_message(user: User,
         session: 当前会话
 
     Returns:
-        flag_success: 是否出错(False为错误)
-        flag_qcmd: 是否为快捷命令的结果
-        responce: 回复(若出错则为错误JSON)
+        response: Message对象
+
+    Error:
+        ChatError: 若出错则抛出并附上对应的status code
     """
     # 快捷命令
     if (msg[0] == '/'):
@@ -126,5 +130,4 @@ async def summary_title(msg: str) -> tuple[bool, str]:
         )
     except ChatError:
         return False, ''
-    print(response.content)
-    return True, response.content
+    return True, str(response.content)

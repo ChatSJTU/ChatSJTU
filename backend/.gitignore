@@ -6,3 +6,11 @@ db.sqlite3
 /chat/core/senwords/sen_wordlist_strict.txt
 /chat/core/senwords/sen_wordlist.txt
 .env
+
+## migrations
+
+/chat/migrations/**
+!/chat/migrations/__init__.py
+
+/oauth/migrations/**
+!/oauth/migrations/__init__.py

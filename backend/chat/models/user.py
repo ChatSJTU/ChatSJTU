@@ -26,3 +26,4 @@ class UserPreference(models.Model):
     max_tokens = models.IntegerField(default=1000, null=False, blank=False, validators=[MaxValueValidator(2000), MinValueValidator(0)])
     presence_penalty = models.FloatField(default=0, null=False, blank=False, validators=[MaxValueValidator(2.0), MinValueValidator(-2.0)])
     frequency_penalty = models.FloatField(default=0, null=False, blank=False, validators=[MaxValueValidator(2.0), MinValueValidator(-2.0)])
+    attach_with_qcmd = models.BooleanField(default=True, null=False, blank=False)

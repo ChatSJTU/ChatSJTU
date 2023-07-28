@@ -16,7 +16,7 @@ const { Content, Sider, Footer, Header } = Layout;
 
 const MainLayoutMobile = ({handleLogout}) => {
     const [selectedSession, setSelectedSession] = useState(null);
-    const [prevSelectedSession, setPrevSelectedSession] = useState(null);
+    // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
     const [isSiderCollapsed, setIsSiderCollapsed] = useState(true);
 
@@ -24,7 +24,7 @@ const MainLayoutMobile = ({handleLogout}) => {
         setIsSiderCollapsed(prevState => !prevState);
     };
 
-    //选中会话（在LeftSider中）
+    //修改选中会话
     const handleSelectSession = (session) => {
         setSelectedSession(session);
         setCurRightComponent(1);    //切换为聊天框
@@ -38,11 +38,18 @@ const MainLayoutMobile = ({handleLogout}) => {
           name: newName,
         }));
     };
+
+    const handleChangeSessionInfo = (newData) => {
+        setSelectedSession((prevSession) => ({
+          ...prevSession,
+          ...newData,
+        }));
+      };
     
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName}/>,
+        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
@@ -51,19 +58,20 @@ const MainLayoutMobile = ({handleLogout}) => {
     ];
 
     const handleChangeComponent = (index) => {
-        if (index !== 1){
-            if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
-            setSelectedSession(null);
-            setCurRightComponent(index);
-        }
-        else if (index === 1 && !selectedSession){
-            setSelectedSession(prevSelectedSession);
-            setPrevSelectedSession(null);
-            setCurRightComponent(index);
-        }
-        if (index === 1 && !prevSelectedSession){
-            setCurRightComponent(0);
-        }
+        // if (index !== 1){
+        //     if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
+        //     setSelectedSession(null);
+        //     setCurRightComponent(index);
+        // }
+        // else if (index === 1 && !selectedSession){
+        //     setSelectedSession(prevSelectedSession);
+        //     setPrevSelectedSession(null);
+        //     setCurRightComponent(index);
+        // }
+        // if (index === 1 && !prevSelectedSession){
+        //     setCurRightComponent(0);
+        // }
+        setCurRightComponent(index);
         setIsSiderCollapsed(true);
     };
 
@@ -90,7 +98,11 @@ const MainLayoutMobile = ({handleLogout}) => {
                         />
                 </Sider>
                 <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
-                    {componentList[curRightComponent]}
+                    {selectedSession  && 
+                        <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
+                            <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
+                        </div>}
+                    {curRightComponent !== 1 && componentList[curRightComponent]}
                 </Content>
             </Layout>
             <Footer style={{

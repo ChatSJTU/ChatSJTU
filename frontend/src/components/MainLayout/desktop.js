@@ -15,13 +15,13 @@ const { Content, Sider, Footer } = Layout;
 
 const MainLayout = ({handleLogout}) => {
     const [selectedSession, setSelectedSession] = useState(null);
-    const [prevSelectedSession, setPrevSelectedSession] = useState(null);
+    // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
 
     //选中会话（在LeftSider中）
     const handleSelectSession = (session) => {
-        setSelectedSession(session);
         setCurRightComponent(1);    //切换为聊天框
+        setSelectedSession(session);
     };    
 
     //会话改名
@@ -31,11 +31,18 @@ const MainLayout = ({handleLogout}) => {
           name: newName,
         }));
     };
+
+    const handleChangeSessionInfo = (newData) => {
+        setSelectedSession((prevSession) => ({
+          ...prevSession,
+          ...newData,
+        }));
+      };
     
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName}/>,
+        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
@@ -44,19 +51,20 @@ const MainLayout = ({handleLogout}) => {
     ];
 
     const handleChangeComponent = (index) => {
-        if (index !== 1){
-            if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
-            setSelectedSession(null);
-            setCurRightComponent(index);
-        }
-        else if (index === 1 && !selectedSession){
-            setSelectedSession(prevSelectedSession);
-            setPrevSelectedSession(null);
-            setCurRightComponent(index);
-        }
-        if (index === 1 && !prevSelectedSession){
-            setCurRightComponent(0);
-        }
+        // if (index !== 1){
+        //     if (!prevSelectedSession) {setPrevSelectedSession(selectedSession);}
+        //     setSelectedSession(null);
+        //     setCurRightComponent(index);
+        // }
+        // else if (index === 1 && !selectedSession){
+        //     setSelectedSession(prevSelectedSession);
+        //     setPrevSelectedSession(null);
+        //     setCurRightComponent(index);
+        // }
+        // if (index === 1 && !prevSelectedSession){
+        //     setCurRightComponent(0);
+        // }
+        setCurRightComponent(index);
     };
 
     return (
@@ -80,7 +88,8 @@ const MainLayout = ({handleLogout}) => {
                         overflow: 'hidden',
                         border: '1px solid #ccc',
                         boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
-                        marginTop: '-14px'
+                        marginTop: '-14px',
+                        // WebkitMaskImage: '-webkit-radial-gradient(white, black)',
                     }}>
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
@@ -92,12 +101,15 @@ const MainLayout = ({handleLogout}) => {
                                 />
                         </Sider>
                         <Layout>
-                            <Content>
-                                {/* {selectedSession && 
-                                <ChatBox selectedSession={selectedSession} style={{ visibility: curRightComponent === 0 ? 'visible' : 'hidden' }}/>}  */}
-                                {componentList[curRightComponent]}
-                                {/* {curRightComponent !== 0 && componentList[curRightComponent]} */}
-                            </Content>
+                            <Layout>
+                                <Content style={{ minHeight: '0', flex: '1' }}>
+                                {selectedSession  && 
+                                    <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
+                                        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
+                                    </div>}
+                                {curRightComponent !== 1 && componentList[curRightComponent]}
+                                </Content>
+                            </Layout>   
                         </Layout>
                     </Layout>
             </div>

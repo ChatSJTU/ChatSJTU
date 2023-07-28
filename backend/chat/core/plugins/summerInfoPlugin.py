@@ -14,7 +14,7 @@ SUMMER_INFO = """<details>
     <th style="width: 200px;">
         地点
     </th>
-    <th style="width: 300px;">
+    <th >
         服务时间
     </th>
 </tr>

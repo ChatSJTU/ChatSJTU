@@ -11,6 +11,10 @@ import { Button, message, Popconfirm, Space } from 'antd';
 import { CopyOutlined, CodeOutlined } from '@ant-design/icons';
 import DOMPurify from 'dompurify'
 
+import Prism from "prismjs";
+import "prismjs/themes/prism.css";
+import "./prismlang";
+
 import 'katex/dist/katex.min.css';
 import 'github-markdown-css/github-markdown-light.css';
 
@@ -27,7 +31,6 @@ const handleRun = (code) => {
 }
       
 const CodeBlock = {
-
     code({node, inline, className, children, ...props}) {
     const match = /language-(\w+)/.exec(className || '')
         return !inline && match
@@ -58,7 +61,10 @@ const CodeBlock = {
                 </Space>
             </div>
             <pre className={className} style={{fontSize:'14px', margin:'0px', padding:'5px 0px'}}>
-                {children[0]}
+                {Prism.languages[match[1]] ? <code dangerouslySetInnerHTML={{
+                    __html: Prism.highlight(children[0], Prism.languages[match[1]], match[1])
+                    }}></code>
+                    : children[0]}
             </pre>
         </div>
         : <code className={className} {...props}>
@@ -68,6 +74,8 @@ const CodeBlock = {
 };
 
 const MarkdownRenderer = ({content}) =>{
+
+    // Prism.languages.loadLanguage(['python'])
 
     const renderers = {
         ...CodeBlock,

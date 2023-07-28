@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message} from 'antd';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
 import { request } from "../../services/request";
@@ -7,13 +7,22 @@ import { fetchUserProfile } from '../../services/user';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent}) {
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
     const [loaded, setLoaded] = useState(true);
+
+    const timeOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    };
 
     useEffect(() => {
         setLoaded(true);
@@ -37,6 +46,9 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     const fetchSessions = async () => {
         try {
             const response = await request.get('/api/sessions/');
+            response.data.sort(function(a, b) {
+                return new Date(b.updated_time) - new Date(a.updated_time);
+            });
             setSessions(response.data);
             if (loaded && response.data.length > 0) {
                 onSelectSession(response.data[0]);
@@ -87,7 +99,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             const response = await request.post('/api/sessions/');
             const newSession = response.data;
             // setSessions([...sessions, newSession]);
-            fetchSessions();
+            fetchSessions();  
             onSelectSession(newSession); // 进入新创建的会话
         } catch (error) {
             console.error('Failed to create session:', error);
@@ -100,7 +112,11 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         if (selectedSession) {
             const updatedSessions = sessions.map(session =>
                 session.id === selectedSession.id
-                    ? { ...session, name: selectedSession.name }: session
+                    ? { ...session, 
+                        name: selectedSession.name,
+                        rounds: selectedSession.rounds,
+                        updated_time: selectedSession.updated_time}
+                    : session
             );
             setSessions(updatedSessions);
         }
@@ -143,40 +159,50 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 <Menu style={{margin:'0px 17px 0px 25px'}}>
                     {sessions.map((session) => (
                         <Menu.Item className={`ant-menu-item${selectedSession?.id === session.id ? '-selected' : '-unselected'}`}
-                            key={session.id} style={{margin:'15px 0px'}}>
-                        <div
-                            style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            width: '100%',
-                            cursor: 'pointer',
-                            }}
-                            onClick={() => handleSelectSession(session)}
-                        >
-                            {/* <div>
-                                <MessageOutlined />
-                                <span>{session.name}</span>
-                            </div> */}
-                            <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name} title={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                            key={session.id} style={{margin:'15px 0px', height:'auto'}} onClick={() => handleSelectSession(session)}>
+                        <div style={{width:'100%', display: 'flex', flexDirection: 'column'}}>
+                            <div
                                 style={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    flex: '1',
-                            }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
-
-                            {selectedSession && selectedSession.id === session.id && (
-                                <Button
-                                    className='delete-button'
-                                    style={{backgroundColor:'transparent', marginRight: '-10px'}}
-                                    type="text" icon={<DeleteOutlined />}
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleDeleteSession(event, session.id);
-                                    }}
-                                />
-                                )}
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                width: '100%',
+                                cursor: 'pointer',
+                                marginBottom: '-15px'
+                                }}
+                            >
+                                <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name} title={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                                    style={{
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
+                                {selectedSession && selectedSession.id === session.id && (
+                                    <Button
+                                        className='delete-button'
+                                        style={{backgroundColor:'transparent', marginRight: '-5px'}}
+                                        type="text" icon={<DeleteOutlined />}
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            handleDeleteSession(event, session.id);
+                                        }}
+                                    />
+                                    )}
+                            </div>      
+                            <div
+                                style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                width: '100%',
+                                cursor: 'pointer',
+                                color: '#aaaaaa',
+                                fontSize: '12px'
+                                }}
+                            >
+                                <span>{selectedSession?.id === session.id ? selectedSession.rounds : session.rounds} 轮对话</span>
+                                <span>{selectedSession?.id === session.id ? new Date(selectedSession.updated_time).toLocaleString('default', timeOptions) : new Date(session.updated_time).toLocaleString('default', timeOptions)}</span>
+                            </div>
                         </div>
                         </Menu.Item>
                     ))}

@@ -9,7 +9,7 @@ import './index.css'
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent}) {
+function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
@@ -110,10 +110,28 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     };
 
     //修改会话名称
-    const handleRenameSession = (event, sessionId, newSessionName) => {
-        console.log(sessionId);
-        console.log(newSessionName);
-        //等待后端接口
+    const handleRenameSession = async (event, sessionId, newSessionName) => {
+        try {
+            await request.post(`/api/sessions/rename/${sessionId}/`, {new_name: newSessionName});
+            onChangeSessionInfo({name: newSessionName});
+            const updatedSessions = sessions.map(session =>
+                session.id === selectedSession.id ? { ...session, name: newSessionName} : session
+            );
+            setSessions(updatedSessions);
+            message.success('修改会话名成功')
+            setTextboxOpen(false);
+        } catch (error) {
+            if (error.response.data && error.response.status === 404){
+                message.error(`修改会话名失败：${error.response.data.error}`, 2);
+                setTextboxOpen(false);
+            } else if (error.response.data) {
+                message.error(`修改会话名失败：${error.response.data.error}`, 2);
+            } else {
+                message.error('修改会话失败')
+            }
+        } finally {
+            setInputTextFromTextbox('');
+        }
     }
 
     //选中会话
@@ -191,7 +209,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                     <Space size={0}>
                                         <Button
                                             className='edit-button'
-                                            style={{ backgroundColor: 'transparent', marginRight: '-12px' }}
+                                            style={{ backgroundColor: 'transparent', marginRight: '-10px' }}
                                             type="text" icon={<EditOutlined />}
                                             onClick= {() => setTextboxOpen(true)}
                                         />

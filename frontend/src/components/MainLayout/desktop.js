@@ -98,6 +98,7 @@ const MainLayout = ({handleLogout}) => {
                                 onSelectSession={handleSelectSession}
                                 onLogoutClick={handleLogout}
                                 onChangeComponent={handleChangeComponent}
+                                onChangeSessionInfo={handleChangeSessionInfo}
                                 />
                         </Sider>
                         <Layout>

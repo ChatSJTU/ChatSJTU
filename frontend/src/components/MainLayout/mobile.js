@@ -95,6 +95,7 @@ const MainLayoutMobile = ({handleLogout}) => {
                         onSelectSession={handleSelectSession}
                         onLogoutClick={handleLogout}
                         onChangeComponent={handleChangeComponent}
+                        onChangeSessionInfo={handleChangeSessionInfo} 
                         />
                 </Sider>
                 <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>

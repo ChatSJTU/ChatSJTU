@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, InputNumber, Select, Switch} from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, InputNumber, Select, Switch, Modal} from 'antd';
+import { CloseOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import './style.css'
 import { request } from "../../services/request";
@@ -10,6 +10,7 @@ import i18n from '../../components/I18n/i18n'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
+const { confirm } = Modal;
 
 function TabSettings({ onCloseTab }) {
 
@@ -84,7 +85,39 @@ function TabSettings({ onCloseTab }) {
             i18n.changeLanguage('en');
         }
     }
+    // 通用Modal 生成函数
+    const showConfirmModal = ({ title, content, onOk }) => {
+        confirm({
+            title,
+            content,
+            icon: <ExclamationCircleFilled />,
+            okText: '确定',
+            okType: 'danger',
+            okButtonProps: {
+                size: "middle",
+            },
+            cancelText: '取消',
+            onOk,
+        });
+      };
 
+    // 清除所有会话警告
+    const showDeleteAllSessionsConfirm = () => {
+        showConfirmModal({
+        title: '确认清除会话？',
+        content: '您的所有会话、消息数据将被清除，此操作不可逆。',
+        onOk: handleDeleteAllSessions,
+        });
+    };
+  
+    // 清除账户警告
+    const showDeleteAccountConfirm = () => {
+        showConfirmModal({
+        title: '确认重置账户？',
+        content: '您的所有数据将被重置，所有会话与设置将被清除，此操作不可逆。',
+        onOk: handleDeleteAccount,
+        });
+    };
 
     return (
         <Layout style={{ height: '100%' }}>
@@ -183,15 +216,7 @@ function TabSettings({ onCloseTab }) {
                                 <div>清除所有会话、消息数据</div>
                             </Col>
                             <Col span={8} className="setting-item">
-                                <Popconfirm
-                                    title="确认"
-                                    description="确认清除所有会话、消息数据？"
-                                    onConfirm={handleDeleteAllSessions}
-                                    okText="确定" okButtonProps={{ size: 'middle' }}
-                                    cancelText="取消" cancelButtonProps={{ size: 'middle' }}
-                                >
-                                    <Button danger>立即清除</Button>
-                                </Popconfirm>
+                                <Button danger onClick={showDeleteAllSessionsConfirm}>立即清除</Button>
                             </Col>
                         </Row>
                         <Divider className="setting-divider" />
@@ -201,15 +226,7 @@ function TabSettings({ onCloseTab }) {
                                 <div>重置账户的所有数据，所有会话与设置将被清除。</div>
                             </Col>
                             <Col span={8} className="setting-item">
-                                <Popconfirm
-                                    title="确认"
-                                    description="确认重置账户的所有数据？"
-                                    onConfirm={handleDeleteAccount}
-                                    okText="确定" okButtonProps={{ size: 'middle' }}
-                                    cancelText="取消" cancelButtonProps={{ size: 'middle' }}
-                                >
-                                    <Button danger>立即重置</Button>
-                                </Popconfirm>
+                                <Button danger onClick={showDeleteAccountConfirm}>立即重置</Button>
                             </Col>
                         </Row>
                         {/* <Divider className="setting-divider"/>

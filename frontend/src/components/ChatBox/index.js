@@ -395,7 +395,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 /> */}
             <Dropdown placement="topLeft" overlay={
                     <div style={{display: curRightComponent === 1 ? '' : 'none', width: `${textareaWidth}px`}}>
-                        <Menu style={{maxHeight: '300px', overflowY: 'auto' }}>
+                        <Menu style={{maxHeight: '320px', overflowY: 'auto' }}>
                             {qcmdOptions.map(option => (
                                 <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value, option.label)}>
                                         {option.label_render}

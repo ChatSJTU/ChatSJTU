@@ -180,7 +180,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 {selectedSession && selectedSession.id === session.id && (
                                     <Button
                                         className='delete-button'
-                                        style={{backgroundColor:'transparent', marginRight: '-10px'}}
+                                        style={{backgroundColor:'transparent', marginRight: '-5px'}}
                                         type="text" icon={<DeleteOutlined />}
                                         onClick={(event) => {
                                             event.stopPropagation();

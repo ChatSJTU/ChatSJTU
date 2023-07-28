@@ -75,7 +75,10 @@ async def handle_message(user: User,
         raise ChatError('用户信息错误', status=404)
 
     # 获取并处理历史消息
-    raw_recent_msgs = await session.get_recent_n(n=user_preference.attached_message_count, attach_with_qcmd=user_preference.attach_with_qcmd)
+    attached_message_count = max(user_preference.attached_message_count,
+                                 2) if msg == "continue" else user_preference.attached_message_count
+
+    raw_recent_msgs = await session.get_recent_n(attached_message_count, attach_with_qcmd=user_preference.attach_with_qcmd)
 
     # 构造输入
     role = ['assistant', 'user']

@@ -20,6 +20,6 @@ class SessionSerializer(serializers.ModelSerializer):
 
     def get_updated_time(self, obj):
         try:
-            return obj.message_set.filter(sender = 0).order_by('-timestamp').first().timestamp
+            return obj.message_set.filter(sender = 0).order_by('-timestamp').first().timestamp.isoformat()
         except AttributeError as _ :
-            return obj.created_time
+            return obj.created_time.isoformat()

@@ -9,57 +9,14 @@ import './index.css'
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
-const RenameComponent = ({sessionID, onFinishInput }) => {
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [inputText, setInputText] = useState('');
-    
-    const handleOk = () => {
-        // 调用父组件的处理函数
-        if (inputText !== '') {
-            onFinishInput(sessionID,inputText);
-        }
-        setInputText('')
-        setIsModalVisible(false);
-    };
-  
-    const handleCancel = () => {
-        setInputText('');
-        setIsModalVisible(false);
-    };
-  
-    const handleRenameComponentClick = () => {
-        setIsModalVisible(true);
-    };
-  
-    return (
-      <div>
-        <Button
-          className='edit-button'
-          style={{ backgroundColor: 'transparent', marginRight: '-12px' }}
-          type="text" icon={<EditOutlined />}
-          onClick={handleRenameComponentClick}
-        />
-        <Modal
-          title="修改会话"
-          open={isModalVisible}
-          onOk={handleOk}
-          onCancel={handleCancel}
-        >
-          请输入新的会话名称:
-          <div>
-            <Input value={inputText} onChange={(event) => {setInputText(event.target.value);}} style={{ marginTop: '7px' }} />
-          </div>
-        </Modal>
-      </div>
-    );
-};
-
 function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent}) {
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
     const [loaded, setLoaded] = useState(true);
-    //const [renameText,setRenameText] = useState('');
+    const [isTextboxOpen, setTextboxOpen] = useState(false);
+    const [inputTextFromTextbox, setInputTextFromTextbox] = useState('');
+
     const timeOptions = {
         year: 'numeric',
         month: '2-digit',
@@ -75,16 +32,6 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         fetchUserName();
     }, []);
     
-    // 这里未完成
-    const handleRenameTextEntered = (newRenameText) => {
-        console.log(newRenameText);
-        handleRenameSession(newRenameText);
-    };
-
-    //修改会话名称
-    const handleRenameSession = (session, expectedName) => {
-        //等待后端接口
-    }
 
     //获取登录用户名称
     const fetchUserName = async () => {
@@ -162,6 +109,13 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         }
     };
 
+    //修改会话名称
+    const handleRenameSession = (event, sessionId, newSessionName) => {
+        console.log(sessionId);
+        console.log(newSessionName);
+        //等待后端接口
+    }
+
     //选中会话
     const handleSelectSession = (session) => {
         // 同步改名selectSession到sessions中
@@ -235,7 +189,28 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
                                 {selectedSession && selectedSession.id === session.id && (
                                     <Space size={0}>
-                                        <RenameComponent onFinishInput={handleRenameTextEntered}/>
+                                        <Button
+                                            className='edit-button'
+                                            style={{ backgroundColor: 'transparent', marginRight: '-12px' }}
+                                            type="text" icon={<EditOutlined />}
+                                            onClick= {() => setTextboxOpen(true)}
+                                        />
+                                        <Modal
+                                            title="修改会话"
+                                            open={isTextboxOpen}
+                                            onOk={(event) => {
+                                                handleRenameSession(event,session.id,inputTextFromTextbox);
+                                            }}
+                                            onCancel={() => {
+                                                setInputTextFromTextbox('');
+                                                setTextboxOpen(false);
+                                            }}
+                                            >
+                                            请输入新的会话名称:
+                                            <div>
+                                                <Input value={inputTextFromTextbox} onChange={(event) => {setInputTextFromTextbox(event.target.value);}} style={{ marginTop: '7px' }} />
+                                            </div>
+                                        </Modal>
                                         <Button
                                             className='delete-button'
                                             style={{backgroundColor:'transparent', marginRight: '-10px'}}

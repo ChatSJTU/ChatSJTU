@@ -50,6 +50,10 @@
     color: #4287e1 !important;
 }
 
+.edit-button:hover {
+    color: #4287e1 !important;
+}
+
 .gradient-divider {
     height: 1.5px;
     background: linear-gradient(to right, #a3c2eb, #4287e1, #a3c2eb);

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
 import { request } from "../../services/request";
 import { fetchUserProfile } from '../../services/user';
@@ -9,12 +9,57 @@ import './index.css'
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
+const RenameComponent = ({sessionID, onFinishInput }) => {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [inputText, setInputText] = useState('');
+    
+    const handleOk = () => {
+        // 调用父组件的处理函数
+        if (inputText !== '') {
+            onFinishInput(sessionID,inputText);
+        }
+        setInputText('')
+        setIsModalVisible(false);
+    };
+  
+    const handleCancel = () => {
+        setInputText('');
+        setIsModalVisible(false);
+    };
+  
+    const handleRenameComponentClick = () => {
+        setIsModalVisible(true);
+    };
+  
+    return (
+      <div>
+        <Button
+          className='edit-button'
+          style={{ backgroundColor: 'transparent', marginRight: '-12px' }}
+          type="text" icon={<EditOutlined />}
+          onClick={handleRenameComponentClick}
+        />
+        <Modal
+          title="修改会话"
+          open={isModalVisible}
+          onOk={handleOk}
+          onCancel={handleCancel}
+        >
+          请输入新的会话名称:
+          <div>
+            <Input value={inputText} onChange={(event) => {setInputText(event.target.value);}} style={{ marginTop: '7px' }} />
+          </div>
+        </Modal>
+      </div>
+    );
+};
+
 function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent}) {
     
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
     const [loaded, setLoaded] = useState(true);
-
+    //const [renameText,setRenameText] = useState('');
     const timeOptions = {
         year: 'numeric',
         month: '2-digit',
@@ -29,6 +74,17 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         fetchSessions();
         fetchUserName();
     }, []);
+    
+    // 这里未完成
+    const handleRenameTextEntered = (newRenameText) => {
+        console.log(newRenameText);
+        handleRenameSession(newRenameText);
+    };
+
+    //修改会话名称
+    const handleRenameSession = (session, expectedName) => {
+        //等待后端接口
+    }
 
     //获取登录用户名称
     const fetchUserName = async () => {
@@ -178,16 +234,19 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                         whiteSpace: 'nowrap',
                                 }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
                                 {selectedSession && selectedSession.id === session.id && (
-                                    <Button
-                                        className='delete-button'
-                                        style={{backgroundColor:'transparent', marginRight: '-5px'}}
-                                        type="text" icon={<DeleteOutlined />}
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            handleDeleteSession(event, session.id);
-                                        }}
-                                    />
-                                    )}
+                                    <Space size={0}>
+                                        <RenameComponent onFinishInput={handleRenameTextEntered}/>
+                                        <Button
+                                            className='delete-button'
+                                            style={{backgroundColor:'transparent', marginRight: '-10px'}}
+                                            type="text" icon={<DeleteOutlined />}
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                handleDeleteSession(event, session.id);
+                                            }}
+                                        />
+                                    </Space>
+                                )}
                             </div>      
                             <div
                                 style={{

@@ -1,8 +1,14 @@
+import json
+import logging
+import requests
 from .plugins.utils import StandardPlugin
 from .plugins.canteenPlugin import CanteenPlugin
 from .plugins.sjmcPlugin import SjmcPlugin
 from .plugins.libraryPlugin import LibraryPlugin
 from .plugins.summerInfoPlugin import SummerInfoPlugin
+from .configs import FC_API_ENDPOINT
+
+logger = logging.getLogger(__name__)
 
 # 支持快捷命令的插件列表
 qcmd_plugins_list = [
@@ -11,6 +17,23 @@ qcmd_plugins_list = [
     LibraryPlugin(),
     SummerInfoPlugin()
 ]
+
+try:
+    fc_def_res = requests.get(FC_API_ENDPOINT + "/fc/def");
+    assert fc_def_res.ok;
+    all_plugin: list = json.loads(fc_def_res.content);
+    # fc_plugins_dic = {}
+    # for item in all_plugin:
+    #     fc = next(filter(lambda x: x.getName() == item["name"].split("_")[0], qcmd_plugins_list), None);
+    #     if (fc != None):
+    #         fc.setFunction(item);
+    #         fc_plugins_dic[item["name"].split("_")[0]] = fc;
+
+    logger.info("fc_plugins num:" + str(len(all_plugin)));
+except Exception as e:
+    all_plugin = []
+    logger.error("Plugin init error: " + str(e))
+
 
 def check_and_exec_qcmds(msg:str):
     """快捷命令匹配插件、执行并得到结果

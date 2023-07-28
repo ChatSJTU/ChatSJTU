@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from asgiref.sync import sync_to_async
 
 
@@ -12,6 +13,7 @@ class Session(models.Model):
     name = models.CharField(max_length=100)
     # 是否被改名过（不直接检测名称是否为默认，保证用户改回为默认的情况）
     is_renamed = models.BooleanField(default=False)
+    created_time = models.DateTimeField(default=timezone.now, db_index=True, editable=True)
 
     def __str__(self):
         return f"{self.user} : {self.name}"

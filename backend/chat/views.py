@@ -29,13 +29,14 @@ async def sessions(request):
         user = request.user  # 从request.user获取当前用户
         # sessions = await Session.objects.filter(user=user)  # 基于当前用户过滤会话
         sessions = [session async for session in Session.objects.filter(user=user)]
-
-        return JsonResponse(SessionSerializer(sessions, many=True).data, safe=False)
+        data = await sync_to_async(lambda sessions: SessionSerializer(sessions, many=True).data)(sessions)
+        return JsonResponse(data, safe=False)
     elif request.method == 'POST':
         # 创建新会话，并关联到当前用户
         user = request.user
         session = await Session.objects.acreate(name='新会话', user=user)
-        return JsonResponse(SessionSerializer(session).data)
+        data = await sync_to_async(lambda session: SessionSerializer(session).data)(session)
+        return JsonResponse(data)
     else:
         return JsonResponse({"error": "Method not supported"}, status=404)
 

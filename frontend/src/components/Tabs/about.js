@@ -54,24 +54,24 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
-                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Musicminion"><GithubOutlined/></a>,
-                                    <span />
-                                ]}>
-                                <Meta
-                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
-                                    title="Musicminion"
-                                    description="生科，参与前端开发"
-                                />
-                            </Card>
-                            <Card hoverable className="developer-card" size="small"
-                                actions={[
                                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolmanP"><GithubOutlined/></a>,
                                     <span />
                                 ]}>
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ToolmanP" />}
                                     title="ToolmanP"
-                                    description="电院，参与后端开发"
+                                    description="电院，后端开发"
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Ichigo2315"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Ichigo2315" />}
+                                    title="Ichigo2315"
+                                    description="电院，前端开发"
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -104,7 +104,18 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ff98sha" />}
                                     title="ff98sha"
-                                    description="电院，开发与部署指导"
+                                    description="电院，部署与测试开发"
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Musicminion"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
+                                    title="Musicminion"
+                                    description="生科，国际化开发"
                                 />
                             </Card>
                         </div>

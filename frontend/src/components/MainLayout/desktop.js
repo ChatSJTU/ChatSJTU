@@ -31,11 +31,18 @@ const MainLayout = ({handleLogout}) => {
           name: newName,
         }));
     };
+
+    const handleChangeSessionInfo = (newData) => {
+        setSelectedSession((prevSession) => ({
+          ...prevSession,
+          ...newData,
+        }));
+      };
     
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName}/>,
+        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
@@ -98,7 +105,7 @@ const MainLayout = ({handleLogout}) => {
                                 <Content style={{ minHeight: '0', flex: '1' }}>
                                 {selectedSession  && 
                                     <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                                        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} curRightComponent={curRightComponent}/>
+                                        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
                                     </div>}
                                 {curRightComponent !== 1 && componentList[curRightComponent]}
                                 </Content>

@@ -66,4 +66,5 @@
 
 .session-name {
     animation: fadeIn 0.7s;
+    font-weight: bold;
 }

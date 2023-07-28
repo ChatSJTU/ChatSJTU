@@ -24,7 +24,7 @@ const MainLayoutMobile = ({handleLogout}) => {
         setIsSiderCollapsed(prevState => !prevState);
     };
 
-    //选中会话（在LeftSider中）
+    //修改选中会话
     const handleSelectSession = (session) => {
         setSelectedSession(session);
         setCurRightComponent(1);    //切换为聊天框
@@ -38,11 +38,18 @@ const MainLayoutMobile = ({handleLogout}) => {
           name: newName,
         }));
     };
+
+    const handleChangeSessionInfo = (newData) => {
+        setSelectedSession((prevSession) => ({
+          ...prevSession,
+          ...newData,
+        }));
+      };
     
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName}/>,
+        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
@@ -93,7 +100,7 @@ const MainLayoutMobile = ({handleLogout}) => {
                 <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
                     {selectedSession  && 
                         <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                            <ChatBox selectedSession={selectedSession} onChangeSessionName={handleChangeSessionName} curRightComponent={curRightComponent}/>
+                            <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
                         </div>}
                     {curRightComponent !== 1 && componentList[curRightComponent]}
                 </Content>

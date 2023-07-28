@@ -16,7 +16,7 @@ import './index.css'
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 
-function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
+function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
@@ -118,6 +118,7 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
 
             // 发送消息到后端处理
             const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
+            console.log(response);
             // 在前端显示用户发送的消息和服务端返回的消息
             const sendTime = new Date(response.data.send_timestamp);
             const responseTime = new Date(response.data.response_timestamp);
@@ -141,8 +142,12 @@ function ChatBox({ selectedSession, onChangeSessionName, curRightComponent}) {
             
             //可能的会话名更改
             if (response.data.session_rename !== ''){
-                onChangeSessionName(response.data.session_rename);
+                onChangeSessionInfo({'name':response.data.session_rename});
             }
+            onChangeSessionInfo({
+                'rounds': selectedSession.rounds + 1,
+                'updated_time': responseTime.toLocaleString('default', timeOptions),
+            });
 
         } catch (error) {
             console.error('Failed to send message:', error);

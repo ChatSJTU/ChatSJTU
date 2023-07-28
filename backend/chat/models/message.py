@@ -12,6 +12,7 @@ class Message(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, db_index=True)
     content = models.TextField()
     flag_qcmd = models.BooleanField(verbose_name='是否为快捷指令回复', default=False)
+    interrupted = models.BooleanField(verbose_name='是否由于max_tokens的限制打断',default=False)
     use_model = models.CharField(verbose_name='使用模型', max_length=50, default='')
     timestamp = models.DateTimeField(default=timezone.now, db_index=True, editable=True)
 

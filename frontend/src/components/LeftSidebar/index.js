@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
@@ -17,6 +17,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     const [isTextboxOpen, setTextboxOpen] = useState(false);
     const [inputTextFromTextbox, setInputTextFromTextbox] = useState('');
 
+    const modalInputRef = useRef(null);
+
     const timeOptions = {
         year: 'numeric',
         month: '2-digit',
@@ -27,10 +29,15 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     };
 
     useEffect(() => {
+        if (isTextboxOpen && modalInputRef.current) {
+            setTimeout(() => {
+                modalInputRef.current.focus();
+            },0);
+        }
         setLoaded(true);
         fetchSessions();
         fetchUserName();
-    }, []);
+    }, [isTextboxOpen]);
     
 
     //获取登录用户名称
@@ -214,7 +221,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                             onClick= {() => setTextboxOpen(true)}
                                         />
                                         <Modal
-                                            title="修改会话"
+                                            title="修改会话名称"
                                             open={isTextboxOpen}
                                             onOk={(event) => {
                                                 handleRenameSession(event,session.id,inputTextFromTextbox);
@@ -224,9 +231,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                                 setTextboxOpen(false);
                                             }}
                                             >
-                                            请输入新的会话名称:
                                             <div>
-                                                <Input value={inputTextFromTextbox} onChange={(event) => {setInputTextFromTextbox(event.target.value);}} style={{ marginTop: '7px' }} />
+                                                <Input placeholder={selectedSession.name} ref={modalInputRef} value={inputTextFromTextbox} onChange={(event) => {setInputTextFromTextbox(event.target.value);}} style={{ marginTop: '7px' }} />
                                             </div>
                                         </Modal>
                                         <Button

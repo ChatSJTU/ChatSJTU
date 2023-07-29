@@ -14,8 +14,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
     const [loaded, setLoaded] = useState(true);
-    const [isTextboxOpen, setTextboxOpen] = useState(false);
-    const [inputTextFromTextbox, setInputTextFromTextbox] = useState('');
+    const [isModalInputOpen, setModalInputOpen] = useState(false);
+    const [modalInputValue, setModalInputValue] = useState('');
 
     const modalInputRef = useRef(null);
 
@@ -29,7 +29,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     };
 
     useEffect(() => {
-        if (isTextboxOpen && modalInputRef.current) {
+        if (isModalInputOpen && modalInputRef.current) {
             setTimeout(() => {
                 modalInputRef.current.focus();
             },0);
@@ -37,7 +37,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         setLoaded(true);
         fetchSessions();
         fetchUserName();
-    }, [isTextboxOpen]);
+    }, [isModalInputOpen]);
     
 
     //获取登录用户名称
@@ -126,18 +126,18 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             );
             setSessions(updatedSessions);
             message.success('修改会话名成功')
-            setTextboxOpen(false);
+            setModalInputOpen(false);
         } catch (error) {
             if (error.response.data && error.response.status === 404){
                 message.error(`修改会话名失败：${error.response.data.error}`, 2);
-                setTextboxOpen(false);
+                setModalInputOpen(false);
             } else if (error.response.data) {
                 message.error(`修改会话名失败：${error.response.data.error}`, 2);
             } else {
                 message.error('修改会话失败')
             }
         } finally {
-            setInputTextFromTextbox('');
+            setModalInputValue('');
         }
     }
 
@@ -218,21 +218,21 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                             className='edit-button'
                                             style={{ backgroundColor: 'transparent', marginRight: '-10px' }}
                                             type="text" icon={<EditOutlined />}
-                                            onClick= {() => setTextboxOpen(true)}
+                                            onClick= {() => setModalInputOpen(true)}
                                         />
                                         <Modal
                                             title="修改会话名称"
-                                            open={isTextboxOpen}
+                                            open={isModalInputOpen}
                                             onOk={(event) => {
-                                                handleRenameSession(event,session.id,inputTextFromTextbox);
+                                                handleRenameSession(event,session.id,modalInputValue);
                                             }}
                                             onCancel={() => {
-                                                setInputTextFromTextbox('');
-                                                setTextboxOpen(false);
+                                                setModalInputValue('');
+                                                setModalInputOpen(false);
                                             }}
                                             >
                                             <div>
-                                                <Input placeholder={selectedSession.name} ref={modalInputRef} value={inputTextFromTextbox} onChange={(event) => {setInputTextFromTextbox(event.target.value);}} style={{ marginTop: '7px' }} />
+                                                <Input placeholder={selectedSession.name} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
                                             </div>
                                         </Modal>
                                         <Button

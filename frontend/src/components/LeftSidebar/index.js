@@ -232,7 +232,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                             }}
                                             >
                                             <div>
-                                                <Input placeholder={selectedSession.name} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
+                                                <Input placeholder={selectedSession.name} showCount maxLength={30} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
                                             </div>
                                         </Modal>
                                         <Button

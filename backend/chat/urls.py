@@ -15,8 +15,10 @@ urlpatterns = [
     path('sessions/<int:session_id>/', views.delete_session, name='delete_session'),
     # 删除所有会话 DELETE
     path('sessions/delete_all/', views.delete_all_sessions, name='delete_all_sessions'),
+    # 修改会话名 POST
+    path('sessions/rename/<int:session_id>/', views.rename_session, name='rename_session'),
     # 发送消息 POST
     path('send-message/<int:session_id>/', views.send_message, name='send_message'),
-
+    # 读取或修改用户偏好 GET POST
     path('user-preference/', views.user_preference, name='user_preference'),
 ]

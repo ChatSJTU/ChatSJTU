@@ -29,7 +29,7 @@ const handleRun = (code) => {
     const newWindow = window.open();
     newWindow.document.write(code);
 }
-      
+
 const CodeBlock = {
     code({node, inline, className, children, ...props}) {
     const match = /language-(\w+)/.exec(className || '')
@@ -90,6 +90,7 @@ const MarkdownRenderer = ({content}) =>{
             components={renderers}
             style={{ wordWrap: 'break-word', overflowWrap: 'break-word'}}
             skipHtml={false}
+            linkTarget="_blank"
         />
     )
 }

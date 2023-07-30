@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db.models import F
 from chat.serializers import UserPreferenceSerializer, SessionSerializer, MessageSerializer
 from chat.models import Session, Message, UserAccount, UserPreference
-from chat.core import STUDENT_LIMIT, handle_message, summary_title
+from chat.core import STUDENT_LIMIT, handle_message, summary_title, senword_detector_strict
 from oauth.models import UserProfile
 from django.utils import timezone
 import time
@@ -67,6 +67,27 @@ async def delete_all_sessions(request):
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
 
+# 修改会话名称
+@api_view(['POST'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def rename_session(request, session_id):
+    try:
+        new_name = request.data.get('new_name').strip()
+        print(len(new_name))
+        if len(new_name) == 0:
+            return JsonResponse({'error': '会话名不得为空'}, status=400)
+        elif len(new_name) > 30:
+            return JsonResponse({'error': '会话名过长'}, status=400)
+        if senword_detector_strict.find(new_name):
+            return JsonResponse({'error': '存在敏感词'}, status=400)
+        session = await Session.objects.aget(id=session_id, user=request.user)
+        session.name = new_name
+        session.is_renamed = True
+        await session.asave()
+        return JsonResponse({'message': 'Session renamed successfully'})
+    except Session.DoesNotExist:
+        return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 获取会话中的消息内容
 @api_view(['GET'])

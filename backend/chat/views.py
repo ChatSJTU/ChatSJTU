@@ -77,6 +77,8 @@ async def rename_session(request, session_id):
         print(len(new_name))
         if len(new_name) == 0:
             return JsonResponse({'error': '会话名不得为空'}, status=400)
+        elif len(new_name) > 30:
+            return JsonResponse({'error': '会话名过长'}, status=400)
         if senword_detector_strict.find(new_name):
             return JsonResponse({'error': '存在敏感词'}, status=400)
         session = await Session.objects.aget(id=session_id, user=request.user)

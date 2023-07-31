@@ -1,4 +1,3 @@
-from typing import Union
 from chat.models import UserPreference, Session, Message
 from chat.core.errors import ChatError
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
@@ -6,13 +5,16 @@ from .utils import senword_detector, senword_detector_strict
 from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
 from .qcmd import *
 
-
+from django.utils.timezone import datetime
 from django.contrib.auth.models import User
+from typing import Union
+
+import logging
 import time
 
+logger = logging.getLogger(__name__)
 
 async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
-
     """检查并处理是否为快捷命令
 
     Args:
@@ -33,13 +35,15 @@ async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
     return None
 
 
-async def handle_message(user: User,
-                         msg: str,
-                         selected_model: str,
-                         session: Session,
-                         permission: bool,
-                         regenerate: bool = False) -> Message:
-
+async def handle_message(
+    user: User,
+    msg: str,
+    selected_model: str,
+    session: Session,
+    permission: bool,
+    regenerate: bool,
+    before: datetime,
+) -> Message:
     """消息处理的主入口
 
     Args:
@@ -55,17 +59,17 @@ async def handle_message(user: User,
         ChatError: 若出错则抛出并附上对应的status code
     """
     # 快捷命令
-    if (msg[0] == '/'):
+    if msg[0] == "/":
         resp = await check_and_handle_qcmds(msg)
         if resp is not None:
             return resp
 
     if permission == False:
-        raise ChatError('您已到达今日使用上限', status=429)
+        raise ChatError("您已到达今日使用上限", status=429)
 
-    if (senword_detector_strict.find(msg)):
-        time.sleep(1)   # 避免处理太快前端显示闪烁
-        raise ChatError('请求存在敏感词')
+    if senword_detector_strict.find(msg):
+        time.sleep(1)  # 避免处理太快前端显示闪烁
+        raise ChatError("请求存在敏感词")
 
     use_strict_prompt = senword_detector.find(msg)
 
@@ -73,51 +77,68 @@ async def handle_message(user: User,
     try:
         user_preference = await UserPreference.objects.aget(user=user)
     except UserPreference.DoesNotExist:
-        raise ChatError('用户信息错误', status=404)
+        raise ChatError("用户信息错误", status=404)
 
     # 获取并处理历史消息
-    attached_message_count = max(user_preference.attached_message_count,
-                                 2) if msg == "continue" else user_preference.attached_message_count
+    attached_message_count = (
+        max(user_preference.attached_message_count, 2)
+        if msg == "continue"
+        else user_preference.attached_message_count
+    )
 
-    raw_recent_msgs = await session.get_recent_n(attached_message_count,
-                                                 attach_with_qcmd=user_preference.attach_with_qcmd,
-                                                 attach_with_regenerated=not regenerate and user_preference.attach_with_regenerated)
+    raw_recent_msgs = await session.get_recent_n(
+        attached_message_count,
+        attach_with_qcmd=user_preference.attach_with_qcmd,
+        attach_with_regenerated=user_preference.attach_with_regenerated,
+        before=before,
+    )
 
     # 构造输入
-    role = ['assistant', 'user']
+    role = ["assistant", "user"]
     input_list = [
-        {'role': 'system', 'content': SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE},]
-    input_list.extend([{
-        'role': role[message.sender],
-        'content': message.content,
-    } for message in raw_recent_msgs
-    ])
+        {
+            "role": "system",
+            "content": SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE,
+        },
+    ]
+    input_list.extend(
+        [
+            {
+                "role": role[message.sender],
+                "content": message.content,
+            }
+            for message in raw_recent_msgs
+        ]
+    )
+    
+    if not regenerate:
+        input_list.append({"role": "user", "content": msg})
 
-    input_list.append({'role': 'user', 'content': msg})
+    logger.debug(input_list)
 
     # API交互
-    if selected_model == 'Azure GPT3.5':
+    if selected_model == "Azure GPT3.5":
         response = await interact_with_azure_gpt(
             msg=input_list,
-            model_engine='gpt-35-turbo-16k',
+            model_engine="gpt-35-turbo-16k",
             temperature=user_preference.temperature,
-            max_tokens=user_preference.max_tokens
+            max_tokens=user_preference.max_tokens,
         )
-    elif selected_model == 'OpenAI GPT4':
+    elif selected_model == "OpenAI GPT4":
         response = await interact_with_openai_gpt(
             msg=input_list,
-            model_engine='gpt-4',
+            model_engine="gpt-4",
             temperature=user_preference.temperature,
-            max_tokens=user_preference.max_tokens
+            max_tokens=user_preference.max_tokens,
         )
     else:
-        raise ChatError('模型名错误')
+        raise ChatError("模型名错误")
 
     response.use_model = selected_model
 
     # 输出关键词检测
-    if (senword_detector_strict.find(response.content)):
-        raise ChatError('回复存在敏感词，已屏蔽')
+    if senword_detector_strict.find(response.content):
+        raise ChatError("回复存在敏感词，已屏蔽")
 
     return response
 
@@ -126,14 +147,16 @@ async def summary_title(msg: str) -> tuple[bool, str]:
     """
     用于概括会话标题
     """
-    input_list = [{'role': 'user', 'content': msg+'\n用小于五个词概括上述文字'},]
+    input_list = [
+        {"role": "user", "content": msg + "\n用小于五个词概括上述文字"},
+    ]
     try:
         response = await interact_with_azure_gpt(
             msg=input_list,
-            model_engine='gpt-35-turbo-16k',
+            model_engine="gpt-35-turbo-16k",
             max_tokens=20,
-            temperature=0.1
+            temperature=0.1,
         )
     except ChatError:
-        return False, ''
+        return False, ""
     return True, str(response.content)

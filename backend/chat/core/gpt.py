@@ -1,29 +1,43 @@
-from typing import Union
+from chat.core.errors import ChatError
+from chat.models.message import Message
+from .configs import *
+
 import tenacity
 import logging
 import openai
 
-from .configs import *
-
 logger = logging.getLogger(__name__)
 
 openai.proxy = os.getenv("OPENAI_PROXY", None)
+
 
 async def __interact_openai(
     msg: list,
     temperature: float,
     max_tokens: int,
     **kwargs,
-) -> tuple[bool, Union[str, dict[str, str]]]:
+) -> Message:
+   '''
+        使用openai包与openai api进行交互
+        Args:
+            msg: 用户输入的消息
+            temperature: 生成文本的多样性
+            max_tokens: 生成文本的长度
+            **kwargs: 其他参数
+        Returns:
+            response: Message对象
+        Error:
+            ChatError: 若出错则抛出以及对应的status code
+   '''
+    # 重试装饰器
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_random_exponential(min=1, max=5),
-        retry=tenacity.retry_if_exception_type(
-            (openai.error.RateLimitError, openai.error.OpenAIError)
-        ),
-        before=tenacity.before_log(logger, logging.DEBUG), reraise=True,
+        retry=tenacity.retry_if_exception_type(openai.error.OpenAIError),
+        before=tenacity.before_log(logger, logging.DEBUG),
+        reraise=True,
     )
-    async def __interact_with_retry() -> tuple[bool, Union[str, dict[str, str]]]:
+    async def __interact_with_retry() -> Message:
         try:
             response = await openai.ChatCompletion.acreate(
                 messages=msg,
@@ -33,39 +47,47 @@ async def __interact_openai(
             )
             assert isinstance(response, dict)
             content = response['choices'][0]['message']['content']
+            finish_reason = response['choices'][0]['finish_reason']
             assert isinstance(content, str)
-            return True, content
+            return Message(sender=0,
+                           flag_qcmd=False,
+                           content=content,
+                           interrupted=finish_reason == 'length')
 
         except openai.error.InvalidRequestError as e:
             logger.error(e)
-            return False, {'error': '请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入'}
+            raise ChatError('请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入')
 
         except openai.error.AuthenticationError as e:
             logger.error(e)
-            return False, {'error': 'Invalid Authentication'}
+            raise ChatError('验证失败，请联系管理员')
 
-        except (openai.error.RateLimitError, openai.error.OpenAIError) as e:
+        except openai.error.OpenAIError as _:
             raise
 
         except Exception as e:
             logger.error(e)
-            return False, {'error': '服务器遇到未知错误'}
+            raise ChatError('服务器遇到未知错误')
 
     try:
         return await __interact_with_retry()
 
     except openai.error.RateLimitError as e:
         logger.error(e)
-        return False, {'error': 'API受限，请稍作等待后重试，若一直受限请联系管理员'}
+        raise ChatError('API受限，请稍作等待后重试，若一直受限请联系管理员')
 
     except openai.error.OpenAIError as e:
         logger.error(e)
-        return False, {'error': 'API或网络错误，请稍作等待后重试'}
+        raise ChatError('API或网络错误，请稍作等待后重试')
 
 
 async def interact_with_openai_gpt(
-    msg: list, model_engine='gpt-4', temperature=0.5, max_tokens=1000
-) -> tuple[bool, Union[str, dict[str, str]]]:
+    msg: list,
+    model_engine='gpt-4',
+    temperature=0.5,
+    max_tokens=1000
+) -> Message:
+
     # 使用OpenAI API与GPT交互
 
     openai.api_type = 'open_ai'
@@ -73,12 +95,17 @@ async def interact_with_openai_gpt(
     openai.api_key = OPENAI_KEY
     openai.api_base = 'https://api.openai.com/v1'
     openai.api_version = None
+
     return await __interact_openai(msg, temperature, max_tokens, model=model_engine)
 
 
 async def interact_with_azure_gpt(
-    msg: list, model_engine='gpt-35-turbo-16k', temperature=0.5, max_tokens=1000
-) -> tuple[bool, Union[str, dict[str, str]]]:
+    msg: list,
+    model_engine='gpt-35-turbo-16k',
+    temperature=0.5,
+    max_tokens=1000
+) -> Message:
+
     # 使用Azure API与GPT交互
     openai.api_type = 'azure'
     openai.organization = None

@@ -1,18 +1,20 @@
-from django.forms.utils import ValidationError
+from chat.serializers import UserPreferenceSerializer, SessionSerializer, MessageSerializer, ChatErrorSerializer
+from chat.models import Session, Message, UserAccount, UserPreference
+from chat.core import STUDENT_LIMIT, handle_message, summary_title, senword_detector_strict
+from chat.core.errors import ChatError
+from oauth.models import UserProfile
+
 from rest_framework.decorators import authentication_classes, permission_classes
-from adrf.decorators import api_view
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.forms.utils import ValidationError
 from asgiref.sync import sync_to_async
+from adrf.decorators import api_view
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import F
-from chat.serializers import UserPreferenceSerializer, SessionSerializer, MessageSerializer
-from chat.models import Session, Message, UserAccount, UserPreference
-from chat.core import STUDENT_LIMIT, handle_message, summary_title, senword_detector_strict
-from oauth.models import UserProfile
-from django.utils import timezone
-import time
+
+import logging
 
 # def get_or_create_user(device_id):
 #     # 根据设备标识查找或创建对应的用户
@@ -20,6 +22,8 @@ import time
 #     return user
 
 # 获取会话列表或创建会话
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET', 'POST'])
@@ -39,7 +43,7 @@ async def sessions(request):
         data = await sync_to_async(lambda session: SessionSerializer(session).data)(session)
         return JsonResponse(data)
     else:
-        return JsonResponse({"error": "Method not supported"}, status=404)
+        return JsonResponse({"error": "请求方法未支持"}, status=404)
 
 # 删除会话
 
@@ -50,7 +54,7 @@ async def sessions(request):
 async def delete_session(request, session_id):
     try:
         await Session.objects.filter(id=session_id, user=request.user).adelete()
-        return JsonResponse({'message': 'Session deleted successfully'})
+        return JsonResponse({'message': '成功删除会话'})
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
 
@@ -68,13 +72,14 @@ async def delete_all_sessions(request):
         return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 修改会话名称
+
+
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 async def rename_session(request, session_id):
     try:
         new_name = request.data.get('new_name').strip()
-        print(len(new_name))
         if len(new_name) == 0:
             return JsonResponse({'error': '会话名不得为空'}, status=400)
         elif len(new_name) > 30:
@@ -90,6 +95,8 @@ async def rename_session(request, session_id):
         return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 获取会话中的消息内容
+
+
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
@@ -114,106 +121,112 @@ async def session_messages(request, session_id):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 async def send_message(request, session_id):
-    user_message = request.data.get('message')
-    selected_model = request.data.get('model')
-    permission, isStu, errorresp = await check_usage(request.user)
-    if not permission and user_message[0] != '/':  # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
-        time.sleep(1)   # 避免处理太快前端显示闪烁
-        return errorresp
+
+    user_message: str = request.data.get('message')
+    selected_model: str = request.data.get('model')
+
+    permission, isStu = await check_usage(request.user)
+
+    # if not permission and user_message[0] != '/':  # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
+    #     time.sleep(1)   # 避免处理太快前端显示闪烁
+    #     return errorresp
 
     try:
+
         session = await Session.objects.aget(id=session_id, user=request.user)
 
         sendTimestamp = timezone.now()
 
         # 处理信息
-        flag_success, flag_qcmd, response = await handle_message(
+        ai_message_obj = await handle_message(
             user=request.user,
-            message=user_message,
+            msg=user_message,
             selected_model=selected_model,
-            session=session
+            session=session,
+            permission=permission
         )
-
-        if not flag_success:
-            # session.delete_last_message()
-            return response  # 出错，返回错误
-        if not flag_qcmd and not permission:    # 达到用量，以/开头但不是快捷命令
-            # session.delete_last_message()
-            return errorresp
 
         # 将发送消息加入数据库
         user_message_obj = await Message.objects.acreate(
             sender=1,
             session=session,
             content=user_message,
-            flag_qcmd=flag_qcmd,
+            flag_qcmd=ai_message_obj.flag_qcmd,
             timestamp=sendTimestamp,
         )
 
         # 将返回消息加入数据库
-        ai_message_obj = await Message.objects.acreate(
-            sender=0,
-            session=session,
-            content=response,
-            flag_qcmd=flag_qcmd,
-            use_model=selected_model,
-        )
+        ai_message_obj.session = session
+        await ai_message_obj.asave()
 
         # 查看session是否进行过改名（再次filter防止同步问题）
-        rename_flag = False
-        if not flag_qcmd:
-            session_isrenamed = await Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).afirst()
-            if not session_isrenamed:
-                rename_flag, rename_resp = await summary_title(message=user_message)
+
+        session_rename = ''
+
+        if not ai_message_obj.flag_qcmd:
+            if not await Session.objects.filter(id=session_id).values_list('is_renamed', flat=True).afirst():
+                rename_flag, rename_resp = await summary_title(msg=user_message)
                 if rename_flag:
                     session.name = rename_resp
+                    session_rename = rename_resp
                     session.is_renamed = True
                     await session.asave()
 
         # 增加次数，返回服务端生成的回复消息
-        if (isStu and not flag_qcmd):
+        if isStu and not ai_message_obj.flag_qcmd:
             await increase_usage(user=request.user)
+
         return JsonResponse({
-            'message': response,
-            'flag_qcmd': flag_qcmd,
-            'use_model': selected_model,
+            'message': ai_message_obj.content,
+            'flag_qcmd': ai_message_obj.flag_qcmd,
+            'use_model': ai_message_obj.use_model,
             'send_timestamp': user_message_obj.timestamp.isoformat(),
             'response_timestamp': ai_message_obj.timestamp.isoformat(),
-            'session_rename': rename_resp if rename_flag else ''
+            'session_rename': session_rename,
         })
+
+    except ChatError as e:
+        serializer = ChatErrorSerializer(e)
+        return JsonResponse(serializer.data, status=e.status)
+
     except Session.DoesNotExist:
         return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 检查使用次数
-# 返回: flag（是否有权限）、isStu（是否为学生）、错误返回（可能有）
+# 返回: permission（是否达到上限）、isStu（是否为学生)
 
 
-async def check_usage(user):
+async def check_usage(user) -> tuple[bool, bool]:
+
     try:
         profile = await UserProfile.objects.aget(user=user)
         if profile.user_type != 'student':
-            return True, False, None
+            return True, False
+
     except UserProfile.DoesNotExist:
-        return False, False, JsonResponse({'error': '用户信息错误'}, status=404)
+        raise ChatError('用户信息错误', status=404)
 
     try:
+
         account = await UserAccount.objects.aget(user=user)
         today = timezone.localtime(timezone.now()).date()
+
         if account.last_used != today:
             account.usage_count = 0
             account.last_used = today
             await account.asave()
-            return True, True, None
+            return True, True
 
         if account.usage_count >= STUDENT_LIMIT:
-            return False, True, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
+            return False, True
         else:
-            return True, True, None
+            return True, True
+
     except UserAccount.DoesNotExist:
-        return False, False, JsonResponse({'error': '用户信息错误'}, status=404)
+        raise ChatError('用户信息错误', status=404)
+
     except Exception as e:
-        print(e)
-        return False, False, JsonResponse({'error': e}, status=404)
+        raise ChatError(e.__str__(), status=500)
 
 # 更新使用次数
 
@@ -223,7 +236,7 @@ async def increase_usage(user):
         accounts = UserAccount.objects.filter(user=user)
         await sync_to_async(accounts.update)(usage_count=F('usage_count') + 1)
     except UserAccount.DoesNotExist:
-        return JsonResponse({'error': '用户信息错误'}, status=404)
+        raise ChatError('用户信息错误', status=404)
 
 # 检查并更新使用次数
 # def check_and_update_usage(user):
@@ -276,7 +289,7 @@ async def user_preference(request):
 
         if field not in preference.__dict__.keys():
             return JsonResponse({'error': '修改域不存在'}, status=400)
-        
+
         setattr(preference, field, value)
 
         try:

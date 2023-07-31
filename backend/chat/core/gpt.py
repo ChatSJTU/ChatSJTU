@@ -17,18 +17,19 @@ async def __interact_openai(
     max_tokens: int,
     **kwargs,
 ) -> Message:
-    '''
-        使用openai包与openai api进行交互
-        Args:
-            msg: 用户输入的消息
-            temperature: 生成文本的多样性
-            max_tokens: 生成文本的长度
-            **kwargs: 其他参数
-        Returns:
-            response: Message对象
-        Error:
-            ChatError: 若出错则抛出以及对应的status code
-    '''
+    """
+    使用openai包与openai api进行交互
+    Args:
+        msg: 用户输入的消息
+        temperature: 生成文本的多样性
+        max_tokens: 生成文本的长度
+        **kwargs: 其他参数
+    Returns:
+        response: Message对象
+    Error:
+        ChatError: 若出错则抛出以及对应的status code
+    """
+
     # 重试装饰器
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -40,83 +41,74 @@ async def __interact_openai(
     async def __interact_with_retry() -> Message:
         try:
             response = await openai.ChatCompletion.acreate(
-                messages=msg,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                **kwargs
+                messages=msg, temperature=temperature, max_tokens=max_tokens, **kwargs
             )
             assert isinstance(response, dict)
-            content = response['choices'][0]['message']['content']
-            finish_reason = response['choices'][0]['finish_reason']
+            content = response["choices"][0]["message"]["content"]
+            finish_reason = response["choices"][0]["finish_reason"]
             assert isinstance(content, str)
-            return Message(sender=0,
-                           flag_qcmd=False,
-                           content=content,
-                           interrupted=finish_reason == 'length')
+            return Message(
+                sender=0,
+                flag_qcmd=False,
+                content=content,
+                interrupted=finish_reason == "length",
+            )
 
         except openai.error.InvalidRequestError as e:
             logger.error(e)
-            raise ChatError('请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入')
+            raise ChatError("请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入")
 
         except openai.error.AuthenticationError as e:
             logger.error(e)
-            raise ChatError('验证失败，请联系管理员')
+            raise ChatError("验证失败，请联系管理员")
 
         except openai.error.OpenAIError as _:
             raise
 
         except Exception as e:
             logger.error(e)
-            raise ChatError('服务器遇到未知错误')
+            raise ChatError("服务器遇到未知错误")
 
     try:
         return await __interact_with_retry()
 
     except openai.error.RateLimitError as e:
         logger.error(e)
-        raise ChatError('API受限，请稍作等待后重试，若一直受限请联系管理员')
+        raise ChatError("API受限，请稍作等待后重试，若一直受限请联系管理员")
 
     except openai.error.OpenAIError as e:
         logger.error(e)
-        raise ChatError('API或网络错误，请稍作等待后重试')
+        raise ChatError("API或网络错误，请稍作等待后重试")
 
 
 async def interact_with_openai_gpt(
-    msg: list,
-    model_engine='gpt-4',
-    temperature=0.5,
-    max_tokens=1000
+    msg: list, model_engine="gpt-4", temperature=0.5, max_tokens=1000
 ) -> Message:
-
     # 使用OpenAI API与GPT交互
 
-    openai.api_type = 'open_ai'
+    openai.api_type = "open_ai"
     openai.organization = OPENAI_ORGANIZATION
     openai.api_key = OPENAI_KEY
-    openai.api_base = 'https://api.openai.com/v1'
+    openai.api_base = "https://api.openai.com/v1"
     openai.api_version = None
 
     return await __interact_openai(msg, temperature, max_tokens, model=model_engine)
 
 
 async def interact_with_azure_gpt(
-    msg: list,
-    model_engine='gpt-35-turbo-16k',
-    temperature=0.5,
-    max_tokens=1000
+    msg: list, model_engine="gpt-35-turbo-16k", temperature=0.5, max_tokens=1000
 ) -> Message:
-
     # 使用Azure API与GPT交互
-    openai.api_type = 'azure'
+    openai.api_type = "azure"
     openai.organization = None
     openai.api_key = AZURE_OPENAI_KEY
     openai.api_base = AZURE_OPENAI_ENDPOINT
-    openai.api_version = '2023-05-15'
+    openai.api_version = "2023-05-15"
 
     return await __interact_openai(msg, temperature, max_tokens, engine=model_engine)
 
 
-'''
+"""
 与GPT交互，两方API略有不同，但输入输出几乎一致
 @msg 用户发送的信息,封装成字典的形式
     需要是如下的结构
@@ -135,4 +127,4 @@ async def interact_with_azure_gpt(
 
 @max_tokens 代表了回复的最大长度,如果设置为0,则回复的内容为空;
 @return(flag, response) flag为真表示无错误，response为语言模型的回复或错误JSON
-'''
+"""

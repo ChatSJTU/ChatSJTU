@@ -14,5 +14,5 @@ class MessageSerializer(serializers.ModelSerializer):
             'use_model',
             'time',
             'interrupted',
-            'last_generated'
+            'regenerated'
             ]

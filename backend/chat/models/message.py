@@ -20,8 +20,8 @@ class Message(models.Model):
         verbose_name='使用模型', max_length=50, default='')
     timestamp = models.DateTimeField(
         verbose_name='时间', default=timezone.now, db_index=True, editable=True)
-    last_generated = models.BooleanField(
-        verbose_name='是否是最后一次的生成回答', default=True)
+    regenerated = models.BooleanField(
+        verbose_name='是否为重新生成的', default=False)
 
     def __str__(self):
         return self.content

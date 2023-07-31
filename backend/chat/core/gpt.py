@@ -17,7 +17,7 @@ async def __interact_openai(
     max_tokens: int,
     **kwargs,
 ) -> Message:
-   '''
+    '''
         使用openai包与openai api进行交互
         Args:
             msg: 用户输入的消息
@@ -28,7 +28,7 @@ async def __interact_openai(
             response: Message对象
         Error:
             ChatError: 若出错则抛出以及对应的status code
-   '''
+    '''
     # 重试装饰器
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),

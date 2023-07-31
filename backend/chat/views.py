@@ -1,3 +1,4 @@
+from django.contrib.admin.options import transaction
 from chat.serializers import UserPreferenceSerializer, SessionSerializer, MessageSerializer, ChatErrorSerializer
 from chat.models import Session, Message, UserAccount, UserPreference
 from chat.core import STUDENT_LIMIT, handle_message, summary_title, senword_detector_strict
@@ -124,16 +125,43 @@ async def send_message(request, session_id):
 
     user_message: str = request.data.get('message')
     selected_model: str = request.data.get('model')
+    regenerate: bool = user_message == "%regenerate%"
 
     permission, isStu = await check_usage(request.user)
 
     # if not permission and user_message[0] != '/':  # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
     #     time.sleep(1)   # 避免处理太快前端显示闪烁
     #     return errorresp
+    try:
+        session = await Session.objects.aget(id=session_id, user=request.user)
+    except Session.DoesNotExist:
+        return JsonResponse({'error': '会话不存在'}, status=404)
+
+    if regenerate:
+
+        # 这里需要原子性
+        @transaction.atomic()
+        def revise_last_message() -> str:
+            try:
+
+                last_user_message_obj = Message.objects.filter(session=session,
+                                                               sender=1,
+                                                               last_generated=True).order_by('-timestamp').first()
+                last_ai_message_obj = Message.objects.filter(session=session,
+                                                             sender=0,
+                                                             last_generated=True).order_by('-timestamp').first()
+                last_ai_message_obj.last_generated = False
+                last_user_message_obj.last_generated = False
+                last_ai_message_obj.save()
+                last_user_message_obj.save()
+                return last_user_message_obj.content
+
+            except AttributeError:
+                raise ChatError('未找到上一条消息，无法重试', status=404)
+
+        user_message = await sync_to_async(revise_last_message)()
 
     try:
-
-        session = await Session.objects.aget(id=session_id, user=request.user)
 
         sendTimestamp = timezone.now()
 
@@ -143,21 +171,28 @@ async def send_message(request, session_id):
             msg=user_message,
             selected_model=selected_model,
             session=session,
-            permission=permission
+            permission=permission,
+            regenerate=regenerate,
         )
 
-        # 将发送消息加入数据库
-        user_message_obj = await Message.objects.acreate(
-            sender=1,
-            session=session,
-            content=user_message,
-            flag_qcmd=ai_message_obj.flag_qcmd,
-            timestamp=sendTimestamp,
-        )
+        # 这里需要原子性
+        @transaction.atomic()
+        def save_message() -> tuple[Message, Message]:
+            # 将发送消息加入数据库
+            user_message_obj = Message.objects.create(
+                sender=1,
+                session=session,
+                content=user_message,
+                flag_qcmd=ai_message_obj.flag_qcmd,
+                timestamp=sendTimestamp,
+            )
 
         # 将返回消息加入数据库
-        ai_message_obj.session = session
-        await ai_message_obj.asave()
+            ai_message_obj.session = session
+            ai_message_obj.save()
+            return user_message_obj, ai_message_obj
+
+        user_message_obj, ai_message_obj = await sync_to_async(save_message)()
 
         # 查看session是否进行过改名（再次filter防止同步问题）
 
@@ -189,8 +224,6 @@ async def send_message(request, session_id):
         serializer = ChatErrorSerializer(e)
         return JsonResponse(serializer.data, status=e.status)
 
-    except Session.DoesNotExist:
-        return JsonResponse({'error': '会话不存在'}, status=404)
 
 # 检查使用次数
 # 返回: permission（是否达到上限）、isStu（是否为学生)

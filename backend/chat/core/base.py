@@ -37,7 +37,8 @@ async def handle_message(user: User,
                          msg: str,
                          selected_model: str,
                          session: Session,
-                         permission: bool) -> Message:
+                         permission: bool,
+                         regenerate: bool = False) -> Message:
 
     """消息处理的主入口
 
@@ -78,7 +79,9 @@ async def handle_message(user: User,
     attached_message_count = max(user_preference.attached_message_count,
                                  2) if msg == "continue" else user_preference.attached_message_count
 
-    raw_recent_msgs = await session.get_recent_n(attached_message_count, attach_with_qcmd=user_preference.attach_with_qcmd)
+    raw_recent_msgs = await session.get_recent_n(attached_message_count,
+                                                 attach_with_qcmd=user_preference.attach_with_qcmd,
+                                                 attach_with_regenerated=not regenerate and user_preference.attach_with_regenerated)
 
     # 构造输入
     role = ['assistant', 'user']

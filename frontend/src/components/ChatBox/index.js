@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -332,7 +332,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         <List
             style={{ flex: 1, overflow: 'auto'}}
             dataSource={messages}
-            renderItem={item => (
+            renderItem={(item, index) => (
             <div ref={messagesEndRef}>
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
@@ -362,7 +362,20 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                         />
                         <div style={{ width: '100%', marginTop: 10}}>
                             {item.sender === 0 && 
-                                <MarkdownRenderer content={item.content}/>}
+                                <>
+                                    <MarkdownRenderer content={item.content}/>
+                                    {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
+                                        <Space style={{marginTop: 10}} size="middle">
+                                            {item.interrupted &&
+                                                <Button icon={<DoubleRightOutlined />}
+                                                    onClick={() => sendUserMessage('continue')}>继续生成</Button>
+                                            }
+                                            <Button icon={<ReloadOutlined />}
+                                                onClick={() => sendUserMessage('%regenerate%')}>再次生成</Button>
+                                        </Space>
+                                    }
+                                </>
+                            }
                             {item.sender === 1 &&
                                 <div style={{ whiteSpace: 'pre-wrap' }}>
                                     {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (

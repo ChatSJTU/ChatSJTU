@@ -50,28 +50,28 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
     }, [messages]);
 
     //增加字段说明结果编号（面向连续重新生成）
-    const calcRegenIndex = (data) => {
-        console.log(data);
-        let regenIndex = 0;
-        for(let i=1; i<data.length; i++){
-            if (data[i].sender !== 0) data[i].regenInfo = '';
-            else if (data[i].regenerated || data[i-1].regenerated) {
-                if (!data[i-1].regenerated) regenIndex = 0;
-                regenIndex++;
-                data[i].regenInfo = `回答 ${regenIndex}`;
-            }
-            else data[i].regenInfo = '';
-            console.log(`${i}  ${data[i].regenInfo}`)
-        }
-        return data;
-    }
+    // const calcRegenIndex = (data) => {
+    //     console.log(data);
+    //     let regenIndex = 0;
+    //     for(let i=1; i<data.length; i++){
+    //         if (data[i].sender !== 0) data[i].regenInfo = '';
+    //         else if (data[i].regenerated || data[i-1].regenerated) {
+    //             if (!data[i-1].regenerated) regenIndex = 0;
+    //             regenIndex++;
+    //             data[i].regenInfo = `回答 ${regenIndex}`;
+    //         }
+    //         else data[i].regenInfo = '';
+    //         console.log(`${i}  ${data[i].regenInfo}`)
+    //     }
+    //     return data;
+    // }
 
     useEffect(() => {
         if (selectedSession) {
           // 请求选中会话的消息记录数据
           request.get(`/api/sessions/${selectedSession.id}/messages/`)
             .then(response => {
-                setMessages(calcRegenIndex(response.data));
+                setMessages(response.data);
             })
             .catch(error => {
                 console.error('Error fetching messages:', error);
@@ -156,8 +156,6 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 },
             ]);
             if (retryMessage) {setRetryMessage(null);}
-            let updateMessage = [...messages];
-            setMessages(calcRegenIndex(updateMessage));
             
             //可能的会话名更改
             if (response.data.session_rename !== ''){
@@ -371,7 +369,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
-                                    <div style={{marginLeft:'7px'}}>{item.regenInfo}</div>
+                                    {/* <div style={{marginLeft:'7px'}}>{item.regenInfo}</div> */}
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
                                         icon={<CopyOutlined />}

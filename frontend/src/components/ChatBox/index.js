@@ -42,19 +42,36 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         second: '2-digit',
     };
 
-    //发送消息自动滚动到底部
     useEffect(() => {
+        //发送消息自动滚动到底部
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
         }
     }, [messages]);
+
+    //增加字段说明结果编号（面向连续重新生成）
+    const calcRegenIndex = (data) => {
+        console.log(data);
+        let regenIndex = 0;
+        for(let i=1; i<data.length; i++){
+            if (data[i].sender !== 0) data[i].regenInfo = '';
+            else if (data[i].regenerated || data[i-1].regenerated) {
+                if (!data[i-1].regenerated) regenIndex = 0;
+                regenIndex++;
+                data[i].regenInfo = `回答 ${regenIndex}`;
+            }
+            else data[i].regenInfo = '';
+            console.log(`${i}  ${data[i].regenInfo}`)
+        }
+        return data;
+    }
 
     useEffect(() => {
         if (selectedSession) {
           // 请求选中会话的消息记录数据
           request.get(`/api/sessions/${selectedSession.id}/messages/`)
             .then(response => {
-                setMessages(response.data);
+                setMessages(calcRegenIndex(response.data));
             })
             .catch(error => {
                 console.error('Error fetching messages:', error);
@@ -71,7 +88,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
-            console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
+            // console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
           }
         }
         
@@ -139,6 +156,8 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 },
             ]);
             if (retryMessage) {setRetryMessage(null);}
+            let updateMessage = [...messages];
+            setMessages(calcRegenIndex(updateMessage));
             
             //可能的会话名更改
             if (response.data.session_rename !== ''){
@@ -334,6 +353,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
             dataSource={messages}
             renderItem={(item, index) => (
             <div ref={messagesEndRef}>
+                { !(item.sender === 1 && item.regenerated) &&
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
                     style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
@@ -351,6 +371,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
+                                    <div style={{marginLeft:'7px'}}>{item.regenInfo}</div>
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
                                         icon={<CopyOutlined />}
@@ -397,6 +418,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                     </div>
                     <div/>
                 </List.Item>
+                }
             </div>)}
         />
         

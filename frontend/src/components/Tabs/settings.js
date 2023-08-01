@@ -177,7 +177,7 @@ function TabSettings({ onCloseTab }) {
                                 <div>单次交互回复所用的最大 Token 数</div>
                             </Col>
                             <Col span={6} className="setting-item">
-                                <InputNumber min={0} max={2000} step={100}
+                                <InputNumber min={100} max={2000} step={100}
                                     value={settings?.max_tokens}
                                     onChange={(value) => { handleChangeSettings({ max_tokens: value }); }}
                                 />

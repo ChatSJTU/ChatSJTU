@@ -32,7 +32,7 @@ function TabWallet ({ onCloseTab }) {
 
     const tagStyle = {
         faculty: { text: '教职工', color: 'blue' },
-        fsyyjzg: { text: '附属医院教职工', color: 'magenta'},
+        fs:      { text: '附属单位教职工', color: 'magenta'},
         postphd: { text: '博士后', color: 'cyan' },
         student: { text: '学生', color: 'green' },
         team:    { text: '集体账号', color: 'volcano'},
@@ -48,7 +48,7 @@ function TabWallet ({ onCloseTab }) {
 
     const PermissionDisplay = {
         faculty: FacultyPermission,
-        fsyyjzg: FacultyPermission,
+        fs:      FacultyPermission,
         postphd: FacultyPermission,
         student:
             <div className="permission-display-container">

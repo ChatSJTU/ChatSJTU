@@ -210,13 +210,14 @@ async def send_message(request, session_id):
                 regenerated=regenerate,
             )
             # 防止生成失败导致重修改 修改flag
-            last_ai_message_obj = (
-                Message.objects.filter(session=session, sender=0, regenerated=False)
-                .order_by("-timestamp")
-                .first()
-            )
-            last_ai_message_obj.regenerated = True
-            last_ai_message_obj.save()
+            if regenerate:
+                last_ai_message_obj = (
+                    Message.objects.filter(session=session, sender=0, regenerated=False)
+                    .order_by("-timestamp")
+                    .first()
+                )
+                last_ai_message_obj.regenerated = True
+                last_ai_message_obj.save()
 
             # 将返回消息加入数据库
             ai_message_obj.session = session

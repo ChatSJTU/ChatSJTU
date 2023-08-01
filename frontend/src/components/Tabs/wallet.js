@@ -35,7 +35,7 @@ function TabWallet ({ onCloseTab }) {
 
     const tagStyle = {
         faculty: { text: t('Tabs_wallet_User_Label1'), color: 'blue' },
-        fsyyjzg: { text: t('Tabs_wallet_User_Label2'), color: 'magenta'},
+        fs: { text: t('Tabs_wallet_User_Label2'), color: 'magenta'},
         postphd: { text: t('Tabs_wallet_User_Label3'), color: 'cyan' },
         student: { text: t('Tabs_wallet_User_Label4'), color: 'green' },
         team:    { text: t('Tabs_wallet_User_Label5'), color: 'volcano'},

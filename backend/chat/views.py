@@ -170,9 +170,6 @@ async def send_message(request, session_id):
                     .order_by("-timestamp")
                     .first()
                 )
-                
-                last_ai_message_obj.regenerated = True
-                last_ai_message_obj.save()
 
                 return last_user_message_obj.content, last_ai_message_obj.timestamp
 
@@ -183,7 +180,6 @@ async def send_message(request, session_id):
         user_message = user_message_sent
 
     else:
-
         user_message_sent = user_message
         before = timezone.now()
 
@@ -213,6 +209,14 @@ async def send_message(request, session_id):
                 timestamp=sendTimestamp,
                 regenerated=regenerate,
             )
+            # 防止生成失败导致重修改 修改flag
+            last_ai_message_obj = (
+                Message.objects.filter(session=session, sender=0, regenerated=False)
+                .order_by("-timestamp")
+                .first()
+            )
+            last_ai_message_obj.regenerated = True
+            last_ai_message_obj.save()
 
             # 将返回消息加入数据库
             ai_message_obj.session = session

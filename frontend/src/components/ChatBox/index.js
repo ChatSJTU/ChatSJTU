@@ -351,7 +351,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
             dataSource={messages}
             renderItem={(item, index) => (
             <div ref={messagesEndRef}>
-                { !(item.sender === 1 && item.regenerated) &&
+                { !(item.sender === 1 && (item.regenerated || item.interrupted)) &&
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
                     style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
@@ -369,7 +369,8 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
-                                    {/* <div style={{marginLeft:'7px'}}>{item.regenInfo}</div> */}
+                                    {(item.sender === 0 && !item.flag_qcmd && item.generation !== 0) &&
+                                        <div style={{marginLeft:'7px'}}>{`回答 ${item.generation}`}</div> }
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
                                         icon={<CopyOutlined />}

@@ -1,17 +1,17 @@
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 import i18n from "i18next";                     // i18n 的主要模块
-import zh from '../../locales/zh-cn.json';
-import en from '../../locales/en-us.json';
+import LoginLayout_zh from '../../locales/zh-cn/LoginLayout.json';
+import LoginLayout_en from '../../locales/en-us/LoginLayout.json';
 import { initReactI18next } from 'react-i18next'; 
 
 
-const resources = {
+const i18nResources = {
     en: {
-        translation: en
+        LoginLayout: LoginLayout_en
     },
     zh: {
-        translation: zh
+        LoginLayout: LoginLayout_zh
     }
 }
 
@@ -20,7 +20,7 @@ i18n
     .use(LanguageDetector)
     .use(initReactI18next) //init i18next
     .init({
-        resources,
+        resources: i18nResources,
         fallbackLng: 'zh',
         debug: false,
         interpolation: {

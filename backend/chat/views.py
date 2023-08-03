@@ -164,7 +164,7 @@ async def send_message(request, session_id):
         .afirst()
     )
     last_ai_message_obj = await (
-        Message.objects.filter(session=session, sender=0)
+        Message.objects.filter(session=session, sender=0, generation__gt=0)
         .order_by("-timestamp")
         .afirst()
     )
@@ -253,7 +253,7 @@ async def send_message(request, session_id):
                     session.is_renamed = True
                     await session.asave()
 
-        #增加次数，返回服务端生成的回复消息
+        # 增加次数，返回服务端生成的回复消息
         if isStu and not ai_message_obj.flag_qcmd:
             await increase_usage(user=request.user)
 

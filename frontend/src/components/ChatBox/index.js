@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -42,12 +42,29 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         second: '2-digit',
     };
 
-    //发送消息自动滚动到底部
     useEffect(() => {
+        //发送消息自动滚动到底部
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
         }
     }, [messages]);
+
+    //增加字段说明结果编号（面向连续重新生成）
+    // const calcRegenIndex = (data) => {
+    //     console.log(data);
+    //     let regenIndex = 0;
+    //     for(let i=1; i<data.length; i++){
+    //         if (data[i].sender !== 0) data[i].regenInfo = '';
+    //         else if (data[i].regenerated || data[i-1].regenerated) {
+    //             if (!data[i-1].regenerated) regenIndex = 0;
+    //             regenIndex++;
+    //             data[i].regenInfo = `回答 ${regenIndex}`;
+    //         }
+    //         else data[i].regenInfo = '';
+    //         console.log(`${i}  ${data[i].regenInfo}`)
+    //     }
+    //     return data;
+    // }
 
     useEffect(() => {
         if (selectedSession) {
@@ -71,7 +88,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
-            console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
+            // console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
           }
         }
         
@@ -332,8 +349,9 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         <List
             style={{ flex: 1, overflow: 'auto'}}
             dataSource={messages}
-            renderItem={item => (
+            renderItem={(item, index) => (
             <div ref={messagesEndRef}>
+                { !(item.sender === 1 && (item.regenerated || item.interrupted)) &&
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
                     style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
@@ -351,6 +369,8 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
+                                    {(item.sender === 0 && !item.flag_qcmd && item.generation !== 0) &&
+                                        <div style={{marginLeft:'7px'}}>{`回答 ${item.generation}`}</div> }
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
                                         icon={<CopyOutlined />}
@@ -362,7 +382,20 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                         />
                         <div style={{ width: '100%', marginTop: 10}}>
                             {item.sender === 0 && 
-                                <MarkdownRenderer content={item.content}/>}
+                                <>
+                                    <MarkdownRenderer content={item.content}/>
+                                    {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
+                                        <Space style={{marginTop: 10}} size="middle">
+                                            {item.interrupted &&
+                                                <Button icon={<DoubleRightOutlined />}
+                                                    onClick={() => sendUserMessage('continue')}>继续生成</Button>
+                                            }
+                                            <Button icon={<ReloadOutlined />}
+                                                onClick={() => sendUserMessage('%regenerate%')}>再次生成</Button>
+                                        </Space>
+                                    }
+                                </>
+                            }
                             {item.sender === 1 &&
                                 <div style={{ whiteSpace: 'pre-wrap' }}>
                                     {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
@@ -384,6 +417,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                     </div>
                     <div/>
                 </List.Item>
+                }
             </div>)}
         />
         

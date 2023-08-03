@@ -11,5 +11,6 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
             'max_tokens',
             'presence_penalty',
             'frequency_penalty',
-            'attach_with_qcmd'
+            'attach_with_qcmd',
+            'attach_with_regenerated'
             ]

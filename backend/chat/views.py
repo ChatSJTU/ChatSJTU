@@ -123,7 +123,10 @@ async def session_messages(request, session_id):
     try:
         filters = {"session__id": session_id, "session__user": request.user}
 
-        messages = [message async for message in Message.objects.filter(**filters)]
+        messages = [
+            message
+            async for message in Message.objects.filter(**filters).order_by("timestamp")
+        ]
 
         serializer = MessageSerializer(messages, many=True)
         return JsonResponse(serializer.data, safe=False)
@@ -143,6 +146,7 @@ async def send_message(request, session_id):
     user_message: str = request.data.get("message")
     selected_model: str = request.data.get("model")
     regenerate: bool = user_message == "%regenerate%"
+    cont: bool = user_message == "continue"
     permission, isStu = await check_usage(request.user)
 
     # if not permission and user_message[0] != '/':  # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
@@ -153,34 +157,38 @@ async def send_message(request, session_id):
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
 
+    last_user_message_obj = await (
+        Message.objects.filter(session=session, sender=1, regenerated=False)
+        .order_by("-timestamp")
+        .exclude(content="continue")
+        .afirst()
+    )
+    last_ai_message_obj = await (
+        Message.objects.filter(session=session, sender=0)
+        .order_by("-timestamp")
+        .afirst()
+    )
+
     if regenerate:
-        # 这里需要原子性
-        @transaction.atomic()
-        def revise_last_message() -> tuple[str, timezone.datetime]:
-            try:
-                last_user_message_obj = (
-                    Message.objects.filter(session=session, sender=1, regenerated=False)
-                    .order_by("-timestamp")
-                    .exclude(content="continue")
-                    .first()
-                )
+        try:
+            before = last_user_message_obj.timestamp
+            user_message = last_user_message_obj.content
+            generation = last_ai_message_obj.generation + 1
+        except AttributeError:
+            return JsonResponse({"error": "缺少上一条消息，无法重复生成。"}, status=404)
 
-                last_ai_message_obj = (
-                    Message.objects.filter(session=session, sender=0, regenerated=False)
-                    .order_by("-timestamp")
-                    .first()
-                )
-
-                return last_user_message_obj.content, last_ai_message_obj.timestamp
-
-            except AttributeError:
-                raise ChatError("未找到上一条消息，无法重试", status=404)
-
-        user_message_sent, before = await sync_to_async(revise_last_message)()
-        user_message = user_message_sent
+    elif cont:
+        try:
+            generation = last_ai_message_obj.generation
+            user_message = "continue"
+            before = timezone.now()
+            if not last_ai_message_obj.interrupted:
+                return JsonResponse({"error": "上一条信息已全部生成完毕，无法继续"}, status=400)
+        except AttributeError:
+            return JsonResponse({"error": "缺少上一条信息，无法继续生成"}, status=404)
 
     else:
-        user_message_sent = user_message
+        generation = 1
         before = timezone.now()
 
     try:
@@ -189,38 +197,41 @@ async def send_message(request, session_id):
         # 处理信息
         ai_message_obj = await handle_message(
             user=request.user,
-            msg=user_message_sent,
+            msg=user_message,
             selected_model=selected_model,
             session=session,
             permission=permission,
-            regenerate=regenerate,
             before=before,
         )
 
-        # 这里需要原子性
+        # 这里需要原子性 如果在传输途中session被删除仍然可以进行rollback
         @transaction.atomic()
         def save_message() -> tuple[Message, Message]:
+            # 修改上一条ai信息的regenerated为True
+            if regenerate:
+                for last_ai_message_obj in Message.objects.filter(
+                    session=session,
+                    sender=0,
+                    regenerated=False,
+                    timestamp__gt=before,
+                ):
+                    last_ai_message_obj.regenerated = True
+                    last_ai_message_obj.save()
+
             # 将发送消息加入数据库
             user_message_obj = Message.objects.create(
                 sender=1,
                 session=session,
                 content=user_message,
-                flag_qcmd=ai_message_obj.flag_qcmd,
                 timestamp=sendTimestamp,
+                generation=generation,
                 regenerated=regenerate,
+                interrupted=cont,
+                flag_qcmd=ai_message_obj.flag_qcmd,
             )
-            # 防止生成失败导致重修改 修改flag
-            if regenerate:
-                last_ai_message_obj = (
-                    Message.objects.filter(session=session, sender=0, regenerated=False)
-                    .order_by("-timestamp")
-                    .first()
-                )
-                last_ai_message_obj.regenerated = True
-                last_ai_message_obj.save()
-
             # 将返回消息加入数据库
             ai_message_obj.session = session
+            ai_message_obj.generation = generation
             ai_message_obj.save()
             return user_message_obj, ai_message_obj
 
@@ -244,8 +255,8 @@ async def send_message(request, session_id):
                     await session.asave()
 
         # 增加次数，返回服务端生成的回复消息
-        if isStu and not ai_message_obj.flag_qcmd:
-            await increase_usage(user=request.user)
+        # if isStu and not ai_message_obj.flag_qcmd:
+        #     await increase_usage(user=request.user)
 
         return JsonResponse(
             {

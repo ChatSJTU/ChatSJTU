@@ -179,8 +179,7 @@ async def send_message(request, session_id):
 
     elif cont:
         try:
-            generation = last_ai_message_obj.generation
-            user_message = "continue"
+            generation = 0
             before = timezone.now()
             if not last_ai_message_obj.interrupted:
                 return JsonResponse({"error": "上一条信息已全部生成完毕，无法继续"}, status=400)

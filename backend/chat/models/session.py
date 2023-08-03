@@ -30,7 +30,7 @@ class Session(models.Model):
     ):  # 获取最近n条
         def __request_recent_n(n: int):
             filters: dict[str, Union[bool, timezone.datetime]] = {
-                "timestamp__lte": before
+                "timestamp__lt": before
             }
 
             if not attach_with_qcmd:

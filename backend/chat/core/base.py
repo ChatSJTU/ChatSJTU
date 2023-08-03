@@ -41,7 +41,6 @@ async def handle_message(
     selected_model: str,
     session: Session,
     permission: bool,
-    regenerate: bool,
     before: datetime,
 ) -> Message:
     """消息处理的主入口
@@ -110,11 +109,10 @@ async def handle_message(
             for message in raw_recent_msgs
         ]
     )
-    
-    if not regenerate:
-        input_list.append({"role": "user", "content": msg})
 
-    logger.debug(input_list)
+    input_list.append({"role": "user", "content": msg})
+
+    logger.debug("GPT INPUT:{0}".format(input_list))
 
     # API交互
     if selected_model == "Azure GPT3.5":

@@ -1,0 +1,21 @@
+{
+    "Tabs_wallet_Title": "账户信息",
+    "Tabs_wallet_Subtitle_1": "权限",
+    "Tabs_wallet_Subtitle_2": "用量",
+    "Tabs_wallet_Perm_Title": "用户名",
+    "Tabs_wallet_Perm_Student_1": "每日限用20条模型对话",
+    "Tabs_wallet_Perm_Student_2": "使用校园服务快捷命令",
+    "Tabs_wallet_Perm_Faculty_1": "无限制使用模型对话",
+    "Tabs_wallet_Perm_Faculty_2": "使用校园服务快捷命令",
+    "Tabs_wallet_User_Label0": "未知",
+    "Tabs_wallet_User_Label1": "教职工",
+    "Tabs_wallet_User_Label2": "附属医院教职工",
+    "Tabs_wallet_User_Label3": "博士生",
+    "Tabs_wallet_User_Label4": "学生",
+    "Tabs_wallet_User_Label5": "集体账号",
+    "Tabs_wallet_User_Label6": "贵宾",
+    "Tabs_wallet_User_Label7": "医学院教职工",
+    "Tabs_wallet_Usage_Title": "今日默认模型用量：",
+    "Tabs_wallet_Usage_Head": "已用",
+    "Tabs_wallet_Usage_End": "条"
+}

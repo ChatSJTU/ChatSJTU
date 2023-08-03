@@ -65,7 +65,7 @@ function TabWallet ({ onCloseTab }) {
 
     const UsageDisplay=(
         <Typography>
-            <Title level={4} style={{marginTop:'25px'}}>{t('Tabs_wallet_Subtitle_1')}</Title>
+            <Title level={4} style={{marginTop:'25px'}}>{t('Tabs_wallet_Subtitle_2')}</Title>
             <Card style={{marginTop: '25px'}}>
                 {t('Tabs_wallet_Usage_Title')} 
                     <Progress percent={(100 * user?.usagecount / user?.usagelimit) || 0} 

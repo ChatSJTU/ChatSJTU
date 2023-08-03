@@ -253,9 +253,9 @@ async def send_message(request, session_id):
                     session.is_renamed = True
                     await session.asave()
 
-        # 增加次数，返回服务端生成的回复消息
-        # if isStu and not ai_message_obj.flag_qcmd:
-        #     await increase_usage(user=request.user)
+        #增加次数，返回服务端生成的回复消息
+        if isStu and not ai_message_obj.flag_qcmd:
+            await increase_usage(user=request.user)
 
         return JsonResponse(
             {

@@ -1,4 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
+import { useTranslation } from 'react-i18next';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
@@ -28,6 +29,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         second: '2-digit',
     };
 
+    let { t } = useTranslation('LeftSidebar');
+
     useEffect(() => {
         if (isModalInputOpen && modalInputRef.current) {
             setTimeout(() => {
@@ -47,7 +50,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             setUser(userData);
         } catch (error) {
             if (error.response.status === 404){
-                message.error('用户不存在',2);
+                message.error(t('LeftSidebar_FetchUsernameError'),2);
             }
         }
     };
@@ -96,9 +99,9 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         } catch (error) {
             console.error('Failed to delete session:', error);
             if (error.response.data) {
-                message.error(`删除会话失败：${error.response.data.error}`, 2);
+                message.error((t('LeftSidebar_DeleteSessionError') + ':' + `${error.response.data.error}`), 2);
             } else {
-                message.error('删除会话失败', 2);
+                message.error(t('LeftSidebar_DeleteSessionError'), 2);
             }
         }
     };
@@ -125,16 +128,16 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 session.id === selectedSession.id ? { ...session, name: newSessionName} : session
             );
             setSessions(updatedSessions);
-            message.success('修改会话名成功')
+            message.success(t('LeftSidebar_RenameSessionSuccess'))
             setModalInputOpen(false);
         } catch (error) {
             if (error.response.data && error.response.status === 404){
-                message.error(`修改会话名失败：${error.response.data.error}`, 2);
+                message.error(t('LeftSidebar_RenameSessionError') + ':' + `${error.response.data.error}`, 2);
                 setModalInputOpen(false);
             } else if (error.response.data) {
-                message.error(`修改会话名失败：${error.response.data.error}`, 2);
+                message.error(t('LeftSidebar_RenameSessionError') + ':' + `${error.response.data.error}`, 2);
             } else {
-                message.error('修改会话失败')
+                message.error(t('LeftSidebar_RenameSessionError'))
             }
         } finally {
             setModalInputValue('');
@@ -174,18 +177,18 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
             <Header className='Sider-content'>
                 <Typography style={{margin:'0px 25px'}}>
                     <Title className='chat-sjtu-title' level={2}>Chat SJTU</Title>
-                    <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>交大人的 AI 助手</Paragraph>
+                    <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>{t('LeftSidebar_Subtitle')}</Paragraph>
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>
                     <Col span={12} className='button-col'>
                         <Button block size="large" type="text" icon={<RocketOutlined />} disabled>
-                            伴我学
+                            {t('LeftSidebar_VoiceControl_Btn')}
                         </Button>
                     </Col>
                     <Col span={12} className='button-col'>
                         <Button block size="large" type="text" icon={<PlusCircleOutlined/>}
                             onClick={handleCreateSession}>
-                            新的会话
+                            {t('LeftSidebar_NewSession_Btn')}
                         </Button>
                     </Col>
                 </Row>
@@ -221,8 +224,10 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                             onClick= {() => setModalInputOpen(true)}
                                         />
                                         <Modal
-                                            title="修改会话名称"
+                                            title={t('LeftSidebar_Modal_Title')}
                                             open={isModalInputOpen}
+                                            okText={t('LeftSidebar_ModalOK')}
+                                            cancelText={t('LeftSidebar_ModalCancel')}
                                             onOk={(event) => {
                                                 handleRenameSession(event,session.id,modalInputValue);
                                             }}
@@ -258,7 +263,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 fontSize: '12px'
                                 }}
                             >
-                                <span>{selectedSession?.id === session.id ? selectedSession.rounds : session.rounds} 轮对话</span>
+                                <span>{selectedSession?.id === session.id ? selectedSession.rounds : session.rounds} {t('LeftSidebar_CountSession')}</span>
                                 <span>{selectedSession?.id === session.id ? new Date(selectedSession.updated_time).toLocaleString('default', timeOptions) : new Date(session.updated_time).toLocaleString('default', timeOptions)}</span>
                             </div>
                         </div>
@@ -276,12 +281,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 <Menu>
                                     <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
                                     <Menu.Item icon={<WalletOutlined />} key="1"
-                                        onClick={handleChangeComponent(6)}>账户信息</Menu.Item>
+                                        onClick={handleChangeComponent(6)}>{t('LeftSidebar_Account_Btn_Layer2')}</Menu.Item>
                                     <Menu.Item icon={<SettingOutlined />} key="2"
-                                        onClick={handleChangeComponent(5)}>偏好设置</Menu.Item>
+                                        onClick={handleChangeComponent(5)}>{t('LeftSidebar_Account_Btn_Layer3')}</Menu.Item>
                                     <Menu.Divider key="3"></Menu.Divider>
                                     <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="4"
-                                        onClick={onLogoutClick}>退出登录</Menu.Item>
+                                        onClick={onLogoutClick}>{t('LeftSidebar_Account_Btn_Layer4')}</Menu.Item>
                                 </Menu>
                             }
                         >
@@ -299,11 +304,11 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                         <Dropdown placement="topRight"
                             overlay={
                                     <Menu>
-                                        <Menu.Item icon={<CodeOutlined />} key="1" disabled>扩展开发</Menu.Item>
+                                        <Menu.Item icon={<CodeOutlined />} key="1" disabled>{t('LeftSidebar_Utils_Btn_Layer1')}</Menu.Item>
                                         <Menu.Item icon={<AlertOutlined />} key="2"
-                                            onClick={handleChangeComponent(3)}>免责声明</Menu.Item>
+                                            onClick={handleChangeComponent(3)}>{t('LeftSidebar_Utils_Btn_Layer2')}</Menu.Item>
                                         <Menu.Item icon={<InfoCircleOutlined />} key="3"
-                                            onClick={handleChangeComponent(2)}>关于我们</Menu.Item>
+                                            onClick={handleChangeComponent(2)}>{t('LeftSidebar_Utils_Btn_Layer3')}</Menu.Item>
                                     </Menu>
                                 }
                         >

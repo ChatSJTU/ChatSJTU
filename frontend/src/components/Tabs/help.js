@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
@@ -15,16 +16,18 @@ function TabHelp ({ onCloseTab }) {
         setLoaded(true);
     }, []);
 
+    let { t } = useTranslation('Tabs_help');
+
     return(
         <Layout style={{ height: '100%'}}>
             <Header className='Header' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2>帮助</h2>
+                    <h2>{t('Tabs_help_Title')}</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
                 <Typography>
                     <Title level={2} style={{fontFamily: "Trebuchet MS, Arial, sans-serif", marginTop:'25px'}}>
-                        欢迎使用 <span style={{ color: '#a72139' }}>Chat SJTU</span> !
+                        {t('Tabs_help_Subtitle_Head')} <span style={{ color: '#a72139' }}>{t('Tabs_help_Subtitle_Body')}</span> {t('Tabs_help_Subtitle_End')}
                         </Title>
                 </Typography>
             </Content>

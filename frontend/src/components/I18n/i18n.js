@@ -6,11 +6,16 @@ import LoginLayout_zh from '../../locales/zh-cn/LoginLayout.json';
 import Tabs_about_zh from '../../locales/zh-cn/Tabs_about.json';
 import Tabs_disclaimer_zh from '../../locales/zh-cn/Tabs_disclaimer.json';
 import Tabs_wallet_zh from '../../locales/zh-cn/Tabs_wallet.json';
+import Tabs_help_zh from '../../locales/zh-cn/Tabs_help.json';
+import Tabs_settings_zh from '../../locales/zh-cn/Tabs_settings.json';
 
 import LoginLayout_en from '../../locales/en-us/LoginLayout.json';
 import Tabs_about_en from '../../locales/en-us/Tabs_about.json';
 import Tabs_disclaimer_en from '../../locales/en-us/Tabs_disclaimer.json';
 import Tabs_wallet_en from '../../locales/en-us/Tabs_wallet.json';
+import Tabs_help_en from '../../locales/en-us/Tabs_help.json';
+import Tabs_settings_en from '../../locales/en-us/Tabs_settings.json';
+
 
 import { initReactI18next } from 'react-i18next'; 
 
@@ -21,13 +26,16 @@ const i18nResources = {
         Tabs_about: Tabs_about_en,
         Tabs_disclaimer: Tabs_disclaimer_en,
         Tabs_wallet: Tabs_wallet_en,
-        
+        Tabs_help: Tabs_help_en,
+        Tabs_settings: Tabs_settings_en,
     },
     zh: {
         LoginLayout: LoginLayout_zh,
         Tabs_about: Tabs_about_zh,
         Tabs_disclaimer: Tabs_disclaimer_zh,
         Tabs_wallet: Tabs_wallet_zh,
+        Tabs_help: Tabs_help_zh,
+        Tabs_settings: Tabs_settings_zh,
     }
 }
 

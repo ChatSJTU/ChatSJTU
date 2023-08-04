@@ -1,0 +1,15 @@
+{
+    "ChatBox_FetchMessageError": "请求消息记录失败",
+    "ChatBox_ReplyError": "回复生成失败",
+    "ChatBox_RetryError": "无可重试的消息",
+    "ChatBox_SendError": "发送消息不能为空",
+    "ChatBox_CopySuccess": "已复制到剪贴板",
+    "ChatBox_PreservedMessage": "系统提示",
+    "ChatBox_Tag_CampusCommand": "🎓校园服务快捷命令",
+    "ChatBox_Tag_Reply": "回答",
+    "ChatBox_Regenerate_Btn": "再次生成",
+    "ChatBox_Continue_Btn": "继续生成",
+    "ChatBox_Placeholder": "Shift+Enter 换行，Enter 发送，+ 触发自动补全，/ 触发校园服务快捷命令",
+    "ChatBox_ClearInput_Btn": "清空",
+    "ChatBox_SendInput_Btn": "发送"
+}

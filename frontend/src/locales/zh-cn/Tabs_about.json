@@ -1,0 +1,22 @@
+{
+    "Tabs_about_Header": "关于我们",
+    "Tabs_about_Title_1": "简介",
+    "Tabs_about_Intro_Head": "Chat SJTU 是由",
+    "Tabs_about_Intro_Body": "上海交通大学网络信息中心",
+    "Tabs_about_Intro_End": "指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。",
+    "Tabs_about_Title_2": "开发团队",
+    "Tabs_about_Dev1_Desc": "电院，全栈开发",
+    "Tabs_about_Dev2_Desc": "电院，全栈开发",
+    "Tabs_about_Dev3_Desc": "电院，后端开发",
+    "Tabs_about_Dev4_Desc": "电院，前端开发",
+    "Tabs_about_Dev5_Desc": "密院，模型与插件开发",
+    "Tabs_about_Dev6_Desc": "安泰，模型与插件开发",
+    "Tabs_about_Dev7_Desc": "电院，部署与测试开发",
+    "Tabs_about_Dev8_Desc": "生科，国际化开发",
+    "Tabs_about_Title_3": "鸣谢",
+    "Tabs_about_Ackn_Head": "特别感谢",
+    "Tabs_about_Ackn_End": "等学长在开发过程中的帮助",
+    "Tabs_about_Title_4": "联系我们",
+    "Tabs_about_Contact_Head": "您可以通过邮件",
+    "Tabs_about_Contact_End": "联系我们"
+}

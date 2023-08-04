@@ -1,0 +1,19 @@
+{
+    "LeftSidebar_FetchUsernameError": "User does not exist",
+    "LeftSidebar_DeleteSessionError": "Failed to delete session",
+    "LeftSidebar_RenameSessionError": "Failed to rename session",
+    "LeftSidebar_RenameSessionSuccess": "Session renamed successfully",
+    "LeftSidebar_Subtitle": "AI assistant for SJTUers",
+    "LeftSidebar_VoiceControl_Btn": "Gcourse",
+    "LeftSidebar_NewSession_Btn": "New talk",
+    "LeftSidebar_Modal_Title": "Rename talk",
+    "LeftSidebar_ModalOK": "Confirm",
+    "LeftSidebar_ModalCancel": "Cancel",
+    "LeftSidebar_Account_Btn_Layer2": "Account",
+    "LeftSidebar_Account_Btn_Layer3": "Settings",
+    "LeftSidebar_Account_Btn_Layer4": "Logout",
+    "LeftSidebar_Utils_Btn_Layer1": "Plugins development",
+    "LeftSidebar_Utils_Btn_Layer2": "Disclaimer",
+    "LeftSidebar_Utils_Btn_Layer3": "About",
+    "LeftSidebar_CountSession": "Rounds"
+}

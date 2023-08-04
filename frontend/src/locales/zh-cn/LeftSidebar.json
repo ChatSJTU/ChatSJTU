@@ -1,0 +1,19 @@
+{
+    "LeftSidebar_FetchUsernameError": "用户不存在",
+    "LeftSidebar_DeleteSessionError": "删除会话失败",
+    "LeftSidebar_RenameSessionError": "修改会话名失败",
+    "LeftSidebar_RenameSessionSuccess": "修改会话名成功",
+    "LeftSidebar_Subtitle": "交大人的 AI 助手",
+    "LeftSidebar_VoiceControl_Btn": "伴我学",
+    "LeftSidebar_NewSession_Btn": "新的会话",
+    "LeftSidebar_Modal_Title": "修改会话名称",
+    "LeftSidebar_ModalOK": "确定",
+    "LeftSidebar_ModalCancel": "取消",
+    "LeftSidebar_Account_Btn_Layer2": "账户信息",
+    "LeftSidebar_Account_Btn_Layer3": "偏好设置",
+    "LeftSidebar_Account_Btn_Layer4": "退出登录",
+    "LeftSidebar_Utils_Btn_Layer1": "扩展开发",
+    "LeftSidebar_Utils_Btn_Layer2": "免责声明",
+    "LeftSidebar_Utils_Btn_Layer3": "关于我们",
+    "LeftSidebar_CountSession": "轮对话"
+}

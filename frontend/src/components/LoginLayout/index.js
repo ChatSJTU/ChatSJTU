@@ -45,7 +45,7 @@ function LoginLayout({ handleLogin, changeLanguage }) {
     }
 
 
-    let { t } = useTranslation();
+    let { t } = useTranslation('LoginLayout');
 
     return (
         <Layout style={{ height: '100vh', background: '#FFF', position: 'relative' }}>

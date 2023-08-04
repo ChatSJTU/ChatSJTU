@@ -1,0 +1,15 @@
+{
+    "ChatBox_FetchMessageError": "Failed to query message log",
+    "ChatBox_ReplyError": "Failed to generate response",
+    "ChatBox_RetryError": "No available message to be re-sent",
+    "ChatBox_SendError": "Message cannot be empty",
+    "ChatBox_CopySuccess": "Copied to clipboard",
+    "ChatBox_PreservedMessage": "System prompt",
+    "ChatBox_Tag_CampusCommand": "🎓Campus service quick command",
+    "ChatBox_Tag_Reply": "Reply",
+    "ChatBox_Regenerate_Btn": "Regenerate",
+    "ChatBox_Continue_Btn": "Continue",
+    "ChatBox_Placeholder": "Shift+Enter for line break, Enter for send, + for auto-fill, / for campus service quick command",
+    "ChatBox_ClearInput_Btn": "Clear",
+    "ChatBox_SendInput_Btn": "Send"
+}

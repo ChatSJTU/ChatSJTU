@@ -12,5 +12,8 @@ class MessageSerializer(serializers.ModelSerializer):
             'content',
             'flag_qcmd',
             'use_model',
-            'time'
+            'time',
+            'interrupted',
+            'generation',
+            'regenerated'
             ]

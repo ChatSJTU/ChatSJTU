@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
+import { useTranslation } from 'react-i18next';
 
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
@@ -33,6 +34,8 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
 
+    const { t } = useTranslation('ChatBox');
+
     const timeOptions = {
         year: 'numeric',
         month: '2-digit',
@@ -42,12 +45,29 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         second: '2-digit',
     };
 
-    //发送消息自动滚动到底部
     useEffect(() => {
+        //发送消息自动滚动到底部
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
         }
     }, [messages]);
+
+    //增加字段说明结果编号（面向连续重新生成）
+    // const calcRegenIndex = (data) => {
+    //     console.log(data);
+    //     let regenIndex = 0;
+    //     for(let i=1; i<data.length; i++){
+    //         if (data[i].sender !== 0) data[i].regenInfo = '';
+    //         else if (data[i].regenerated || data[i-1].regenerated) {
+    //             if (!data[i-1].regenerated) regenIndex = 0;
+    //             regenIndex++;
+    //             data[i].regenInfo = `回答 ${regenIndex}`;
+    //         }
+    //         else data[i].regenInfo = '';
+    //         console.log(`${i}  ${data[i].regenInfo}`)
+    //     }
+    //     return data;
+    // }
 
     useEffect(() => {
         if (selectedSession) {
@@ -71,7 +91,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
-            console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
+            // console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
           }
         }
         
@@ -152,12 +172,12 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         } catch (error) {
             console.error('Failed to send message:', error);
             if (error.response.data && error.response.status === 404) {
-                message.error(`回复生成失败：${error.response.data.error}`, 2);
+                message.error(t('ChatBox_ReplyError') + ':' + `${error.response.data.error}`, 2);
             } else if (error.response.data.error) {
                 showWarning(error.response.data.error);
                 setRetryMessage(userMessage);
             } else {
-                message.error('回复生成失败', 2);
+                message.error(t('ChatBox_ReplyError'), 2);
             }
 
             setMessages((prevMessages) =>
@@ -173,7 +193,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         if (retryMessage) {
           await sendUserMessage(retryMessage);
         } else {
-          message.error('无可重试的消息', 2);
+          message.error(t('ChatBox_RetryError'), 2);
         }
     };    
 
@@ -186,7 +206,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 sender: 2,
                 content: content,
                 // time: time_now.toLocaleString('default', timeOptions),
-                time: '系统提示'
+                time: t('ChatBox_PreservedMessage')
             },
         ]);
     }
@@ -222,14 +242,14 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
             setRetryMessage(null);
             sendUserMessage();
         } else {
-            message.error('发送消息不能为空', 2);
+            message.error(t('ChatBox_SendError'), 2);
         }
       };
 
     //复制
     const handleCopy = (content) => {
         copy(content);
-        message.success('已复制到剪贴板', 2);
+        message.success(t('ChatBox_CopySuccess'), 2);
       };
 
     //快捷指令、快捷补全提示菜单
@@ -332,8 +352,9 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         <List
             style={{ flex: 1, overflow: 'auto'}}
             dataSource={messages}
-            renderItem={item => (
+            renderItem={(item, index) => (
             <div ref={messagesEndRef}>
+                { !(item.sender === 1 && (item.regenerated || item.interrupted)) &&
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
                     style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
@@ -346,11 +367,13 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
                                     <div>{item.time}</div>
                                     {(item.sender === 0 && item.flag_qcmd) &&
-                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>🎓校园服务快捷命令</Tag>
+                                        <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>{t('ChatBox_Tag_CampusCommand')}</Tag>
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
+                                    {(item.sender === 0 && !item.flag_qcmd && item.generation !== 0) &&
+                                        <div style={{marginLeft:'7px'}}>{t('ChatBox_Tag_Reply')} {`${item.generation}`}</div> }
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
                                         icon={<CopyOutlined />}
@@ -362,7 +385,20 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                         />
                         <div style={{ width: '100%', marginTop: 10}}>
                             {item.sender === 0 && 
-                                <MarkdownRenderer content={item.content}/>}
+                                <>
+                                    <MarkdownRenderer content={item.content}/>
+                                    {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
+                                        <Space style={{marginTop: 10}} size="middle">
+                                            {item.interrupted &&
+                                                <Button icon={<DoubleRightOutlined />}
+                                                    onClick={() => sendUserMessage('continue')}>{t('ChatBox_Continue_Btn')}</Button>
+                                            }
+                                            <Button icon={<ReloadOutlined />}
+                                                onClick={() => sendUserMessage('%regenerate%')}>{t('ChatBox_Regenerate_Btn')}</Button>
+                                        </Space>
+                                    }
+                                </>
+                            }
                             {item.sender === 1 &&
                                 <div style={{ whiteSpace: 'pre-wrap' }}>
                                     {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
@@ -384,6 +420,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                     </div>
                     <div/>
                 </List.Item>
+                }
             </div>)}
         />
         
@@ -418,7 +455,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                 {handleSend();}
                         }
                     }}
-                    placeholder="Shift+Enter 换行，Enter 发送，+ 触发自动补全，/ 触发校园服务快捷命令"
+                    placeholder={t('ChatBox_Placeholder')}
                     style={{resize: 'none', fontSize:'16px', width: '100%'}}
                 /></div>
             </Dropdown>
@@ -431,11 +468,11 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 ]}/>
                 <Space>
                     <Button size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
-                        清空
+                        {t('ChatBox_ClearInput_Btn')}
                     </Button>
                     <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}
                         loading={isWaiting}>
-                        {isFold || isFoldMobile ? '':'发送'}
+                        {isFold || isFoldMobile ? '':t('ChatBox_SendInput_Btn')}
                     </Button>
                 </Space>
             </div>

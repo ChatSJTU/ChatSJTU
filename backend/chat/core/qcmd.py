@@ -5,7 +5,7 @@ from .plugins.libraryPlugin import LibraryPlugin
 from .plugins.summerInfoPlugin import SummerInfoPlugin
 
 # 支持快捷命令的插件列表
-qcmd_plugins_list = [
+qcmd_plugins_list: list[StandardPlugin] = [
     SjmcPlugin(),
     CanteenPlugin(),
     LibraryPlugin(),
@@ -24,12 +24,8 @@ def check_and_exec_qcmds(msg:str):
         response(str): 若触发，返回结果
     """
     for event in qcmd_plugins_list:
-        event : StandardPlugin
-        try:
-            if event.qcmd_trigger(msg):
-                flag_success, response = event.qcmd_response(msg)
-                return True, flag_success, response
-        except:
-            return False, False, '无插件匹配'
+        if event.qcmd_trigger(msg):
+            flag_success, response = event.qcmd_response(msg)
+            return True, flag_success, response
     return False, False, '无插件匹配'
 

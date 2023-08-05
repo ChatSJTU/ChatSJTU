@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Divider, Button, Card, Avatar } from 'antd';
 import { CloseOutlined, GithubOutlined } from '@ant-design/icons';
 import './style.css'
@@ -15,20 +16,22 @@ function TabAbout ({ onCloseTab }) {
         setLoaded(true);
     }, []);
 
+    let { t } = useTranslation('Tabs_about');
+
     return(
         <Layout style={{ height: '100%'}}>
             <Header className='Header' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2>关于我们</h2>
+                    <h2>{t('Tabs_about_Header')}</h2>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
                 <Typography>
-                    <Title level={4} style={{marginTop:'25px'}}>简介</Title>
+                    <Title level={4} style={{marginTop:'25px'}}>{t('Tabs_about_Title_1')}</Title>
                     <Paragraph>
-                        Chat SJTU 是由<Link href="https://net.sjtu.edu.cn/" target="_blank">上海交通大学网络信息中心</Link>指导，学生团队开发的自然语言处理工具。由人工智能技术驱动，旨在为交大人的学习生活提供便利。
+                        {t('Tabs_about_Intro_Head')}<Link href="https://net.sjtu.edu.cn/" target="_blank">{t('Tabs_about_Intro_Body')}</Link>{t('Tabs_about_Intro_End')}
                     </Paragraph>
                     <Divider/>
-                    <Title level={4}>开发团队</Title>
+                    <Title level={4}>{t('Tabs_about_Title_2')}</Title>
                         <div className="developer-card-container">
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
@@ -38,7 +41,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/UNIkeEN" />}
                                     title="UNIkeEN"
-                                    description="电院，全栈开发"
+                                    description={t('Tabs_about_Dev1_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -49,18 +52,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/1357310795" />}
                                     title="Teruteru"
-                                    description="电院，全栈开发"
-                                />
-                            </Card>
-                            <Card hoverable className="developer-card" size="small"
-                                actions={[
-                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Musicminion"><GithubOutlined/></a>,
-                                    <span />
-                                ]}>
-                                <Meta
-                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
-                                    title="Musicminion"
-                                    description="生科，参与前端开发"
+                                    description={t('Tabs_about_Dev2_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -71,7 +63,18 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ToolmanP" />}
                                     title="ToolmanP"
-                                    description="电院，参与后端开发"
+                                    description={t('Tabs_about_Dev3_Desc')}
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Ichigo2315"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Ichigo2315" />}
+                                    title="Ichigo2315"
+                                    description={t('Tabs_about_Dev4_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -82,7 +85,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/VegetablesKimi" />}
                                     title="VegetablesKimi"
-                                    description="密院，模型与插件开发"
+                                    description={t('Tabs_about_Dev5_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -93,7 +96,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/xjxyys" />}
                                     title="xjxyys"
-                                    description="安泰，模型与插件开发"
+                                    description={t('Tabs_about_Dev6_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -104,18 +107,29 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ff98sha" />}
                                     title="ff98sha"
-                                    description="电院，开发与部署指导"
+                                    description={t('Tabs_about_Dev7_Desc')}
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Musicminion"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
+                                    title="Musicminion"
+                                    description={t('Tabs_about_Dev8_Desc')}
                                 />
                             </Card>
                         </div>
-                    <Title level={4}>鸣谢</Title>
+                    <Title level={4}>{t('Tabs_about_Title_3')}</Title>
                     <Paragraph>
-                        特别感谢 <Text code>@topologica1</Text>、<Text code>@boar</Text> 等学长在开发过程中的帮助。
+                        {t('Tabs_about_Ackn_Head')}<Text code>@topologica1</Text>、<Text code>@boar</Text>{t('Tabs_about_Ackn_End')}
                     </Paragraph>
                     <Divider/>
-                    <Title level={4}>联系我们</Title>
+                    <Title level={4}>{t('Tabs_about_Title_4')}</Title>
                     <Paragraph>
-                        您可以通过邮件 <Link href="mailto:gpt@sjtu.edu.cn">gpt@sjtu.edu.cn</Link> 联系我们。
+                        {t('Tabs_about_Contact_Head')}<Link href="mailto:gpt@sjtu.edu.cn">gpt@sjtu.edu.cn</Link>{t('Tabs_about_Contact_End')}
                     </Paragraph>
                 </Typography>
             </Content>

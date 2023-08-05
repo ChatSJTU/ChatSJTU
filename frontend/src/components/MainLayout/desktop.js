@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {Layout} from 'antd';
 
 import ChatBox from '../ChatBox';
@@ -17,6 +18,8 @@ const MainLayout = ({handleLogout}) => {
     const [selectedSession, setSelectedSession] = useState(null);
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
+
+    const { t } = useTranslation('MainLayout');
 
     //选中会话（在LeftSider中）
     const handleSelectSession = (session) => {
@@ -98,6 +101,7 @@ const MainLayout = ({handleLogout}) => {
                                 onSelectSession={handleSelectSession}
                                 onLogoutClick={handleLogout}
                                 onChangeComponent={handleChangeComponent}
+                                onChangeSessionInfo={handleChangeSessionInfo}
                                 />
                         </Sider>
                         <Layout>
@@ -120,7 +124,7 @@ const MainLayout = ({handleLogout}) => {
                 width: '100%',
                 textAlign: 'center',
                 }}>
-                <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>版权所有 © 2023 上海交通大学网络信息中心 沪交ICP备20230139<br/>技术支持：ChatSJTU 学生开发团队 <a href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">联系我们</a></p>
+                <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>{t('MainLayout_Footer_Copyright')}<br/>{t('MainLayout_Footer_TechSupport')} <a href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">{t('MainLayout_Footer_ContactLinkText')}</a></p>
             </div>
         </Layout>
     );

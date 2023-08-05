@@ -11,5 +11,7 @@
     "ChatBox_Continue_Btn": "Continue",
     "ChatBox_Placeholder": "Shift+Enter for line break, Enter for send, + for auto-fill, / for campus service quick command",
     "ChatBox_ClearInput_Btn": "Clear",
-    "ChatBox_SendInput_Btn": "Send"
+    "ChatBox_SendInput_Btn": "Send",
+    "ChatBox_Retry_Btn": "Retry",
+    "ChatBox_List_Locale": "No data"
 }

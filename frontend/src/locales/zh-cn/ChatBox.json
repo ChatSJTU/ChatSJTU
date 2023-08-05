@@ -11,5 +11,7 @@
     "ChatBox_Continue_Btn": "继续生成",
     "ChatBox_Placeholder": "Shift+Enter 换行，Enter 发送，+ 触发自动补全，/ 触发校园服务快捷命令",
     "ChatBox_ClearInput_Btn": "清空",
-    "ChatBox_SendInput_Btn": "发送"
+    "ChatBox_SendInput_Btn": "发送",
+    "ChatBox_Retry_Btn": "重试",
+    "ChatBox_List_Locale": "暂无数据"
 }

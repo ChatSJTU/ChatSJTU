@@ -413,7 +413,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                 <Space>
                                     {item.content}
                                     <Button icon={<ReloadOutlined />} onClick={handleRetry}
-                                        >重试</Button>
+                                        >{t('ChatBox_Retry_Btn')}</Button>
                                 </Space>}/>
                             }
                         </div>

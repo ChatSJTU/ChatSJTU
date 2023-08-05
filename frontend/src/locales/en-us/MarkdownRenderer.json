@@ -1,0 +1,9 @@
+{
+    "MarkdownRenderer_Run_Btn": "Run",
+    "MarkdownRenderer_Copy_Btn": "Copy",
+    "MarkdownRenderer_Popconfirm_Title": "Confirm",
+    "MarkdownRenderer_Popconfirm_btnOK": "Confirm",
+    "MarkdownRenderer_Popconfirm_btnCancel": "Cancel",
+    "MarkdownRenderer_Popconfirm_Description": "This operation will open a new page to run. Please ensure the security of the HTML code by yourself.",
+    "MarkdownRenderer_CopySuccess": "Copied to clipboard"
+}

@@ -1,0 +1,9 @@
+{
+    "MarkdownRenderer_Run_Btn": "运行",
+    "MarkdownRenderer_Copy_Btn": "复制",
+    "MarkdownRenderer_Popconfirm_Title": "确认",
+    "MarkdownRenderer_Popconfirm_btnOK": "确定",
+    "MarkdownRenderer_Popconfirm_btnCancel": "取消",
+    "MarkdownRenderer_Popconfirm_Description": "此操作会唤起新页面运行，请自行确保HTML代码的安全性",
+    "MarkdownRenderer_CopySuccess": "代码已复制到剪贴板"
+}

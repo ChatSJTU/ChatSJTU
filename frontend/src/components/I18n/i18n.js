@@ -11,6 +11,7 @@ import Tabs_help_zh from '../../locales/zh-cn/Tabs_help.json';
 import Tabs_settings_zh from '../../locales/zh-cn/Tabs_settings.json';
 import ChatBox_zh from '../../locales/zh-cn/ChatBox.json';
 import MainLayout_zh from '../../locales/zh-cn/MainLayout.json';
+import MarkdownRenderer_zh from '../../locales/zh-cn/MarkdownRenderer.json';
 
 import LoginLayout_en from '../../locales/en-us/LoginLayout.json';
 import LeftSidebar_en  from '../../locales/en-us/LeftSidebar.json';
@@ -21,6 +22,7 @@ import Tabs_help_en from '../../locales/en-us/Tabs_help.json';
 import Tabs_settings_en from '../../locales/en-us/Tabs_settings.json';
 import ChatBox_en from '../../locales/en-us/ChatBox.json';
 import MainLayout_en from '../../locales/en-us/MainLayout.json';
+import MarkdownRenderer_en from '../../locales/en-us/MarkdownRenderer.json';
 
 
 
@@ -37,7 +39,8 @@ const i18nResources = {
         Tabs_help: Tabs_help_en,
         Tabs_settings: Tabs_settings_en,
         ChatBox: ChatBox_en,
-        MainLayout: MainLayout_en
+        MainLayout: MainLayout_en,
+        MarkdownRenderer: MarkdownRenderer_en
     },
     zh: {
         LoginLayout: LoginLayout_zh,
@@ -48,7 +51,8 @@ const i18nResources = {
         Tabs_help: Tabs_help_zh,
         Tabs_settings: Tabs_settings_zh,
         ChatBox: ChatBox_zh,
-        MainLayout: MainLayout_zh
+        MainLayout: MainLayout_zh,
+        MarkdownRenderer: MarkdownRenderer_zh
     }
 }
 

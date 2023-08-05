@@ -133,7 +133,7 @@ function TabSettings({ onCloseTab }) {
                     <Card style={{ marginTop: '25px' }} >
                         <Row>
                             <Col span={18} className="setting-title">
-                                <div><span>语言（language）</span></div>
+                                <div><span>语言 (Language)</span></div>
                                 {/* <div>选择您的界面语言</div> */}
                             </Col>
                             <Col span={6} className="setting-item">

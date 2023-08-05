@@ -12,7 +12,7 @@ const { Header, Content } = Layout;
 const { Title } = Typography;
 const { confirm } = Modal;
 
-function TabSettings({ onCloseTab }) {
+function TabSettings({ onCloseTab, changeLanguage}) {
 
     const [loaded, setLoaded] = useState(true);
     const [settings, setSettings] = useState(null);
@@ -79,14 +79,6 @@ function TabSettings({ onCloseTab }) {
         return 'zh-CN';
     }
 
-    const handleLanguageChange = (value) => {
-        if (value === 'zh-CN') {
-            i18n.changeLanguage('zh');
-        }
-        else if (value === 'en-US') {
-            i18n.changeLanguage('en');
-        }
-    }
     // 通用Modal 生成函数
     const showConfirmModal = ({ title, content, onOk }) => {
         confirm({
@@ -142,7 +134,7 @@ function TabSettings({ onCloseTab }) {
                                     style={{
                                         width: 90,
                                     }}
-                                    onChange={handleLanguageChange}
+                                    onChange={changeLanguage}
                                     options={[
                                         {
                                             value: 'zh-CN',

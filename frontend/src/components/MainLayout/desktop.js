@@ -14,7 +14,7 @@ import './index.css'
 
 const { Content, Sider, Footer } = Layout;
 
-const MainLayout = ({handleLogout}) => {
+const MainLayout = ({handleLogout, changeLanguage}) => {
     const [selectedSession, setSelectedSession] = useState(null);
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -49,7 +49,7 @@ const MainLayout = ({handleLogout}) => {
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>
     ];
 

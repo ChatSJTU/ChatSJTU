@@ -37,11 +37,13 @@ function LeftSidebar ({ sessions, setSessions, selectedSession, onSelectSession,
                 modalInputRef.current.focus();
             },0);
         }
+    }, [isModalInputOpen]);
+
+    useEffect(() => {
         setLoaded(true);
         fetchSessions();
         fetchUserName();
-    }, [isModalInputOpen]);
-    
+    }, [])
 
     //获取登录用户名称
     const fetchUserName = async () => {

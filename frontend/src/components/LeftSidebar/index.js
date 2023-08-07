@@ -91,6 +91,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                     // 如果删除的不是最后一个会话，则选择下一个会话
                     nextSelectedSession = sessions[sessionIndex + 1];
                     onSelectSession(nextSelectedSession); // 更新选定的会话
+                    handleScrollMenu(nextSelectedSession.id);
                 } else if (sessionIndex > 0) {
                     // 如果删除的是最后一个会话且列表中还有其他会话，则选择上一个会话
                     nextSelectedSession = sessions[sessionIndex - 1];
@@ -99,6 +100,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                     handleCreateSession(); // 如果会话列表为空，自动创建新会话
                     }
                 }
+
         } catch (error) {
             console.error('Failed to delete session:', error);
             if (error.response.data) {
@@ -116,6 +118,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
             const newSession = response.data;
             fetchSessions();  
             onSelectSession(newSession); // 进入新创建的会话
+            handleScrollMenu(newSession.id,500);
         } catch (error) {
             console.error('Failed to create session:', error);
         }
@@ -170,15 +173,14 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
     //     }
     // }, [sessions]);
 
-    const handleItemScroll = (index) => {
-        // console.log(`index: ${index}`);
-        let curSession = document.getElementById(`active_session_${index}`)
-        if(curSession) {
-            setTimeout(() => {
-                curSession.scrollIntoView({behavior: 'smooth', block: "center"});
-            },1);
-        }
+    const handleScrollMenu = (index,timeout = 100) => {
+        setTimeout(
+            () => {
+            let curSession = document.getElementById(`active_session_${index}`);
+            if(curSession) curSession.scrollIntoView({behavior: 'smooth', block: "center"});
+        },timeout)
     };
+        
 
     return (
         <Layout style={{ height: '100%'}}>
@@ -209,7 +211,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                             key={session.id}
                             style={{margin:'15px 0px', height:'auto'}}
                             onClick={() => {
-                                    handleItemScroll(session.id);
+                                    handleScrollMenu(session.id);
                                     onSelectSession(session);
                                 }
                             }>

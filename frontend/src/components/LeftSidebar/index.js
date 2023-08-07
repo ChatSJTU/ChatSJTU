@@ -1,18 +1,19 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect, useContext} from 'react';
 import { useTranslation } from 'react-i18next';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
 import { request } from "../../services/request";
 import { fetchUserProfile } from '../../services/user';
+import { SessionContext } from '../../contexts/SessionContext';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
-function LeftSidebar ({ sessions, setSessions, selectedSession, onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
+function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
     
-    // const [sessions, setSessions] = useState([]);
+    const {sessions, setSessions, selectedSession} = useContext(SessionContext);
     const [user, setUser] = useState(null);
     const [loaded, setLoaded] = useState(true);
     const [isModalInputOpen, setModalInputOpen] = useState(false);

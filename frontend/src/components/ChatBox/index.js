@@ -1,6 +1,6 @@
 //主要组件，聊天列表和发送文本框
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
@@ -11,13 +11,16 @@ import { useTranslation } from 'react-i18next';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
+import { SessionContext } from '../../contexts/SessionContext';
 
 import './index.css'
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 
-function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
+function ChatBox({ onChangeSessionInfo, curRightComponent}) {
+
+    const {selectedSession} = useContext(SessionContext);
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数

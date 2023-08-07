@@ -10,6 +10,7 @@ import TabDisclaimers from '../Tabs/disclaimers';
 import TabHelp from '../Tabs/help';
 import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
+import { SessionContext } from '../../contexts/SessionContext';
 
 import './index.css'
 
@@ -38,10 +39,12 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
 
     //修改会话信息
     const handleChangeSessionInfo = (targetId, newData) => {
-        const updatedSessions = sessions.map(session =>
-            session.id === targetId ? { ...session, ...newData} : session
-        );
-        setSessions(updatedSessions);
+        setSessions((prevSessions) => {
+            const updatedSessions = prevSessions.map(session =>
+                session.id === targetId ? { ...session, ...newData} : session
+            );
+            return updatedSessions;
+        });
         if (targetId === selectedSession.id) {
             setSelectedSession((prevSession) => ({
                 ...prevSession,
@@ -53,7 +56,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo}/>,
+        <ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
@@ -80,47 +83,52 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
     };
 
     return (
-        <Layout className="background fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <Header style={{
-                backgroundColor: '#FFF',
-                width: '100%',
-                zIndex: 2,
-                borderBottom: '1px solid #bbbbbb',
+        <SessionContext.Provider 
+            value={{
+                sessions,
+                setSessions,
+                selectedSession,
+                setSelectedSession,
             }}>
-                <Button onClick={toggleSider}>
-                    <MenuOutlined />
-                </Button>
-            </Header>
-            <Layout className="center-box" style={{ flex: 1, overflow: 'hidden', position: 'relative'}}>
-                <Sider className='Sider' collapsed={isSiderCollapsed} onCollapse={toggleSider} width="100%" collapsedWidth="0" style={{
-                    height: '100%', position: 'absolute', zIndex: isSiderCollapsed ? 1 : 2 }}>
-                    <LeftSidebar 
-                        sessions={sessions}
-                        setSessions={setSessions}
-                        selectedSession={selectedSession} 
-                        onSelectSession={handleSelectSession}
-                        onLogoutClick={handleLogout}
-                        onChangeComponent={handleChangeComponent}
-                        onChangeSessionInfo={handleChangeSessionInfo} 
-                        />
-                </Sider>
-                <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
-                    {selectedSession  && 
-                        <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                            <ChatBox selectedSession={selectedSession} onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
-                        </div>}
-                    {curRightComponent !== 1 && componentList[curRightComponent]}
-                </Content>
-            </Layout>
-            <Footer style={{
-                textAlign: 'center', 
-                height: 'fit-content', 
-                padding:'0px',
-                borderTop: '1px solid #bbbbbb',
+            <Layout className="background fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+                <Header style={{
+                    backgroundColor: '#FFF',
+                    width: '100%',
+                    zIndex: 2,
+                    borderBottom: '1px solid #bbbbbb',
                 }}>
-                    <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>{t('MainLayout_Footer_Copyright')}<br/>{t('MainLayout_Footer_TechSupport')} <a href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">{t('MainLayout_Footer_ContactLinkText')}</a></p>
-            </Footer>
-        </Layout>
+                    <Button onClick={toggleSider}>
+                        <MenuOutlined />
+                    </Button>
+                </Header>
+                <Layout className="center-box" style={{ flex: 1, overflow: 'hidden', position: 'relative'}}>
+                    <Sider className='Sider' collapsed={isSiderCollapsed} onCollapse={toggleSider} width="100%" collapsedWidth="0" style={{
+                        height: '100%', position: 'absolute', zIndex: isSiderCollapsed ? 1 : 2 }}>
+                        <LeftSidebar 
+                            onSelectSession={handleSelectSession}
+                            onLogoutClick={handleLogout}
+                            onChangeComponent={handleChangeComponent}
+                            onChangeSessionInfo={handleChangeSessionInfo} 
+                            />
+                    </Sider>
+                    <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
+                        {selectedSession  && 
+                            <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
+                                <ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
+                            </div>}
+                        {curRightComponent !== 1 && componentList[curRightComponent]}
+                    </Content>
+                </Layout>
+                <Footer style={{
+                    textAlign: 'center', 
+                    height: 'fit-content', 
+                    padding:'0px',
+                    borderTop: '1px solid #bbbbbb',
+                    }}>
+                        <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>{t('MainLayout_Footer_Copyright')}<br/>{t('MainLayout_Footer_TechSupport')} <a href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">{t('MainLayout_Footer_ContactLinkText')}</a></p>
+                </Footer>
+            </Layout>
+        </SessionContext.Provider>
     );
 };
 

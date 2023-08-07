@@ -10,9 +10,9 @@ import './index.css'
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
+function LeftSidebar ({ sessions, setSessions, selectedSession, onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
     
-    const [sessions, setSessions] = useState([]);
+    // const [sessions, setSessions] = useState([]);
     const [user, setUser] = useState(null);
     const [loaded, setLoaded] = useState(true);
     const [isModalInputOpen, setModalInputOpen] = useState(false);
@@ -111,7 +111,6 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         try {
             const response = await request.post('/api/sessions/');
             const newSession = response.data;
-            // setSessions([...sessions, newSession]);
             fetchSessions();  
             onSelectSession(newSession); // 进入新创建的会话
         } catch (error) {
@@ -123,11 +122,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     const handleRenameSession = async (event, sessionId, newSessionName) => {
         try {
             await request.post(`/api/sessions/rename/${sessionId}/`, {new_name: newSessionName});
-            onChangeSessionInfo({name: newSessionName});
-            const updatedSessions = sessions.map(session =>
-                session.id === selectedSession.id ? { ...session, name: newSessionName} : session
-            );
-            setSessions(updatedSessions);
+            onChangeSessionInfo(sessionId, {name: newSessionName});
             message.success(t('LeftSidebar_RenameSessionSuccess'))
             setModalInputOpen(false);
         } catch (error) {
@@ -145,21 +140,21 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     }
 
     //选中会话
-    const handleSelectSession = (session) => {
-        // 同步改名selectSession到sessions中
-        if (selectedSession) {
-            const updatedSessions = sessions.map(session =>
-                session.id === selectedSession.id
-                    ? { ...session, 
-                        name: selectedSession.name,
-                        rounds: selectedSession.rounds,
-                        updated_time: selectedSession.updated_time}
-                    : session
-            );
-            setSessions(updatedSessions);
-        }
-        onSelectSession(session);
-    };
+    // const handleSelectSession = (session) => {
+    //     // 同步改名selectSession到sessions中
+    //     if (selectedSession) {
+    //         const updatedSessions = sessions.map(session =>
+    //             session.id === selectedSession.id
+    //                 ? { ...session, 
+    //                     name: selectedSession.name,
+    //                     rounds: selectedSession.rounds,
+    //                     updated_time: selectedSession.updated_time}
+    //                 : session
+    //         );
+    //         setSessions(updatedSessions);
+    //     }
+    //     onSelectSession(session);
+    // };
 
     //选中帮助、关于、设置等
     const handleChangeComponent = (index) => {
@@ -197,7 +192,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 <Menu style={{margin:'0px 17px 0px 25px'}}>
                     {sessions.map((session) => (
                         <Menu.Item className={`ant-menu-item${selectedSession?.id === session.id ? '-selected' : '-unselected'}`}
-                            key={session.id} style={{margin:'15px 0px', height:'auto'}} onClick={() => handleSelectSession(session)}>
+                            key={session.id} style={{margin:'15px 0px', height:'auto'}} onClick={() => onSelectSession(session)}>
                         <div style={{width:'100%', display: 'flex', flexDirection: 'column'}}>
                             <div
                                 style={{
@@ -209,12 +204,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 marginBottom: '-15px'
                                 }}
                             >
-                                <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name} title={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                                <span className='session-name' title={session.name} key={session.name}
                                     style={{
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
-                                }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
+                                }}>{session.name}</span>
                                 {selectedSession && selectedSession.id === session.id && (
                                     <Space size={0}>
                                         <Button
@@ -237,7 +232,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                             }}
                                             >
                                             <div>
-                                                <Input placeholder={selectedSession.name} showCount maxLength={30} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
+                                                <Input placeholder={session.name} showCount maxLength={30} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
                                             </div>
                                         </Modal>
                                         <Button
@@ -263,8 +258,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 fontSize: '12px'
                                 }}
                             >
-                                <span>{selectedSession?.id === session.id ? selectedSession.rounds : session.rounds} {t('LeftSidebar_CountSession')}</span>
-                                <span>{selectedSession?.id === session.id ? new Date(selectedSession.updated_time).toLocaleString('default', timeOptions) : new Date(session.updated_time).toLocaleString('default', timeOptions)}</span>
+                                <span>{session.rounds} {t('LeftSidebar_CountSession')}</span>
+                                <span>{new Date(session.updated_time).toLocaleString('default', timeOptions)}</span>
                             </div>
                         </div>
                         </Menu.Item>

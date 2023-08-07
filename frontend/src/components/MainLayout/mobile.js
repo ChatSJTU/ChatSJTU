@@ -16,6 +16,8 @@ import './index.css'
 const { Content, Sider, Footer, Header } = Layout;
 
 const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
+
+    const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -34,20 +36,19 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
         setIsSiderCollapsed(true);  //sider折叠
     };    
 
-    //会话改名
-    const handleChangeSessionName = (newName) => {
-        setSelectedSession((prevSession) => ({
-          ...prevSession,
-          name: newName,
-        }));
+    //修改会话信息
+    const handleChangeSessionInfo = (targetId, newData) => {
+        const updatedSessions = sessions.map(session =>
+            session.id === targetId ? { ...session, ...newData} : session
+        );
+        setSessions(updatedSessions);
+        if (targetId === selectedSession.id) {
+            setSelectedSession((prevSession) => ({
+                ...prevSession,
+                ...newData,
+                }));
+        }
     };
-
-    const handleChangeSessionInfo = (newData) => {
-        setSelectedSession((prevSession) => ({
-          ...prevSession,
-          ...newData,
-        }));
-      };
     
     //右侧可显示的组件列表
     const componentList = [
@@ -94,6 +95,8 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
                 <Sider className='Sider' collapsed={isSiderCollapsed} onCollapse={toggleSider} width="100%" collapsedWidth="0" style={{
                     height: '100%', position: 'absolute', zIndex: isSiderCollapsed ? 1 : 2 }}>
                     <LeftSidebar 
+                        sessions={sessions}
+                        setSessions={setSessions}
                         selectedSession={selectedSession} 
                         onSelectSession={handleSelectSession}
                         onLogoutClick={handleLogout}

@@ -15,6 +15,8 @@ import './index.css'
 const { Content, Sider, Footer } = Layout;
 
 const MainLayout = ({handleLogout, changeLanguage}) => {
+
+    const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -27,20 +29,20 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
         setSelectedSession(session);
     };    
 
-    //会话改名
-    const handleChangeSessionName = (newName) => {
-        setSelectedSession((prevSession) => ({
-          ...prevSession,
-          name: newName,
-        }));
+    //修改会话信息
+    const handleChangeSessionInfo = (targetId, newData) => {
+        console.log(newData)
+        const updatedSessions = sessions.map(session =>
+            session.id === targetId ? { ...session, ...newData} : session
+        );
+        setSessions(updatedSessions);
+        if (targetId === selectedSession.id) {
+            setSelectedSession((prevSession) => ({
+                ...prevSession,
+                ...newData,
+                }));
+        }
     };
-
-    const handleChangeSessionInfo = (newData) => {
-        setSelectedSession((prevSession) => ({
-          ...prevSession,
-          ...newData,
-        }));
-      };
     
     //右侧可显示的组件列表
     const componentList = [
@@ -97,6 +99,8 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                     <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                         <Sider className='Sider' width={300}>
                             <LeftSidebar 
+                                sessions={sessions}
+                                setSessions={setSessions}
                                 selectedSession={selectedSession} 
                                 onSelectSession={handleSelectSession}
                                 onLogoutClick={handleLogout}

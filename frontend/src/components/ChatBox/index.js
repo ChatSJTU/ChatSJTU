@@ -91,16 +91,11 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
-            // console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
           }
         }
-        
-        // Initial resize
         handleResize();
-        // Handle resize when window size changes
         window.addEventListener('resize', handleResize);
-    
-        // Clean up event listener on unmount
+
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
@@ -136,36 +131,43 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 },
             ]);
 
+            //记录以防止请求时切换的同步性问题
+            const reqSession = selectedSession
             // 发送消息到后端处理
             const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
-            console.log(response);
             // 在前端显示用户发送的消息和服务端返回的消息
             const sendTime = new Date(response.data.send_timestamp);
             const responseTime = new Date(response.data.response_timestamp);
             // 避免可能的时间先后错误，统一接收后端时间并显示
-            setMessages((prevMessages) => [
-                ...prevMessages.filter((message) => message.time !== WaitingText),
-                {
-                    sender: 1,
-                    content: userMessage,
-                    time: sendTime.toLocaleString('default', timeOptions),
-                },
-                {
-                    sender: 0,
-                    content: response.data.message,
-                    flag_qcmd: response.data.flag_qcmd,
-                    use_model: response.data.use_model,
-                    time: responseTime.toLocaleString('default', timeOptions),
-                },
-            ]);
-            if (retryMessage) {setRetryMessage(null);}
-            
-            //可能的会话名更改
-            if (response.data.session_rename !== ''){
-                onChangeSessionInfo({'name':response.data.session_rename});
+            if (reqSession.id === selectedSession.id) {
+                setMessages((prevMessages) => [
+                    ...prevMessages.filter((message) => message.time !== WaitingText),
+                    {
+                        sender: 1,
+                        content: userMessage,
+                        time: sendTime.toLocaleString('default', timeOptions),
+                    },
+                    {
+                        sender: 0,
+                        content: response.data.message,
+                        flag_qcmd: response.data.flag_qcmd,
+                        use_model: response.data.use_model,
+                        time: responseTime.toLocaleString('default', timeOptions),
+                    },
+                ]);
+                if (retryMessage) {setRetryMessage(null);}
             }
-            onChangeSessionInfo({
-                'rounds': selectedSession.rounds + 1,
+
+            //可能的会话名更改
+            // if (response.data.session_rename !== ''){
+            //     onChangeSessionInfo( reqSession.id, {
+            //         'name': response.data.session_rename
+            //     });
+            // }
+            const rename = response.data.session_rename
+            onChangeSessionInfo( reqSession.id, {
+                'name': rename !== '' ? rename : reqSession.name,
+                'rounds': reqSession.rounds + 1,
                 'updated_time': responseTime.toLocaleString('default', timeOptions),
             });
 

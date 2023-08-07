@@ -170,6 +170,16 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
     //     }
     // }, [sessions]);
 
+    const handleItemScroll = (index) => {
+        // console.log(`index: ${index}`);
+        let curSession = document.getElementById(`active_session_${index}`)
+        if(curSession) {
+            setTimeout(() => {
+                curSession.scrollIntoView({behavior: 'smooth', block: "center"});
+            },1);
+        }
+    };
+
     return (
         <Layout style={{ height: '100%'}}>
             <Header className='Sider-content'>
@@ -195,7 +205,14 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                 <Menu style={{margin:'0px 17px 0px 25px'}}>
                     {sessions.map((session) => (
                         <Menu.Item className={`ant-menu-item${selectedSession?.id === session.id ? '-selected' : '-unselected'}`}
-                            key={session.id} style={{margin:'15px 0px', height:'auto'}} onClick={() => onSelectSession(session)}>
+                            id={`active_session_${session.id}`}
+                            key={session.id}
+                            style={{margin:'15px 0px', height:'auto'}}
+                            onClick={() => {
+                                    handleItemScroll(session.id);
+                                    onSelectSession(session);
+                                }
+                            }>
                         <div style={{width:'100%', display: 'flex', flexDirection: 'column'}}>
                             <div
                                 style={{

@@ -4,8 +4,8 @@ import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, 
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
 import { request } from "../../services/request";
-import { fetchUserProfile } from '../../services/user';
 import { SessionContext } from '../../contexts/SessionContext';
+import { UserContext } from '../../contexts/UserContext';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
@@ -14,7 +14,7 @@ const { Title, Paragraph, Text } = Typography;
 function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
     
     const {sessions, setSessions, selectedSession} = useContext(SessionContext);
-    const [user, setUser] = useState(null);
+    const {userProfile} = useContext(UserContext);
     const [loaded, setLoaded] = useState(true);
     const [isModalInputOpen, setModalInputOpen] = useState(false);
     const [modalInputValue, setModalInputValue] = useState('');
@@ -43,20 +43,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
     useEffect(() => {
         setLoaded(true);
         fetchSessions();
-        fetchUserName();
     }, [])
-
-    //获取登录用户名称
-    const fetchUserName = async () => {
-        try {
-            const userData = await fetchUserProfile();
-            setUser(userData);
-        } catch (error) {
-            if (error.response.status === 404){
-                message.error(t('LeftSidebar_FetchUsernameError'),2);
-            }
-        }
-    };
 
     //获取会话列表
     const fetchSessions = async () => {
@@ -296,7 +283,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                         <Dropdown placement="topLeft"
                             overlay={
                                 <Menu>
-                                    <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
+                                    <Menu.Item icon={<UserOutlined />} key="0">{userProfile?.username}</Menu.Item>
                                     <Menu.Item icon={<WalletOutlined />} key="1"
                                         onClick={handleChangeComponent(6)}>{t('LeftSidebar_Account_Btn_Layer2')}</Menu.Item>
                                     <Menu.Item icon={<SettingOutlined />} key="2"

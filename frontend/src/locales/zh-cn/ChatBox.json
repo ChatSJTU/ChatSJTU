@@ -9,6 +9,8 @@
     "ChatBox_Tag_Reply": "回答",
     "ChatBox_Regenerate_Btn": "再次生成",
     "ChatBox_Continue_Btn": "继续生成",
+    "ChatBox_Regenerate_Prompt": "再次生成回答",
+    "ChatBox_Continue_Prompt": "继续生成回答",
     "ChatBox_Placeholder": "Shift+Enter 换行，Enter 发送，+ 触发自动补全，/ 触发校园服务快捷命令",
     "ChatBox_ClearInput_Btn": "清空",
     "ChatBox_SendInput_Btn": "发送",

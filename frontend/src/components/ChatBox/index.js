@@ -1,7 +1,7 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert } from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
@@ -111,6 +111,8 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
 
     const WaitingText = '回复生成中（若结果较长或遇用量高峰期，请耐心等待~）';
     const ErrorText = '回复生成失败'
+    const ContinuePrompt = 'continue'
+    const RegeneratePrompt = '%regenerate%'
 
     // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
     const sendUserMessage = async (retryMsg) => {
@@ -396,22 +398,36 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                                         <Space style={{marginTop: 10}} size="middle">
                                             {item.interrupted &&
                                                 <Button icon={<DoubleRightOutlined />}
-                                                    onClick={() => sendUserMessage('continue')}>{t('ChatBox_Continue_Btn')}</Button>
+                                                    onClick={() => sendUserMessage(ContinuePrompt)}>{t('ChatBox_Continue_Btn')}</Button>
                                             }
                                             <Button icon={<ReloadOutlined />}
-                                                onClick={() => sendUserMessage('%regenerate%')}>{t('ChatBox_Regenerate_Btn')}</Button>
+                                                onClick={() => sendUserMessage(RegeneratePrompt)}>{t('ChatBox_Regenerate_Btn')}</Button>
                                         </Space>
                                     }
                                 </>
                             }
                             {item.sender === 1 &&
-                                <div style={{ whiteSpace: 'pre-wrap' }}>
-                                    {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
-                                    <span key={i}>
-                                        {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                <div style={{ whiteSpace: 'pre-wrap'}}>
+                                {item.content === ContinuePrompt && 
+                                    <span style={{color:'#0086D1'}}>
+                                        <DoubleRightOutlined style={{marginRight:'10px'}}/>
+                                        {t('ChatBox_Continue_Prompt')}
                                     </span>
-                                    ))}
-                                </div>
+                                }
+                                {item.content === RegeneratePrompt && 
+                                    <span style={{color:'#0086D1'}}>
+                                        <ReloadOutlined style={{marginRight:'10px'}}/>
+                                        {t('ChatBox_Regenerate_Prompt')}
+                                    </span>
+                                }
+                                {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
+                                    ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                        <span key={i}>
+                                            {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                        </span>
+                                    ))
+                                }
+                            </div>
                             }
                             {item.sender === 2 && 
                             <Alert type="error" style={{fontSize:'16px'}} message={

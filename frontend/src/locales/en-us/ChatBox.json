@@ -16,6 +16,6 @@
     "ChatBox_SendInput_Btn": "Send",
     "ChatBox_Retry_Btn": "Retry",
     "ChatBox_List_Locale": "No data",
-    "ChatBox_WaitingText": "Please Waiting...",
+    "ChatBox_WaitingText": "Please Wait...",
     "ChatBox_ErrorText": "Result Generation Failed"
 }

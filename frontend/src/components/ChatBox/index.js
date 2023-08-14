@@ -372,7 +372,10 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                             description={
                                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
-                                    <div>{item.time}</div>
+                                    {item.time === WaitingText ?
+                                        <div>{t('ChatBox_WaitingText')}</div> :
+                                            item.time === ErrorText ? <div>{t('ChatBox_ErrorText')}</div> : <div>{item.time}</div>
+                                    }
                                     {(item.sender === 0 && item.flag_qcmd) &&
                                         <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>{t('ChatBox_Tag_CampusCommand')}</Tag>
                                         }

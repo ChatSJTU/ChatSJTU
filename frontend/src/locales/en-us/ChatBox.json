@@ -15,5 +15,7 @@
     "ChatBox_ClearInput_Btn": "Clear",
     "ChatBox_SendInput_Btn": "Send",
     "ChatBox_Retry_Btn": "Retry",
-    "ChatBox_List_Locale": "No data"
+    "ChatBox_List_Locale": "No data",
+    "ChatBox_WaitingText": "Waiting...",
+    "ChatBox_ErrorText": "Generation Failed"
 }

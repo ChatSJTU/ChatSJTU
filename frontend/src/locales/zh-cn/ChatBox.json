@@ -15,5 +15,7 @@
     "ChatBox_ClearInput_Btn": "清空",
     "ChatBox_SendInput_Btn": "发送",
     "ChatBox_Retry_Btn": "重试",
-    "ChatBox_List_Locale": "暂无数据"
+    "ChatBox_List_Locale": "暂无数据",
+    "ChatBox_WaitingText": "回复生成中（若结果较长或遇用量高峰期，请耐心等待~）",
+    "ChatBox_ErrorText": "回复生成失败"
 }

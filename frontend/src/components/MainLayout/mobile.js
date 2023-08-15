@@ -12,7 +12,7 @@ import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
-import { fetchUserProfile } from '../../services/user';
+import { fetchUserProfile, getSettings } from '../../services/user';
 
 import './index.css'
 
@@ -23,6 +23,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null); 
+    const [settings, setSettings] = useState(null);
 
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -32,6 +33,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
 
     useEffect(() => {
         fetchUserInfo();
+        fetchSettings();
     }, []);
 
     // 获取登录用户信息
@@ -43,6 +45,17 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
             if (error.response.status === 404){
                 message.error('用户不存在',2);
             }
+        }
+    };
+
+    //获取用户设置项
+    const fetchSettings = async () => {
+        try {
+            const data = await getSettings();
+            setSettings(data);
+        } catch (error) {
+            console.error('Failed to fetch settings:', error);
+            message.error('获取设置项失败', 2);
         }
     };
 
@@ -113,6 +126,9 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
             <UserContext.Provider
                 value={{
                     userProfile,
+                    settings,
+                    setSettings,
+                    fetchSettings,
                 }}>
                 <Layout className="background fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
                     <Header style={{

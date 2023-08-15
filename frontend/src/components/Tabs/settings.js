@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Layout, Button, Card, Popconfirm, Divider, Col, Row, Typography, message, InputNumber, Select, Switch, Modal} from 'antd';
+import React, { useState, useEffect, useContext } from "react";
+import { Layout, Button, Card, Divider, Col, Row, Typography, message, InputNumber, Select, Switch, Modal} from 'antd';
 import { CloseOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import './style.css'
 import { request } from "../../services/request";
-import { getSettings, updateSettings } from "../../services/user";
-import { GlobalOutlined } from '@ant-design/icons';
+import { updateSettings } from "../../services/user";
+import { UserContext } from '../../contexts/UserContext';
 import i18n from '../../components/I18n/i18n'
 
 const { Header, Content } = Layout;
@@ -15,25 +15,14 @@ const { confirm } = Modal;
 function TabSettings({ onCloseTab, changeLanguage}) {
 
     const [loaded, setLoaded] = useState(true);
-    const [settings, setSettings] = useState(null);
+    const { settings, setSettings, fetchSettings } = useContext(UserContext);
 
     useEffect(() => {
         setLoaded(true);
-        fetchSettings();
+        fetchSettings();    // 获取设置项的函数定义移至MainLayout
     }, []);
 
     let { t } = useTranslation('Tabs_settings');
-
-    //获取设置项
-    const fetchSettings = async () => {
-        try {
-            const data = await getSettings();
-            setSettings(data);
-        } catch (error) {
-            console.error('Failed to fetch settings:', error);
-            message.error(t('Tabs_settings_FetchError'), 2);
-        }
-    };
 
     //更改设置项
     const handleChangeSettings = async (updatedSettings) => {

@@ -43,7 +43,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
             setUserProfile(userData);
         } catch (error) {
             if (error.response.status === 404){
-                message.error('用户不存在',2);
+                message.error(t('MainLayout_FetchUserError'),2);
             }
         }
     };
@@ -55,7 +55,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
             setSettings(data);
         } catch (error) {
             console.error('Failed to fetch settings:', error);
-            message.error('获取设置项失败', 2);
+            message.error(t('MainLayout_FetchSettingsError'), 2);
         }
     };
 

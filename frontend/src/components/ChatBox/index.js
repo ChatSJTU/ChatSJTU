@@ -82,9 +82,9 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
             .catch(error => {
                 console.error('Error fetching messages:', error);
                 if (error.response.data) {
-                    message.error(`请求消息记录失败：${error.response.data.error}`, 2);
+                    message.error(t('ChatBox_FetchMessageError') + ': ' + `${error.response.data.error}`, 2);
                 } else {
-                    message.error('请求消息记录失败', 2);
+                    message.error(t('ChatBox_FetchMessageError'), 2);
                 }
             });
         }

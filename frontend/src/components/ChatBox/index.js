@@ -12,6 +12,7 @@ import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
 import { SessionContext } from '../../contexts/SessionContext';
+import { Base64 } from 'js-base64';
 
 import './index.css'
 
@@ -359,8 +360,9 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
         <List
             style={{ flex: 1, overflow: 'auto'}}
             dataSource={messages}
-            renderItem={(item, index) => (
-            <div ref={messagesEndRef}>
+            renderItem={(item, index) => {
+            const content = Base64.decode(item.content);
+            return <div ref={messagesEndRef}>
                 { !(item.sender === 1 && (item.regenerated || item.interrupted)) &&
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
@@ -387,7 +389,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                                     <div style={{ flex: '1' }}></div>
                                     <Button type="text"
                                         icon={<CopyOutlined />}
-                                        onClick={() => handleCopy(item.content)}
+                                        onClick={() => handleCopy(content)}
                                     />
                                 </div>
                             }
@@ -396,7 +398,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                         <div style={{ width: '100%', marginTop: 10}}>
                             {item.sender === 0 && 
                                 <>
-                                    <MarkdownRenderer content={item.content}/>
+                                    <MarkdownRenderer content={content}/>
                                     {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
                                         <Space style={{marginTop: 10}} size="middle">
                                             {item.interrupted &&
@@ -411,20 +413,20 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                             }
                             {item.sender === 1 &&
                                 <div style={{ whiteSpace: 'pre-wrap'}}>
-                                {item.content === ContinuePrompt && 
+                                {content === ContinuePrompt && 
                                     <span style={{color:'#0086D1'}}>
                                         <DoubleRightOutlined style={{marginRight:'10px'}}/>
                                         {t('ChatBox_Continue_Prompt')}
                                     </span>
                                 }
-                                {item.content === RegeneratePrompt && 
+                                {content === RegeneratePrompt && 
                                     <span style={{color:'#0086D1'}}>
                                         <ReloadOutlined style={{marginRight:'10px'}}/>
                                         {t('ChatBox_Regenerate_Prompt')}
                                     </span>
                                 }
-                                {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
-                                    ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                {content !== RegeneratePrompt && content !== ContinuePrompt &&
+                                    ReactStringReplace(content, /(\s+)/g, (match, i) => (
                                         <span key={i}>
                                             {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
                                         </span>
@@ -445,7 +447,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                     <div/>
                 </List.Item>
                 }
-            </div>)}
+            </div>}}
         />
         
         <div className='sendbox-area' style={{ padding: '20px 50px', position: 'relative'}}>

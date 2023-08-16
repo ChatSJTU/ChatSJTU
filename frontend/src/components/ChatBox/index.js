@@ -12,8 +12,10 @@ import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
 import { SessionContext } from '../../contexts/SessionContext';
+import { Base64 } from 'js-base64';
 
 import './index.css'
+import { Base64 } from 'js-base64';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
@@ -121,7 +123,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
         const userMessage = retryMsg || input;
         try {
             const messageData = { 
-                message: userMessage,
+                message: Base64.encode(userMessage),
                 model: selectedModel
             };  // 存储请求数据到变量
             setInput('');

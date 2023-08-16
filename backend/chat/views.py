@@ -15,7 +15,7 @@ from chat.core.errors import ChatError
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, base64
 from rest_framework.permissions import IsAuthenticated
 from asgiref.sync import sync_to_async
 from adrf.decorators import api_view
@@ -143,7 +143,7 @@ async def session_messages(request, session_id):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 async def send_message(request, session_id):
-    user_message: str = request.data.get("message")
+    user_message: str = base64.b64decode(request.data.get("message")).decode()
     selected_model: str = request.data.get("model")
     regenerate: bool = user_message == "%regenerate%"
     cont: bool = user_message == "continue"

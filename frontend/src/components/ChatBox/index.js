@@ -15,7 +15,6 @@ import { SessionContext } from '../../contexts/SessionContext';
 import { Base64 } from 'js-base64';
 
 import './index.css'
-import { Base64 } from 'js-base64';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;

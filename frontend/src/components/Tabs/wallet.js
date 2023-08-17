@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Button, Card, message, Tag, Space, Progress } from 'antd';
 import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { fetchUserProfile } from '../../services/user';
+import { UserContext } from '../../contexts/UserContext';
 
 import './style.css'
 
@@ -12,26 +13,13 @@ const { Title } = Typography;
 function TabWallet ({ onCloseTab }) {
 
     const [loaded, setLoaded] = useState(true);
-    const [user, setUser] = useState(null);
+    const { userProfile } = useContext(UserContext)
 
     useEffect(() => {
         setLoaded(true);
-        fetchUserInfo();
     }, []);
 
     let { t } = useTranslation('Tabs_wallet');
-
-    //获取登录用户信息
-    const fetchUserInfo = async () => {
-        try {
-            const userData = await fetchUserProfile();
-            setUser(userData);
-        } catch (error) {
-            if (error.response.status === 404){
-                message.error('用户不存在',2);
-            }
-        }
-    };
 
     const tagStyle = {
         faculty: { text: t('Tabs_wallet_User_Label1'), color: 'blue' },
@@ -42,7 +30,7 @@ function TabWallet ({ onCloseTab }) {
         vip:     { text: t('Tabs_wallet_User_Label6'), color: 'gold'},
         yxy:     { text: t('Tabs_wallet_User_Label7'), color: 'purple'},
     };
-    const tag = tagStyle[user?.usertype] || { text: t('Tabs_wallet_User_Label0'), color: 'default' };
+    const tag = tagStyle[userProfile?.usertype] || { text: t('Tabs_wallet_User_Label0'), color: 'default' };
 
     const FacultyPermission = <div className="permission-display-container">
         <Space><CheckOutlined style={{color:"#52c41a"}}/>{t('Tabs_wallet_Perm_Faculty_1')}</Space>
@@ -68,8 +56,8 @@ function TabWallet ({ onCloseTab }) {
             <Title level={4} style={{marginTop:'25px'}}>{t('Tabs_wallet_Subtitle_2')}</Title>
             <Card style={{marginTop: '25px'}}>
                 {t('Tabs_wallet_Usage_Title')} 
-                    <Progress percent={(100 * user?.usagecount / user?.usagelimit) || 0} 
-                        format={() => t('Tabs_wallet_Usage_Head') + `${user?.usagecount} / ${user?.usagelimit}` + t('Tabs_wallet_Usage_End')}
+                    <Progress percent={(100 * userProfile?.usagecount / userProfile?.usagelimit) || 0} 
+                        format={() => t('Tabs_wallet_Usage_Head') + `${userProfile?.usagecount} / ${userProfile?.usagelimit}` + t('Tabs_wallet_Usage_End')}
                         style={{paddingRight: '55px', flexGrow: 1}}
                         status="active" strokeColor={{from: '#87d068',to: '#108ee9'}}/>
             </Card>
@@ -89,7 +77,7 @@ function TabWallet ({ onCloseTab }) {
                     <Card style={{marginTop: '25px'}}
                         title={
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <span>{t('Tabs_wallet_Perm_Title')} {`${user?.username}`}</span>
+                                    <span>{t('Tabs_wallet_Perm_Title')} {`${userProfile?.username}`}</span>
                                     <Tag
                                         color={tag.color}
                                         style={{marginLeft: '10px' }}
@@ -97,10 +85,10 @@ function TabWallet ({ onCloseTab }) {
                             </div>
                             }
                         >
-                        {PermissionDisplay[user?.usertype] || null}
+                        {PermissionDisplay[userProfile?.usertype] || null}
                     </Card>
                 </Typography>
-                {user?.usertype === 'student'? UsageDisplay:null}
+                {userProfile?.usertype === 'student'? UsageDisplay:null}
             </Content>
         </Layout>
     )

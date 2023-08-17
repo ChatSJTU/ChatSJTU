@@ -1,5 +1,7 @@
 {
     "MainLayout_Footer_Copyright": "Copyright © 2023 Shanghai Jiao Tong University Network Information Center ICP License: 20230139",
     "MainLayout_Footer_TechSupport": "Technical support: ChatSJTU Student Development Team",
-    "MainLayout_Footer_ContactLinkText": "Contact Us"
+    "MainLayout_Footer_ContactLinkText": "Contact Us",
+    "MainLayout_FetchUserError": "User does not exist",
+    "MainLayout_FetchSettingsError": "Failed to fetch settings"
 }

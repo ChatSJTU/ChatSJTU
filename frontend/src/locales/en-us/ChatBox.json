@@ -9,7 +9,13 @@
     "ChatBox_Tag_Reply": "Result",
     "ChatBox_Regenerate_Btn": "Regenerate",
     "ChatBox_Continue_Btn": "Continue",
+    "ChatBox_Regenerate_Prompt": "Regenerate Result",
+    "ChatBox_Continue_Prompt": "Continue to generate",
     "ChatBox_Placeholder": "Shift+Enter for line break, Enter for send, + for auto-fill, / for campus service quick command",
     "ChatBox_ClearInput_Btn": "Clear",
-    "ChatBox_SendInput_Btn": "Send"
+    "ChatBox_SendInput_Btn": "Send",
+    "ChatBox_Retry_Btn": "Retry",
+    "ChatBox_List_Locale": "No data",
+    "ChatBox_WaitingText": "Please Wait...",
+    "ChatBox_ErrorText": "Result Generation Failed"
 }

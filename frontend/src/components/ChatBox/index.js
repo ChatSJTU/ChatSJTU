@@ -1,7 +1,7 @@
 //主要组件，聊天列表和发送文本框
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert} from 'antd';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert } from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
@@ -11,13 +11,18 @@ import { useTranslation } from 'react-i18next';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
 import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
+import { SessionContext } from '../../contexts/SessionContext';
+import { Base64 } from 'js-base64';
 
 import './index.css'
+import { Base64 } from 'js-base64';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 
-function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
+function ChatBox({ onChangeSessionInfo, curRightComponent}) {
+
+    const {selectedSession} = useContext(SessionContext);
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
@@ -79,9 +84,9 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
             .catch(error => {
                 console.error('Error fetching messages:', error);
                 if (error.response.data) {
-                    message.error(`请求消息记录失败：${error.response.data.error}`, 2);
+                    message.error(t('ChatBox_FetchMessageError') + ': ' + `${error.response.data.error}`, 2);
                 } else {
-                    message.error('请求消息记录失败', 2);
+                    message.error(t('ChatBox_FetchMessageError'), 2);
                 }
             });
         }
@@ -91,16 +96,11 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
-            // console.log(textareaRef.current.resizableTextArea.textArea.offsetWidth);
           }
         }
-        
-        // Initial resize
         handleResize();
-        // Handle resize when window size changes
         window.addEventListener('resize', handleResize);
-    
-        // Clean up event listener on unmount
+
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
@@ -113,6 +113,8 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
 
     const WaitingText = '回复生成中（若结果较长或遇用量高峰期，请耐心等待~）';
     const ErrorText = '回复生成失败'
+    const ContinuePrompt = 'continue'
+    const RegeneratePrompt = '%regenerate%'
 
     // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
     const sendUserMessage = async (retryMsg) => {
@@ -121,7 +123,7 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
         const userMessage = retryMsg || input;
         try {
             const messageData = { 
-                message: userMessage,
+                message: Base64.encode(userMessage),
                 model: selectedModel
             };  // 存储请求数据到变量
             setInput('');
@@ -136,36 +138,43 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                 },
             ]);
 
+            //记录以防止请求时切换的同步性问题
+            const reqSession = selectedSession
             // 发送消息到后端处理
             const response = await request.post(`/api/send-message/${selectedSession.id}/`, messageData);
-            console.log(response);
             // 在前端显示用户发送的消息和服务端返回的消息
             const sendTime = new Date(response.data.send_timestamp);
             const responseTime = new Date(response.data.response_timestamp);
             // 避免可能的时间先后错误，统一接收后端时间并显示
-            setMessages((prevMessages) => [
-                ...prevMessages.filter((message) => message.time !== WaitingText),
-                {
-                    sender: 1,
-                    content: userMessage,
-                    time: sendTime.toLocaleString('default', timeOptions),
-                },
-                {
-                    sender: 0,
-                    content: response.data.message,
-                    flag_qcmd: response.data.flag_qcmd,
-                    use_model: response.data.use_model,
-                    time: responseTime.toLocaleString('default', timeOptions),
-                },
-            ]);
-            if (retryMessage) {setRetryMessage(null);}
-            
-            //可能的会话名更改
-            if (response.data.session_rename !== ''){
-                onChangeSessionInfo({'name':response.data.session_rename});
+            if (reqSession.id === selectedSession.id) {
+                setMessages((prevMessages) => [
+                    ...prevMessages.filter((message) => message.time !== WaitingText),
+                    {
+                        sender: 1,
+                        content: userMessage,
+                        time: sendTime.toLocaleString('default', timeOptions),
+                    },
+                    {
+                        sender: 0,
+                        content: response.data.message,
+                        flag_qcmd: response.data.flag_qcmd,
+                        use_model: response.data.use_model,
+                        time: responseTime.toLocaleString('default', timeOptions),
+                    },
+                ]);
+                if (retryMessage) {setRetryMessage(null);}
             }
-            onChangeSessionInfo({
-                'rounds': selectedSession.rounds + 1,
+
+            //可能的会话名更改
+            // if (response.data.session_rename !== ''){
+            //     onChangeSessionInfo( reqSession.id, {
+            //         'name': response.data.session_rename
+            //     });
+            // }
+            const rename = response.data.session_rename
+            onChangeSessionInfo( reqSession.id, {
+                'name': rename !== '' ? rename : reqSession.name,
+                'rounds': reqSession.rounds + 1,
                 'updated_time': responseTime.toLocaleString('default', timeOptions),
             });
 
@@ -365,7 +374,10 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                             description={
                                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
                                     {item.time === WaitingText && <LoadingOutlined style={{marginRight : '15px'}}/> }
-                                    <div>{item.time}</div>
+                                    {item.time === WaitingText ?
+                                        <div>{t('ChatBox_WaitingText')}</div> :
+                                            item.time === ErrorText ? <div>{t('ChatBox_ErrorText')}</div> : <div>{item.time}</div>
+                                    }
                                     {(item.sender === 0 && item.flag_qcmd) &&
                                         <Tag bordered={false} color="blue" style={{marginLeft:'15px'}}>{t('ChatBox_Tag_CampusCommand')}</Tag>
                                         }
@@ -391,29 +403,43 @@ function ChatBox({ selectedSession, onChangeSessionInfo, curRightComponent}) {
                                         <Space style={{marginTop: 10}} size="middle">
                                             {item.interrupted &&
                                                 <Button icon={<DoubleRightOutlined />}
-                                                    onClick={() => sendUserMessage('continue')}>{t('ChatBox_Continue_Btn')}</Button>
+                                                    onClick={() => sendUserMessage(ContinuePrompt)}>{t('ChatBox_Continue_Btn')}</Button>
                                             }
                                             <Button icon={<ReloadOutlined />}
-                                                onClick={() => sendUserMessage('%regenerate%')}>{t('ChatBox_Regenerate_Btn')}</Button>
+                                                onClick={() => sendUserMessage(RegeneratePrompt)}>{t('ChatBox_Regenerate_Btn')}</Button>
                                         </Space>
                                     }
                                 </>
                             }
                             {item.sender === 1 &&
-                                <div style={{ whiteSpace: 'pre-wrap' }}>
-                                    {ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
-                                    <span key={i}>
-                                        {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                <div style={{ whiteSpace: 'pre-wrap'}}>
+                                {item.content === ContinuePrompt && 
+                                    <span style={{color:'#0086D1'}}>
+                                        <DoubleRightOutlined style={{marginRight:'10px'}}/>
+                                        {t('ChatBox_Continue_Prompt')}
                                     </span>
-                                    ))}
-                                </div>
+                                }
+                                {item.content === RegeneratePrompt && 
+                                    <span style={{color:'#0086D1'}}>
+                                        <ReloadOutlined style={{marginRight:'10px'}}/>
+                                        {t('ChatBox_Regenerate_Prompt')}
+                                    </span>
+                                }
+                                {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
+                                    ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                        <span key={i}>
+                                            {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                        </span>
+                                    ))
+                                }
+                            </div>
                             }
                             {item.sender === 2 && 
                             <Alert type="error" style={{fontSize:'16px'}} message={
                                 <Space>
                                     {item.content}
                                     <Button icon={<ReloadOutlined />} onClick={handleRetry}
-                                        >重试</Button>
+                                        >{t('ChatBox_Retry_Btn')}</Button>
                                 </Space>}/>
                             }
                         </div>

@@ -1,19 +1,20 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect, useContext} from 'react';
 import { useTranslation } from 'react-i18next';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
 
 import { request } from "../../services/request";
-import { fetchUserProfile } from '../../services/user';
+import { SessionContext } from '../../contexts/SessionContext';
+import { UserContext } from '../../contexts/UserContext';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
-function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
+function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
     
-    const [sessions, setSessions] = useState([]);
-    const [user, setUser] = useState(null);
+    const {sessions, setSessions, selectedSession} = useContext(SessionContext);
+    const {userProfile} = useContext(UserContext);
     const [loaded, setLoaded] = useState(true);
     const [isModalInputOpen, setModalInputOpen] = useState(false);
     const [modalInputValue, setModalInputValue] = useState('');
@@ -37,23 +38,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 modalInputRef.current.focus();
             },0);
         }
+    }, [isModalInputOpen]);
+
+    useEffect(() => {
         setLoaded(true);
         fetchSessions();
-        fetchUserName();
-    }, [isModalInputOpen]);
-    
-
-    //获取登录用户名称
-    const fetchUserName = async () => {
-        try {
-            const userData = await fetchUserProfile();
-            setUser(userData);
-        } catch (error) {
-            if (error.response.status === 404){
-                message.error(t('LeftSidebar_FetchUsernameError'),2);
-            }
-        }
-    };
+    }, [])
 
     //获取会话列表
     const fetchSessions = async () => {
@@ -88,6 +78,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                     // 如果删除的不是最后一个会话，则选择下一个会话
                     nextSelectedSession = sessions[sessionIndex + 1];
                     onSelectSession(nextSelectedSession); // 更新选定的会话
+                    handleScrollMenu(nextSelectedSession.id);
                 } else if (sessionIndex > 0) {
                     // 如果删除的是最后一个会话且列表中还有其他会话，则选择上一个会话
                     nextSelectedSession = sessions[sessionIndex - 1];
@@ -96,6 +87,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                     handleCreateSession(); // 如果会话列表为空，自动创建新会话
                     }
                 }
+
         } catch (error) {
             console.error('Failed to delete session:', error);
             if (error.response.data) {
@@ -111,9 +103,9 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
         try {
             const response = await request.post('/api/sessions/');
             const newSession = response.data;
-            // setSessions([...sessions, newSession]);
             fetchSessions();  
             onSelectSession(newSession); // 进入新创建的会话
+            handleScrollMenu(newSession.id,500);
         } catch (error) {
             console.error('Failed to create session:', error);
         }
@@ -123,11 +115,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     const handleRenameSession = async (event, sessionId, newSessionName) => {
         try {
             await request.post(`/api/sessions/rename/${sessionId}/`, {new_name: newSessionName});
-            onChangeSessionInfo({name: newSessionName});
-            const updatedSessions = sessions.map(session =>
-                session.id === selectedSession.id ? { ...session, name: newSessionName} : session
-            );
-            setSessions(updatedSessions);
+            onChangeSessionInfo(sessionId, {name: newSessionName});
             message.success(t('LeftSidebar_RenameSessionSuccess'))
             setModalInputOpen(false);
         } catch (error) {
@@ -145,21 +133,21 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     }
 
     //选中会话
-    const handleSelectSession = (session) => {
-        // 同步改名selectSession到sessions中
-        if (selectedSession) {
-            const updatedSessions = sessions.map(session =>
-                session.id === selectedSession.id
-                    ? { ...session, 
-                        name: selectedSession.name,
-                        rounds: selectedSession.rounds,
-                        updated_time: selectedSession.updated_time}
-                    : session
-            );
-            setSessions(updatedSessions);
-        }
-        onSelectSession(session);
-    };
+    // const handleSelectSession = (session) => {
+    //     // 同步改名selectSession到sessions中
+    //     if (selectedSession) {
+    //         const updatedSessions = sessions.map(session =>
+    //             session.id === selectedSession.id
+    //                 ? { ...session, 
+    //                     name: selectedSession.name,
+    //                     rounds: selectedSession.rounds,
+    //                     updated_time: selectedSession.updated_time}
+    //                 : session
+    //         );
+    //         setSessions(updatedSessions);
+    //     }
+    //     onSelectSession(session);
+    // };
 
     //选中帮助、关于、设置等
     const handleChangeComponent = (index) => {
@@ -171,6 +159,15 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
     //         handleCreateSession(); // 如果会话列表为空，自动创建新会话
     //     }
     // }, [sessions]);
+
+    const handleScrollMenu = (index,timeout = 100) => {
+        setTimeout(
+            () => {
+            let curSession = document.getElementById(`active_session_${index}`);
+            if(curSession) curSession.scrollIntoView({behavior: 'smooth', block: "center"});
+        },timeout)
+    };
+        
 
     return (
         <Layout style={{ height: '100%'}}>
@@ -197,7 +194,14 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                 <Menu style={{margin:'0px 17px 0px 25px'}}>
                     {sessions.map((session) => (
                         <Menu.Item className={`ant-menu-item${selectedSession?.id === session.id ? '-selected' : '-unselected'}`}
-                            key={session.id} style={{margin:'15px 0px', height:'auto'}} onClick={() => handleSelectSession(session)}>
+                            id={`active_session_${session.id}`}
+                            key={session.id}
+                            style={{margin:'15px 0px', height:'auto'}}
+                            onClick={() => {
+                                    handleScrollMenu(session.id);
+                                    onSelectSession(session);
+                                }
+                            }>
                         <div style={{width:'100%', display: 'flex', flexDirection: 'column'}}>
                             <div
                                 style={{
@@ -209,12 +213,12 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 marginBottom: '-15px'
                                 }}
                             >
-                                <span className='session-name' key={selectedSession?.id === session.id ? selectedSession.name : session.name} title={selectedSession?.id === session.id ? selectedSession.name : session.name}
+                                <span className='session-name' title={session.name} key={session.name}
                                     style={{
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
-                                }}>{selectedSession?.id === session.id ? selectedSession.name : session.name}</span>
+                                }}>{session.name}</span>
                                 {selectedSession && selectedSession.id === session.id && (
                                     <Space size={0}>
                                         <Button
@@ -237,7 +241,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                             }}
                                             >
                                             <div>
-                                                <Input placeholder={selectedSession.name} showCount maxLength={30} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
+                                                <Input placeholder={session.name} showCount maxLength={30} ref={modalInputRef} value={modalInputValue} onChange={(event) => {setModalInputValue(event.target.value);}} style={{ marginTop: '7px' }} />
                                             </div>
                                         </Modal>
                                         <Button
@@ -263,8 +267,8 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                                 fontSize: '12px'
                                 }}
                             >
-                                <span>{selectedSession?.id === session.id ? selectedSession.rounds : session.rounds} {t('LeftSidebar_CountSession')}</span>
-                                <span>{selectedSession?.id === session.id ? new Date(selectedSession.updated_time).toLocaleString('default', timeOptions) : new Date(session.updated_time).toLocaleString('default', timeOptions)}</span>
+                                <span>{session.rounds} {t('LeftSidebar_CountSession')}</span>
+                                <span>{new Date(session.updated_time).toLocaleString('default', timeOptions)}</span>
                             </div>
                         </div>
                         </Menu.Item>
@@ -279,7 +283,7 @@ function LeftSidebar ({ selectedSession, onSelectSession, onLogoutClick, onChang
                         <Dropdown placement="topLeft"
                             overlay={
                                 <Menu>
-                                    <Menu.Item icon={<UserOutlined />} key="0">{user?.username}</Menu.Item>
+                                    <Menu.Item icon={<UserOutlined />} key="0">{userProfile?.username}</Menu.Item>
                                     <Menu.Item icon={<WalletOutlined />} key="1"
                                         onClick={handleChangeComponent(6)}>{t('LeftSidebar_Account_Btn_Layer2')}</Menu.Item>
                                     <Menu.Item icon={<SettingOutlined />} key="2"

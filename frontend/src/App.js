@@ -21,8 +21,6 @@ const App = () => {
     const [locale, setLocal] = useState(zhCN);
 
     const changeLanguage = (e) => {
-        // 打印出来之前的语言
-        console.log(i18n.language);
         if (e === 'zh-CN') {
             setLocal(zhCN);
             i18n.changeLanguage('zh');
@@ -35,6 +33,14 @@ const App = () => {
     //移动端检测
     const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
+    
+    useEffect(() => {
+        if (i18n.language === 'zh'){
+            setLocal(zhCN)
+        } else if (i18n.language === 'en'){
+            setLocal(enUS)
+        }
+    })
 
     //无需点击jac登录按钮
     useEffect(() => {
@@ -120,8 +126,8 @@ const App = () => {
             <ConfigProvider locale={locale}>
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
                 {isDesktop ? 
-                <MainLayout handleLogout={handleLogout} /> 
-                : <MainLayoutMobile handleLogout={handleLogout} />}
+                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage}/> 
+                : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage}/>}
             </div>
             </ConfigProvider>
         );

@@ -1,8 +1,8 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover } from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -20,7 +20,7 @@ import './index.css'
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 
-function ChatBox({ onChangeSessionInfo, curRightComponent}) {
+function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const {selectedSession} = useContext(SessionContext);
     const {qcmdsList} = useContext(UserContext);
@@ -33,6 +33,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     
     const isFold = useMediaQuery({ minWidth: 768.1, maxWidth: 960 })
     const isFoldMobile = useMediaQuery({ maxWidth: 432 })
@@ -458,7 +459,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                     onClick={scrollToBottom}
                 /> */}
             <Dropdown placement="topLeft" overlay={
-                    <div style={{display: curRightComponent === 1 ? '' : 'none', width: `${textareaWidth}px`}}>
+                    <div style={{display: curRightComponent === 1 && !isPopoverOpen ? '' : 'none', width: `${textareaWidth}px`}}>
                         <Menu style={{maxHeight: '320px', overflowY: 'auto' }}>
                             {qcmdOptions.map(option => (
                                 <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value, option.label)}>
@@ -487,12 +488,35 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                 /></div>
             </Dropdown>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
-                    onChange={value => setSelectedModel(value)}
-                    options={[
-                        {label:`${isFold||isFoldMobile ? '3.5':'GPT3.5'}`, value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
-                        {label:`${isFold||isFoldMobile ? '4':'GPT4'}`, value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
-                ]}/>
+                <Popover trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen}
+                    onOpenChange={(newOpen) => setIsPopoverOpen(newOpen)}
+                    content={
+                        <> 
+                        <Space direction='vertical'>
+                            <div className='card_label'>模型</div>
+                            <Segmented value={selectedModel}
+                                onChange={value => setSelectedModel(value)}
+                                options={[
+                                    {label:'GPT 3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
+                                    {label:'GPT 4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
+                            ]}/>
+                            <div className='card_label'>插件</div>
+                            未启用插件
+                            <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined />} 
+                                onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
+                                浏览插件商店
+                            </Button>
+                        </Space>
+                        </>
+                    }>
+                    <Button size="large">
+                        {selectedModel === 'Azure GPT3.5' 
+                            ? <ThunderboltOutlined style={{color:'#73c9ca'}} />
+                            : <StarOutlined style={{color:'#6d3eb8'}}/>}
+                        {selectedModel === 'Azure GPT3.5' ? 'GPT 3.5' : 'GPT 4'}
+                        <EllipsisOutlined/>
+                    </Button>
+                </Popover>
                 <Space>
                     <Button size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
                         {t('ChatBox_ClearInput_Btn')}

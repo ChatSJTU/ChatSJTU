@@ -8,6 +8,7 @@ import LeftSidebar from '../LeftSidebar';
 import TabAbout from '../Tabs/about';
 import TabDisclaimers from '../Tabs/disclaimers';
 import TabHelp from '../Tabs/help';
+import TabPlugins from '../Tabs/plugins';
 import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
@@ -103,12 +104,13 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>,
+        <div/>, 
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
         <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
-        <TabWallet onCloseTab={() => handleChangeComponent(1)}/>
+        <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 
     const handleChangeComponent = (index) => {
@@ -169,7 +171,10 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
                         <Content style={{ height: '100%', overflowY: 'auto', position: 'absolute', marginLeft: isSiderCollapsed ? '0' : '100%', width: '100%', transition: 'all 0.2s' }}>
                             {selectedSession  && 
                                 <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                                    <ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
+                                    <ChatBox 
+                                        onChangeSessionInfo={handleChangeSessionInfo} 
+                                        onChangeComponent={handleChangeComponent}
+                                        curRightComponent={curRightComponent}/>
                                 </div>}
                             {curRightComponent !== 1 && componentList[curRightComponent]}
                         </Content>

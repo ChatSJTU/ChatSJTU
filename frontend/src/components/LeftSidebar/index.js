@@ -285,9 +285,9 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                                 <Menu>
                                     <Menu.Item icon={<UserOutlined />} key="0">{userProfile?.username}</Menu.Item>
                                     <Menu.Item icon={<WalletOutlined />} key="1"
-                                        onClick={handleChangeComponent(6)}>{t('LeftSidebar_Account_Btn_Layer2')}</Menu.Item>
+                                        onClick={handleChangeComponent(7)}>{t('LeftSidebar_Account_Btn_Layer2')}</Menu.Item>
                                     <Menu.Item icon={<SettingOutlined />} key="2"
-                                        onClick={handleChangeComponent(5)}>{t('LeftSidebar_Account_Btn_Layer3')}</Menu.Item>
+                                        onClick={handleChangeComponent(6)}>{t('LeftSidebar_Account_Btn_Layer3')}</Menu.Item>
                                     <Menu.Divider key="3"></Menu.Divider>
                                     <Menu.Item style={{color: 'red'}} icon={<LogoutOutlined />} key="4"
                                         onClick={onLogoutClick}>{t('LeftSidebar_Account_Btn_Layer4')}</Menu.Item>

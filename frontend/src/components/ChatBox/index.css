@@ -22,4 +22,9 @@
     max-height: 144px;  /* 高于六行时不再变化 */
     overflow-y: auto;
 }
-  
+
+.card_label{
+    color: #aaaaaa;
+    font-size: 0.8125rem;
+	letter-spacing: 0.75px;
+}

@@ -29,7 +29,7 @@ class CanteenPlugin(StandardPlugin):
                     (canteen.get("Seat_u", "") / canteen.get("Seat_s", "") * 100),
                 )
             return True, resp_str
-        except Exception:
+        except Exception as e:
             print(e)
             return False, "快捷命令出现错误"
 

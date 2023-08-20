@@ -12,10 +12,11 @@ import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
 import { fetchUserProfile, getSettings } from '../../services/user';
+import { fetchPluginList } from '../../services/plugins';
 
 import './index.css'
 
-const { Content, Sider, Footer } = Layout;
+const { Content, Sider } = Layout;
 
 const MainLayout = ({handleLogout, changeLanguage}) => {
 
@@ -23,6 +24,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
     const [selectedSession, setSelectedSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
+    const [qcmdsList, setQcmdsList] = useState(null);
 
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -32,6 +34,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
     useEffect(() => {
         fetchUserInfo();
         fetchSettings();
+        fetchPluginAndQcmds();
     }, []);
 
     // 获取登录用户信息
@@ -56,6 +59,17 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
             message.error(t('MainLayout_FetchSettingsError'), 2);
         }
     };
+
+    //获取插件列表、快捷指令列表
+    const fetchPluginAndQcmds = async () => {
+        try {
+            const data = await fetchPluginList();
+            setQcmdsList(data);
+        } catch (error) {
+            console.error('Failed to fetch plugins:', error);
+            message.error('获取插件列表错误', 2);
+        }
+    }
 
     //选中会话（在LeftSider中）
     const handleSelectSession = (session) => {
@@ -121,6 +135,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                     settings,
                     setSettings,
                     fetchSettings,
+                    qcmdsList,
                 }}>
                 <Layout className="background fade-in"
                     style={{

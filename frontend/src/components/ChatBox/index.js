@@ -10,8 +10,9 @@ import { useTranslation } from 'react-i18next';
 
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
-import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
+import { qcmdPromptsList } from '../../services/plugins'
 import { SessionContext } from '../../contexts/SessionContext';
+import { UserContext } from '../../contexts/UserContext';
 import { Base64 } from 'js-base64';
 
 import './index.css'
@@ -22,6 +23,7 @@ const { Text, Paragraph } = Typography;
 function ChatBox({ onChangeSessionInfo, curRightComponent}) {
 
     const {selectedSession} = useContext(SessionContext);
+    const {qcmdsList} = useContext(UserContext);
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数

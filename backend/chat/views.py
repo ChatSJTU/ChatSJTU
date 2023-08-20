@@ -12,6 +12,7 @@ from chat.core import (
     senword_detector_strict,
 )
 from chat.core.errors import ChatError
+from chat.core.qcmd import qcmd_plugins_list_serialized
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
@@ -21,7 +22,7 @@ from asgiref.sync import sync_to_async
 from adrf.decorators import api_view
 from django.contrib.admin.options import transaction
 from django.forms.utils import ValidationError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import F
 
@@ -378,3 +379,14 @@ async def user_preference(request):
         await preference.asave()
         serializer = UserPreferenceSerializer(preference)
         return JsonResponse(serializer.data)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def list_plugins(request):
+    return HttpResponse(
+        qcmd_plugins_list_serialized,
+        content_type="application/json",
+        status=200,
+    )

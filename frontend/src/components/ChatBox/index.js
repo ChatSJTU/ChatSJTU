@@ -126,7 +126,8 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         try {
             const messageData = { 
                 message: Base64.encode(userMessage),
-                model: selectedModel
+                model: selectedModel,
+                plugins: selectedPlugins,
             };  // 存储请求数据到变量
             setInput('');
             handleCalcRows('');

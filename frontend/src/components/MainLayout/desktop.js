@@ -26,6 +26,8 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
     const [qcmdsList, setQcmdsList] = useState(null);
+    const [pluginList, setPluginList] = useState(null);
+    const [selectedPlugins, setSelectedPlugins] = useState([]);
 
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -65,7 +67,8 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
     const fetchPluginAndQcmds = async () => {
         try {
             const data = await fetchPluginList();
-            setQcmdsList(data);
+            setQcmdsList(data.qcmd);
+            setPluginList(data.fc);
         } catch (error) {
             console.error('Failed to fetch plugins:', error);
             message.error('获取插件列表错误', 2);
@@ -91,6 +94,15 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                 ...prevSession,
                 ...newData,
                 }));
+        }
+    };
+
+    //选择或取消选择插件
+    const handleSelectPlugin = (pluginId) => {
+        if (selectedPlugins.includes(pluginId)) {
+            setSelectedPlugins(selectedPlugins.filter(id => id !== pluginId));
+        } else {
+            setSelectedPlugins([...selectedPlugins, pluginId]);
         }
     };
     
@@ -138,6 +150,9 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                     setSettings,
                     fetchSettings,
                     qcmdsList,
+                    pluginList,
+                    selectedPlugins,
+                    handleSelectPlugin,
                 }}>
                 <Layout className="background fade-in"
                     style={{

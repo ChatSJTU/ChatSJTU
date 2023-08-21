@@ -1,7 +1,7 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover } from 'antd';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider } from 'antd';
 import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
@@ -23,7 +23,7 @@ const { Text, Paragraph } = Typography;
 function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const {selectedSession} = useContext(SessionContext);
-    const {qcmdsList} = useContext(UserContext);
+    const {pluginList, qcmdsList, selectedPlugins} = useContext(UserContext);
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
@@ -501,20 +501,40 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                     {label:'GPT 4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                             ]}/>
                             <div className='card_label'>插件</div>
-                            未启用插件
-                            <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined />} 
+                            {selectedPlugins.length <= 0 
+                                ? '未启用插件'
+                                : <Space direction='vertical'>
+                                    已启用的插件：
+                                    {pluginList.map(item => (
+                                        selectedPlugins.includes(item.id) && 
+                                        <Space>
+                                            <Avatar shape="square" size={24} src={item.icon}/>
+                                            {item.name}
+                                        </Space>
+                                    ))}
+                                </Space>
+                            }
+                            <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
                                 onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
                                 浏览插件商店
                             </Button>
                         </Space>
                         </>
                     }>
-                    <Button size="large">
+                    <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
                         {selectedModel === 'Azure GPT3.5' 
                             ? <ThunderboltOutlined style={{color:'#73c9ca'}} />
                             : <StarOutlined style={{color:'#6d3eb8'}}/>}
                         {selectedModel === 'Azure GPT3.5' ? 'GPT 3.5' : 'GPT 4'}
-                        <EllipsisOutlined/>
+                        {selectedPlugins.length > 0 && 
+                            <>
+                                <Divider type='vertical'/>
+                                {pluginList.map(item => (
+                                    selectedPlugins.includes(item.id) && <Avatar shape="square" size={22} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
+                                ))}
+                            </>
+                        }
+                        <EllipsisOutlined style={{marginLeft: '7px'}}/>
                     </Button>
                 </Popover>
                 <Space>

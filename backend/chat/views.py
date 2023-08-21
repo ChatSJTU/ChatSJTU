@@ -271,6 +271,7 @@ async def send_message(request, session_id):
                 "send_timestamp": user_message_obj.timestamp.isoformat(),
                 "response_timestamp": ai_message_obj.timestamp.isoformat(),
                 "session_rename": session_rename,
+                "plugin_group": ai_message_obj.plugin_group,
             }
         )
 

@@ -1,7 +1,6 @@
 from ...configs import FC_API_ENDPOINT
 from .basePlugin import BasePlugin
 
-from collections.abc import Callable
 from typing import Callable, Awaitable, Union
 from dataclasses import dataclass
 import functools
@@ -166,6 +165,7 @@ class FCEndpoint(BasePlugin):
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 url=FC_API_ENDPOINT + self.route.replace("_", "/"),
+                headers={"content-type": "application/json"},
                 data=msg,
             ) as resp:
                 r = FCResponse(**(await resp.json()))

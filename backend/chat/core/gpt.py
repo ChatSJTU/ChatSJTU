@@ -1,7 +1,9 @@
 from chat.core.errors import ChatError
 from chat.models.message import Message
 from .configs import *
+from .plugins.fc import FCSpec
 
+from dataclasses import asdict
 import tenacity
 import logging
 import openai
@@ -15,6 +17,7 @@ async def __interact_openai(
     msg: list,
     temperature: float,
     max_tokens: int,
+    selected_plugins: list[FCSpec],
     **kwargs,
 ) -> Message:
     """
@@ -30,6 +33,45 @@ async def __interact_openai(
         ChatError: 若出错则抛出以及对应的status code
     """
 
+    functions = (
+        [asdict(fc_spec.definition) for fc_spec in selected_plugins]
+        if selected_plugins
+        else None
+    )
+
+    func_map = {fc_spec.definition.name: fc_spec for fc_spec in selected_plugins}
+
+    async def __parse_response(response: dict) -> Message:
+        finish_reason: str = response["choices"][0]["finish_reason"]
+
+        if finish_reason == "function_call":
+            fc_gpt_resp: dict[str, str] = response["choices"][0]["function_call"]
+
+            fc = func_map[fc_gpt_resp["name"]]
+            arguments = fc_gpt_resp["arguments"]
+
+            fc_success, fc_content = await fc.exec(arguments)
+
+            if not fc_success:
+                raise ChatError(fc_content)
+            else:
+                return Message(
+                    sender=0,
+                    content=fc_content,
+                    flag_qcmd=False,
+                    interrupted=False,
+                    plugin_group=fc.group_id,
+                )
+
+        else:
+            content: str = response["choices"][0]["content"]
+            return Message(
+                sender=0,
+                flag_qcmd=False,
+                content=content,
+                interrupted=finish_reason == "length",
+            )
+
     # 重试装饰器
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -41,18 +83,16 @@ async def __interact_openai(
     async def __interact_with_retry() -> Message:
         try:
             response = await openai.ChatCompletion.acreate(
-                messages=msg, temperature=temperature, max_tokens=max_tokens, **kwargs
+                messages=msg,
+                temperature=temperature,
+                max_tokens=max_tokens if functions is None else None,
+                functions=functions,
+                **kwargs,
             )
+
             assert isinstance(response, dict)
-            content = response["choices"][0]["message"]["content"]
-            finish_reason = response["choices"][0]["finish_reason"]
-            assert isinstance(content, str)
-            return Message(
-                sender=0,
-                flag_qcmd=False,
-                content=content,
-                interrupted=finish_reason == "length",
-            )
+
+            return await __parse_response(response)
 
         except openai.error.InvalidRequestError as e:
             logger.error(e)
@@ -82,7 +122,11 @@ async def __interact_openai(
 
 
 async def interact_with_openai_gpt(
-    msg: list, model_engine="gpt-4", temperature=0.5, max_tokens=1000
+    msg: list,
+    model_engine="gpt-4",
+    temperature=0.5,
+    max_tokens=1000,
+    selected_plugins: list[FCSpec] = [],
 ) -> Message:
     # 使用OpenAI API与GPT交互
 
@@ -92,11 +136,17 @@ async def interact_with_openai_gpt(
     openai.api_base = "https://api.openai.com/v1"
     openai.api_version = None
 
-    return await __interact_openai(msg, temperature, max_tokens, model=model_engine)
+    return await __interact_openai(
+        msg, temperature, max_tokens, selected_plugins=selected_plugins, model=model_engine
+    )
 
 
 async def interact_with_azure_gpt(
-    msg: list, model_engine="gpt-35-turbo-16k", temperature=0.5, max_tokens=1000
+    msg: list,
+    model_engine="gpt-35-turbo-16k",
+    temperature=0.5,
+    max_tokens=1000,
+    selected_plugins: list[FCSpec] = [],
 ) -> Message:
     # 使用Azure API与GPT交互
     openai.api_type = "azure"
@@ -105,7 +155,9 @@ async def interact_with_azure_gpt(
     openai.api_base = AZURE_OPENAI_ENDPOINT
     openai.api_version = "2023-05-15"
 
-    return await __interact_openai(msg, temperature, max_tokens, engine=model_engine)
+    return await __interact_openai(
+        msg, temperature, max_tokens, selected_plugins=selected_plugins, model=model_engine
+    )
 
 
 """

@@ -1,8 +1,9 @@
 # 插件基类定义
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 
-class StandardPlugin(ABC):
+class BasePlugin(ABC):
     @abstractmethod
     def qcmd_description(self) -> dict[str, str]:
         raise NotImplementedError
@@ -20,7 +21,7 @@ class StandardPlugin(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def qcmd_response(self, msg: str) -> str:
+    def qcmd_response(self, msg: str) -> tuple[bool, str]:
         """快捷命令的回复
 
         Args:

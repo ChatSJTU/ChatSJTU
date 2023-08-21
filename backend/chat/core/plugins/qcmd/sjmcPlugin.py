@@ -1,8 +1,8 @@
-from .utils import StandardPlugin
+from .basePlugin import BasePlugin
 import requests
 
 
-class SjmcPlugin(StandardPlugin):
+class SjmcPlugin(BasePlugin):
     """
     获取SJMC服务器信息插件
     """

@@ -1,9 +1,10 @@
-from .utils import StandardPlugin
+from .basePlugin import BasePlugin
+
 import requests
 import json
 
 
-class LibraryPlugin(StandardPlugin):
+class LibraryPlugin(BasePlugin):
     """
     获取图书馆信息插件
     """

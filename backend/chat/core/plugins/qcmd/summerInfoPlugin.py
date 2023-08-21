@@ -1,5 +1,4 @@
-from .utils import StandardPlugin
-import requests
+from .basePlugin import BasePlugin
 
 SUMMER_INFO = """<details>
 <summary>暑期生活信息详情</summary>
@@ -305,7 +304,7 @@ SUMMER_INFO = """<details>
 </details>"""
 
 
-class SummerInfoPlugin(StandardPlugin):
+class SummerInfoPlugin(BasePlugin):
     """
     暑期信息插件
     """

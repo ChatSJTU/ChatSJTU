@@ -36,10 +36,9 @@ async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
 
     return None
 
-async def check_and_handle_fc(msg:str, selected_model: str) -> Union[Message, None]:
-    
 
-    
+async def check_and_handle_fc(msg: str, selected_model: str) -> Union[Message, None]:
+    pass
 
 
 async def handle_message(

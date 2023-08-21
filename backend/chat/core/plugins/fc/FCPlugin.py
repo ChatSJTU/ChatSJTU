@@ -2,7 +2,7 @@ from ...configs import FC_API_ENDPOINT
 from .basePlugin import BasePlugin
 
 from collections.abc import Callable
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, Union
 from dataclasses import dataclass
 import aiohttp
 
@@ -27,7 +27,7 @@ class FCResponse:
 
 
 class FCGroup(BasePlugin):
-    def __init__(self, name: str, parent: BasePlugin | None):
+    def __init__(self, name: str, parent: Union[BasePlugin, None]):
         if parent is None:
             self.route = ""
         else:

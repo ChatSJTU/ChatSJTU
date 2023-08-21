@@ -146,6 +146,10 @@ async def session_messages(request, session_id):
 async def send_message(request, session_id):
     user_message: str = base64.b64decode(request.data.get("message")).decode()
     selected_model: str = request.data.get("model")
+
+    plugins: list[str] = request.data.get("plugins")
+    plugins = plugins if plugins else []
+
     regenerate: bool = user_message == "%regenerate%"
     cont: bool = user_message == "continue"
     permission, isStu = await check_usage(request.user)
@@ -202,6 +206,7 @@ async def send_message(request, session_id):
             session=session,
             permission=permission,
             before=before,
+            plugins=plugins,
         )
 
         # 这里需要原子性 如果在传输途中session被删除仍然可以进行rollback

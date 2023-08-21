@@ -4,13 +4,15 @@ from chat.core.errors import ChatError
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
 from .utils import senword_detector, senword_detector_strict
 from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
-from .plugin import check_and_exec_qcmds, PluginResponse
+from .plugin import check_and_exec_qcmds, PluginResponse, fc_trigger
+from .plugins.fc import FCSpec
 
 from django.utils.timezone import datetime
 from django.contrib.auth.models import User
 from typing import Union
 
 import logging
+import functools
 import time
 
 logger = logging.getLogger(__name__)
@@ -48,7 +50,7 @@ async def handle_message(
     session: Session,
     permission: bool,
     before: datetime,
-    msgType: str = "plain",
+    plugins: list[str],
 ) -> Message:
     """消息处理的主入口
 
@@ -76,6 +78,17 @@ async def handle_message(
     if senword_detector_strict.find(msg):
         time.sleep(1)  # 避免处理太快前端显示闪烁
         raise ChatError("请求存在敏感词")
+
+    def build_fcspec(id: str):
+        trigger, fc_spec = fc_trigger(id)
+        if not trigger:
+            raise ChatError("无插件匹配")
+        else:
+            return fc_spec
+
+    selected_plugins: list[FCSpec] = functools.reduce(
+        lambda x, y: x + y, map(build_fcspec, plugins), []
+    )
 
     use_strict_prompt = senword_detector.find(msg)
 
@@ -128,6 +141,7 @@ async def handle_message(
             model_engine="gpt-35-turbo-16k",
             temperature=user_preference.temperature,
             max_tokens=user_preference.max_tokens,
+            selected_plugins=selected_plugins,
         )
     elif selected_model == "OpenAI GPT4":
         response = await interact_with_openai_gpt(
@@ -135,6 +149,7 @@ async def handle_message(
             model_engine="gpt-4",
             temperature=user_preference.temperature,
             max_tokens=user_preference.max_tokens,
+            selected_plugins=selected_plugins,
         )
     else:
         raise ChatError("模型名错误")

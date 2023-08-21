@@ -12,7 +12,7 @@ from chat.core import (
     senword_detector_strict,
 )
 from chat.core.errors import ChatError
-from chat.core.qcmd import qcmd_plugins_list_serialized
+from chat.core.plugin import plugins_list_serialized
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
@@ -386,7 +386,7 @@ async def user_preference(request):
 @permission_classes([IsAuthenticated])
 async def list_plugins(request):
     return HttpResponse(
-        qcmd_plugins_list_serialized,
+        plugins_list_serialized,
         content_type="application/json",
         status=200,
     )

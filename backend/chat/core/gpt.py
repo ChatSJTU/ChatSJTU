@@ -3,8 +3,8 @@ from chat.models.message import Message
 from .configs import *
 from .plugins.fc import FCSpec
 
-from dataclasses import asdict
 from typing import Any, Callable, Coroutine
+from dataclasses import asdict
 import tenacity
 import logging
 import openai

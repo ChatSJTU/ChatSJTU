@@ -94,7 +94,7 @@ async def __interact_openai(
             response = await openai.ChatCompletion.acreate(
                 messages=msg,
                 temperature=temperature,
-                max_tokens=max_tokens if not selected_plugins else None,
+                max_tokens=max_tokens,
                 **kwargs,
             )
 

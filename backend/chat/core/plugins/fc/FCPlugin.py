@@ -40,7 +40,7 @@ class FCGroup(BasePlugin):
         else:
             self.description = {}
 
-        self.routes: dict[str, FCGroup | FCEndpoint] = dict()
+        self.routes: dict[str, Union[FCGroup, FCEndpoint]] = dict()
 
     def add_route(self, route: str, description: str) -> None:
         first, second = extract_route(route)
@@ -70,7 +70,7 @@ class FCGroup(BasePlugin):
         else:
             return fc.fc_trigger(second)
 
-    def fc_description(self) -> dict | list:
+    def fc_description(self) -> Union[dict, list]:
         if self.name == "root":
             return [fc.fc_description() for fc in self.routes.values()]
         else:

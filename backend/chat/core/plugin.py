@@ -37,12 +37,11 @@ def build_FC_Group() -> fc.FCGroup:
     resp: list[dict] = requests.get(FC_API_ENDPOINT + "/fc/def").json()
     for plugin in resp:
         desc = PluginDescription(**plugin)
-        group.add_route(desc.name, desc.name, desc.description)
+        group.add_route(desc.name, desc.description)
     return group
 
 
 BaseFC = build_FC_Group()
-
 plugins_list_serialized: bytes = json.dumps(
     {
         "qcmd": [plugin.qcmd_description() for plugin in qcmd_plugins_list],

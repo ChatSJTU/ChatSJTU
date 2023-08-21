@@ -36,26 +36,24 @@ class FCGroup(BasePlugin):
         self.name = name
 
         if not name == "root":
-            self.description = {"name": name, "description": f"Plugin Group {name}"}
+            self.description = {"name": name}
         else:
             self.description = {}
 
         self.routes: dict[str, Union[FCGroup, FCEndpoint]] = dict()
 
-    def add_route(self, id: str, route: str, description: str) -> None:
+    def add_route(self, route: str, description: str) -> None:
         first, second = extract_route(route)
         print(first, second)
         if second == "":
-            self.routes[first] = FCEndpoint(
-                id=id, path=first, description=description, parent=self
-            )
+            self.routes[first] = FCEndpoint(first, description, self)
         else:
             fcgroup = self.routes.get(first, None)
 
             if fcgroup is None:
                 fcgroup = FCGroup(first, self)
             assert isinstance(fcgroup, FCGroup)
-            fcgroup.add_route(id=id, route=second, description=description)
+            fcgroup.add_route(second, description)
             self.routes[first] = fcgroup
 
     def get_route(self) -> str:
@@ -86,10 +84,9 @@ class FCEndpoint(BasePlugin):
     route: str
     description: dict[str, str]
 
-    def __init__(self, id: str, path: str, description: str, parent: FCGroup):
-        self.id = id
+    def __init__(self, path: str, description: str, parent: FCGroup):
         self.route = parent.get_route() + "/" + path
-        self.description = {"id": id, "name": path, "description": description}
+        self.description = {"name": path, "description": description}
 
     def fc_description(self) -> dict[str, str]:
         return self.description

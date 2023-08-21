@@ -387,6 +387,25 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
                                         }
+                                    {(item.sender === 0 && !item.flag_qcmd && item.plugin_group!=='') &&
+                                        <Popover placement="topLeft" arrow={false} 
+                                            content={
+                                                <Space direction='vertical'>
+                                                    本回复调用了插件：
+                                                    {pluginList.map(plugin => (
+                                                        item.plugin_group === plugin.id && 
+                                                        <Space>
+                                                            <Avatar shape="square" size={24} src={plugin.icon}/>
+                                                            {plugin.name}
+                                                        </Space>
+                                                    ))}
+                                                </Space>
+                                            }>
+                                            {pluginList.map(plugin => item.plugin_group === plugin.id && 
+                                                <Avatar shape="square" size={20} src={plugin.icon} style={{marginTop: '-2px'}}/>
+                                            )}
+                                        </Popover>
+                                        }
                                     {(item.sender === 0 && !item.flag_qcmd && item.generation !== 0) &&
                                         <div style={{marginLeft:'7px'}}>{t('ChatBox_Tag_Reply')} {`${item.generation}`}</div> }
                                     <div style={{ flex: '1' }}></div>
@@ -531,7 +550,8 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             <>
                                 <Divider type='vertical'/>
                                 {pluginList.map(item => (
-                                    selectedPlugins.includes(item.id) && <Avatar shape="square" size={22} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
+                                    selectedPlugins.includes(item.id) && 
+                                    <Avatar shape="square" size={20} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
                                 ))}
                             </>
                         }

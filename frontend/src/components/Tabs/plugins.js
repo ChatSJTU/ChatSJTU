@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Layout, Typography, Button, Card, Checkbox, Avatar } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Layout, Typography, Button, Card, Checkbox, Avatar, Tag, Space } from 'antd';
+import { CloseOutlined, ExperimentTwoTone } from '@ant-design/icons';
 import { UserContext } from "../../contexts/UserContext";
 
 import './style.css'
@@ -20,7 +20,7 @@ function TabPlugins ({ onCloseTab }) {
     return(
         <Layout style={{ height: '100%'}}>
             <Header className='Header' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2>插件商店</h2>
+                    <Space><h2>插件商店</h2><ExperimentTwoTone style={{fontSize:'18px'}}/></Space>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>
@@ -32,7 +32,7 @@ function TabPlugins ({ onCloseTab }) {
                             style={{border: selectedPlugins.includes(item.id) ? '2px solid #1677FF' : ''}}
                         >
                         <Checkbox 
-                            style={{ float: 'right' }} 
+                            style={{ float: 'right', marginTop:'-2px' }} 
                             onChange={() => handleSelectPlugin(item.id)}
                             checked={selectedPlugins.includes(item.id)}/>
                         <Card.Meta 

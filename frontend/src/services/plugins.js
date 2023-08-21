@@ -18,6 +18,7 @@ export async function fetchPluginList() {
     }
 };
 
+//自动补全提示词列表
 export const qcmdPromptsList = [
     {role: 'IEEE Academic Writing Consultant', prompt: "I want you to act as an academic writing consultant and assist me in polishing an IEEE paper. Please focus on improving the paper's language, clarity, and overall presentation to meet the high standards required by IEEE publications. My first request is '%userinput%'"},
     {role: 'SCI Academic Writing Consultant', prompt: "Act as an academic consultant to improve my SCI paper's acceptance chances. Refine language, enhance clarity, and maintain scientific terminology. Check data accuracy and structure, follow journal guidelines. My first request is '%userinput%'"},

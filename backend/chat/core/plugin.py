@@ -1,10 +1,8 @@
-from dataclasses import dataclass
-
-from rest_framework.compat import requests
-
 from .configs import FC_API_ENDPOINT
 from .plugins import qcmd, fc
 
+from dataclasses import dataclass
+import requests
 import json
 
 
@@ -24,24 +22,22 @@ class PluginResponse:
     content: str
 
 
-@dataclass(init=True)
-class PluginDescription:
-    name: str
-    description: str
-    parameters: dict
-
-
 def build_FC_Group() -> fc.FCGroup:
     group = fc.FCGroup("root", None)
     assert FC_API_ENDPOINT is not None
     resp: list[dict] = requests.get(FC_API_ENDPOINT + "/fc/def").json()
     for plugin in resp:
-        desc = PluginDescription(**plugin)
-        group.add_route(desc.name, desc.name, desc.description)
+        desc = fc.FCDefinition(**plugin)
+        group.add_route(desc.name, desc)
     return group
 
 
 BaseFC = build_FC_Group()
+
+
+def fc_trigger(id: str):
+    return BaseFC.fc_trigger(id)
+
 
 plugins_list_serialized: bytes = json.dumps(
     {
@@ -66,14 +62,4 @@ def check_and_exec_qcmds(msg: str) -> PluginResponse:
         if plugin.qcmd_trigger(msg):
             success, response = plugin.qcmd_response(msg)
             return PluginResponse(triggered=True, success=success, content=response)
-    return PluginResponse(triggered=False, success=False, content="无插件匹配")
-
-
-async def check_and_exec_plugins(name: str, msg: str) -> PluginResponse:
-    triggered, func = BaseFC.fc_trigger(name)
-
-    if triggered:
-        success, content = await func(msg)
-        return PluginResponse(triggered=True, success=success, content=content)
-    else:
-        return PluginResponse(triggered=False, success=False, content="无插件匹配")
+    return PluginResponse(triggered=False, success=False, content="无指令匹配")

@@ -4,6 +4,7 @@ from .basePlugin import BasePlugin
 from collections.abc import Callable
 from typing import Callable, Awaitable, Union
 from dataclasses import dataclass
+import functools
 import aiohttp
 
 
@@ -26,28 +27,53 @@ class FCResponse:
     data: str
 
 
+@dataclass(init=True)
+class FCDefinition:
+    name: str
+    description: str
+    parameters: dict
+
+
+@dataclass
+class FCSpec:
+    exec: Callable[[str], Awaitable[tuple[bool, str]]]
+    group_id: str
+    definition: FCDefinition
+
+
 class FCGroup(BasePlugin):
-    def __init__(self, name: str, parent: Union[BasePlugin, None]):
+    route: str
+    name: str
+    description: dict[str, str]
+
+    def __init__(self, path: str, parent: Union[BasePlugin, None]):
         if parent is None:
             self.route = ""
+            self.fcgroup_id = ""
+            self.fc_id = ""
         else:
-            self.route = parent.get_route() + "/" + name
+            self.route = parent.get_route() + "/" + path
+            self.fcgroup_id = parent.get_fc_id()
+            self.fc_id = self.fcgroup_id + "_" + path if self.fcgroup_id else path
 
-        self.name = name
+        self.path = path
 
-        if not name == "root":
-            self.description = {"name": name, "description": f"Plugin Group {name}"}
+        if not path == "root":
+            self.description = {
+                "id": self.fc_id,
+                "name": path,
+                "description": f"Plugin Group {path}",
+            }
         else:
             self.description = {}
 
         self.routes: dict[str, Union[FCGroup, FCEndpoint]] = dict()
 
-    def add_route(self, id: str, route: str, description: str) -> None:
+    def add_route(self, route: str, definition: FCDefinition) -> None:
         first, second = extract_route(route)
-        print(first, second)
         if second == "":
             self.routes[first] = FCEndpoint(
-                id=id, path=first, description=description, parent=self
+                path=first, definition=definition, parent=self
             )
         else:
             fcgroup = self.routes.get(first, None)
@@ -55,30 +81,42 @@ class FCGroup(BasePlugin):
             if fcgroup is None:
                 fcgroup = FCGroup(first, self)
             assert isinstance(fcgroup, FCGroup)
-            fcgroup.add_route(id=id, route=second, description=description)
+            fcgroup.add_route(route=second, definition=definition)
             self.routes[first] = fcgroup
+
+    def get_fc_id(self) -> str:
+        return self.fc_id
 
     def get_route(self) -> str:
         return self.route
 
-    def fc_trigger(
-        self, route: str
-    ) -> tuple[bool, Callable[[str], Awaitable[tuple[bool, str]]]]:
+    def get_group_id(self) -> str:
+        return self.fcgroup_id
+
+    def get_fc_specs(self) -> list[FCSpec]:
+        return functools.reduce(
+            lambda x, y: x + y, [fc.get_fc_specs() for fc in self.routes.values()], []
+        )
+
+    def fc_trigger(self, route: str) -> tuple[bool, list[FCSpec]]:
         first, second = extract_route(route)
         fc = self.routes.get(first, None)
 
         if fc is None:
-            return False, dummy_failure
+            return False, []
         else:
-            return fc.fc_trigger(second)
+            if second == "":
+                return True, self.get_fc_specs()
+            else:
+                return self.fc_trigger(second)
 
     def fc_description(self) -> Union[dict, list]:
-        if self.name == "root":
+        if self.fc_id == "":
             return [fc.fc_description() for fc in self.routes.values()]
         else:
             return dict(
-                **self.description,
                 plugins=[fc.fc_description() for fc in self.routes.values()],
+                **self.description,
             )
 
 
@@ -86,21 +124,42 @@ class FCEndpoint(BasePlugin):
     route: str
     description: dict[str, str]
 
-    def __init__(self, id: str, path: str, description: str, parent: FCGroup):
-        self.id = id
+    def __init__(self, path: str, definition: FCDefinition, parent: FCGroup):
         self.route = parent.get_route() + "/" + path
-        self.description = {"id": id, "name": path, "description": description}
+        self.description = {
+            "id": definition.name,
+            "name": path,
+            "description": definition.description,
+        }
+        self.definition = definition
+        self.fcgroup_id = parent.get_fc_id()
+        self.fc_id = self.fcgroup_id + "_" + path
 
     def fc_description(self) -> dict[str, str]:
         return self.description
 
-    def fc_trigger(
-        self, path: str
-    ) -> tuple[bool, Callable[[str], Awaitable[tuple[bool, str]]]]:
-        return True, self.fc_response
+    def fc_trigger(self, id: str) -> tuple[bool, FCSpec]:
+        return True, FCSpec(
+            exec=self.fc_response, group_id=self.fcgroup_id, definition=self.definition
+        )
+
+    def get_fc_specs(self) -> list[FCSpec]:
+        return [
+            FCSpec(
+                exec=self.fc_response,
+                group_id=self.fcgroup_id,
+                definition=self.definition,
+            )
+        ]
 
     def get_route(self) -> str:
         return self.route
+
+    def get_fcgroup_id(self) -> str:
+        return self.fcgroup_id
+
+    def get_fc_id(self) -> str:
+        return self.fc_id
 
     async def fc_response(self, msg: str) -> tuple[bool, str]:
         assert FC_API_ENDPOINT is not None

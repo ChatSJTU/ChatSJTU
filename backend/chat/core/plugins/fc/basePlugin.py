@@ -25,3 +25,9 @@ class BasePlugin(ABC):
     @abstractmethod
     def get_route(self) -> str:
         raise NotImplementedError
+
+    def get_fcgroup_id(self) -> str:
+        raise NotImplementedError
+
+    def get_fc_id(self) -> str:
+        raise NotImplementedError

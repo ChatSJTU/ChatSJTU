@@ -4,7 +4,7 @@ from chat.core.errors import ChatError
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
 from .utils import senword_detector, senword_detector_strict
 from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
-from .plugin import check_and_exec_qcmds, PluginResponse, fc_trigger
+from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
 from .plugins.fc import FCSpec
 
 from django.utils.timezone import datetime
@@ -80,11 +80,10 @@ async def handle_message(
         raise ChatError("请求存在敏感词")
 
     def build_fcspec(id: str):
-        trigger, fc_spec = fc_trigger(id)
-        if not trigger:
+        try:
+            return fc_get_specs(id)
+        except KeyError:
             raise ChatError("无插件匹配")
-        else:
-            return fc_spec
 
     selected_plugins: list[FCSpec] = functools.reduce(
         lambda x, y: x + y, map(build_fcspec, plugins), []

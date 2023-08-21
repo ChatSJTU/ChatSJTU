@@ -1,9 +1,10 @@
 from chat.models import UserPreference, Session, Message
 from chat.core.errors import ChatError
+
 from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
 from .utils import senword_detector, senword_detector_strict
 from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
-from .qcmd import *
+from .plugin import check_and_exec_qcmds, PluginResponse
 
 from django.utils.timezone import datetime
 from django.contrib.auth.models import User
@@ -13,6 +14,7 @@ import logging
 import time
 
 logger = logging.getLogger(__name__)
+
 
 async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
     """检查并处理是否为快捷命令
@@ -24,15 +26,20 @@ async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
     Error:
         ChatError: 若出错则抛出
     """
-    flag_trig, flag_success, resp = check_and_exec_qcmds(msg)
+    resp: PluginResponse = check_and_exec_qcmds(msg)
 
-    if flag_trig:
-        if flag_success:
-            return Message(content=resp, flag_qcmd=True, sender=0)
+    if resp.triggered:
+        if resp.success:
+            return Message(content=resp.content, flag_qcmd=True, sender=0)
         else:
-            raise ChatError(resp)
+            raise ChatError(resp.content)
 
     return None
+
+async def check_and_handle_fc(msg:str, selected_model: str) -> Union[Message, None]:
+    
+
+    
 
 
 async def handle_message(
@@ -42,6 +49,7 @@ async def handle_message(
     session: Session,
     permission: bool,
     before: datetime,
+    msgType: str = "plain",
 ) -> Message:
     """消息处理的主入口
 

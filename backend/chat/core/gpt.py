@@ -4,6 +4,7 @@ from .configs import *
 from .plugins.fc import FCSpec
 
 from dataclasses import asdict
+from typing import Any, Callable, Coroutine
 import tenacity
 import logging
 import openai
@@ -33,44 +34,52 @@ async def __interact_openai(
         ChatError: 若出错则抛出以及对应的status code
     """
 
-    functions = (
-        [asdict(fc_spec.definition) for fc_spec in selected_plugins]
-        if selected_plugins
-        else None
-    )
+    if selected_plugins:
+        kwargs["functions"] = [
+            asdict(fc_spec.definition) for fc_spec in selected_plugins
+        ]
 
     func_map = {fc_spec.definition.name: fc_spec for fc_spec in selected_plugins}
 
-    async def __parse_response(response: dict) -> Message:
+    async def __parse_response(
+        response: dict, gpt_request_func: Callable[[], Coroutine[Any, Any, dict]]
+    ) -> Message:
         finish_reason: str = response["choices"][0]["finish_reason"]
+        plugin_group = ""
 
         if finish_reason == "function_call":
-            fc_gpt_resp: dict[str, str] = response["choices"][0]["function_call"]
+
+            fc_gpt_resp: dict[str, str] = response["choices"][0]["message"][
+                "function_call"
+            ]
 
             fc = func_map[fc_gpt_resp["name"]]
             arguments = fc_gpt_resp["arguments"]
-
             fc_success, fc_content = await fc.exec(arguments)
+            plugin_group = fc.group_id
 
             if not fc_success:
                 raise ChatError(fc_content)
-            else:
-                return Message(
-                    sender=0,
-                    content=fc_content,
-                    flag_qcmd=False,
-                    interrupted=False,
-                    plugin_group=fc.group_id,
-                )
 
-        else:
-            content: str = response["choices"][0]["content"]
-            return Message(
-                sender=0,
-                flag_qcmd=False,
-                content=content,
-                interrupted=finish_reason == "length",
-            )
+            else:
+                msg.append(
+                    {
+                        "role": "function",
+                        "name": fc.definition.name,
+                        "content": fc_content,
+                    }
+                )
+                response = await gpt_request_func()
+
+        content: str = response["choices"][0]["message"]["content"]
+
+        return Message(
+            sender=0,
+            flag_qcmd=False,
+            content=content,
+            interrupted=finish_reason == "length",
+            plugin_group=plugin_group,
+        )
 
     # 重试装饰器
     @tenacity.retry(
@@ -80,19 +89,18 @@ async def __interact_openai(
         before=tenacity.before_log(logger, logging.DEBUG),
         reraise=True,
     )
-    async def __interact_with_retry() -> Message:
+    async def __interact_with_retry() -> dict:
         try:
             response = await openai.ChatCompletion.acreate(
                 messages=msg,
                 temperature=temperature,
-                max_tokens=max_tokens if functions is None else None,
-                functions=functions,
+                max_tokens=max_tokens if not selected_plugins else None,
                 **kwargs,
             )
 
             assert isinstance(response, dict)
 
-            return await __parse_response(response)
+            return response
 
         except openai.error.InvalidRequestError as e:
             logger.error(e)
@@ -110,7 +118,8 @@ async def __interact_openai(
             raise ChatError("服务器遇到未知错误")
 
     try:
-        return await __interact_with_retry()
+        resp = await __interact_with_retry()
+        return await __parse_response(resp, __interact_with_retry)
 
     except openai.error.RateLimitError as e:
         logger.error(e)
@@ -137,7 +146,7 @@ async def interact_with_openai_gpt(
     openai.api_version = None
 
     return await __interact_openai(
-        msg, temperature, max_tokens, selected_plugins=selected_plugins, model=model_engine
+        msg, temperature, max_tokens, selected_plugins, model=model_engine
     )
 
 
@@ -153,10 +162,10 @@ async def interact_with_azure_gpt(
     openai.organization = None
     openai.api_key = AZURE_OPENAI_KEY
     openai.api_base = AZURE_OPENAI_ENDPOINT
-    openai.api_version = "2023-05-15"
+    openai.api_version = "2023-07-01-preview"
 
     return await __interact_openai(
-        msg, temperature, max_tokens, selected_plugins=selected_plugins, model=model_engine
+        msg, temperature, max_tokens, selected_plugins, engine=model_engine
     )
 
 

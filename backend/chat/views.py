@@ -147,8 +147,8 @@ async def send_message(request, session_id):
     user_message: str = base64.b64decode(request.data.get("message")).decode()
     selected_model: str = request.data.get("model")
 
-    plugins: list[str] = request.data.get("plugins")
-    plugins = plugins if plugins else []
+    plugins = request.data.get("plugins")
+    plugins: list[str] = plugins if plugins is not None else []
 
     regenerate: bool = user_message == "%regenerate%"
     cont: bool = user_message == "continue"

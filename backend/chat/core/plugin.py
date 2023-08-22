@@ -1,11 +1,15 @@
+import tenacity
 from .configs import FC_API_ENDPOINT
 from .plugins import qcmd, fc
 
 from dataclasses import dataclass
 from dacite import from_dict
+import logging
 import requests
 import json
 
+
+logger = logging.getLogger(__name__)
 
 # 支持快捷命令的插件列表
 qcmd_plugins_list: list[qcmd.BasePlugin] = [
@@ -24,16 +28,29 @@ class PluginResponse:
 
 
 def build_fc_group_list() -> dict[str, fc.FCGroup]:
-    assert FC_API_ENDPOINT is not None
-    resp = requests.get(FC_API_ENDPOINT + "/fc/def").json()
+    try:
+        for attempt in tenacity.Retrying(
+            stop=tenacity.stop_after_attempt(3),
+            wait=tenacity.wait_random_exponential(min=1, max=5),
+        ):
+            with attempt:
+                resp = requests.get(FC_API_ENDPOINT + "/fc/def").json()
 
-    group_definitions = [
-        from_dict(data_class=fc.FCGroupDefinition, data=r) for r in resp["data"]
-    ]
+                group_definitions = [
+                    from_dict(data_class=fc.FCGroupDefinition, data=r)
+                    for r in resp["data"]
+                ]
 
-    groups = {definition.id: fc.FCGroup(definition) for definition in group_definitions}
+                groups = {
+                    definition.id: fc.FCGroup(definition)
+                    for definition in group_definitions
+                }
 
-    return groups
+                return groups
+
+    except Exception:
+        logger.info("Failed to build fc group list. Fall back to no-plugin mode.")
+        return {}
 
 
 fc_group_list: dict[str, fc.FCGroup] = build_fc_group_list()

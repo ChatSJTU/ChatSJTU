@@ -3,5 +3,6 @@
     "MainLayout_Footer_TechSupport": "Technical support: ChatSJTU Student Development Team",
     "MainLayout_Footer_ContactLinkText": "Contact Us",
     "MainLayout_FetchUserError": "User does not exist",
-    "MainLayout_FetchSettingsError": "Failed to fetch settings"
+    "MainLayout_FetchSettingsError": "Failed to fetch settings",
+    "MainLayout_FetchPluginsError": "Failed to fetch plugins"
 }

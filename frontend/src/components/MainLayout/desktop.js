@@ -71,7 +71,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
             setPluginList(data.fc);
         } catch (error) {
             console.error('Failed to fetch plugins:', error);
-            message.error('获取插件列表错误', 2);
+            message.error(t('MainLayout_FetchPluginsError'), 2);
         }
     }
 

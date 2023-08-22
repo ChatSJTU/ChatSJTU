@@ -391,7 +391,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                         <Popover placement="topLeft" arrow={false} 
                                             content={
                                                 <Space direction='vertical'>
-                                                    本回复调用了插件：
+                                                    {t('ChatBox_Popover_Title')}
                                                     {pluginList.map(plugin => (
                                                         item.plugin_group === plugin.id && 
                                                         <Space>
@@ -513,18 +513,18 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                     content={
                         <> 
                         <Space direction='vertical'>
-                            <div className='card_label'>模型</div>
+                            <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
                             <Segmented value={selectedModel}
                                 onChange={value => setSelectedModel(value)}
                                 options={[
                                     {label:'GPT 3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
                                     {label:'GPT 4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
                             ]}/>
-                            <div className='card_label'>插件</div>
+                            <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
                             {selectedPlugins.length <= 0 
-                                ? '未启用插件'
+                                ? t('ChatBox_PluginList_NoActivated')
                                 : <Space direction='vertical'>
-                                    已启用的插件：
+                                    {t('ChatBox_PluginList_Title')}
                                     {pluginList.map(item => (
                                         selectedPlugins.includes(item.id) && 
                                         <Space>
@@ -536,7 +536,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             }
                             <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
                                 onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
-                                浏览插件商店
+                                {t('ChatBox_PluginShop_Btn')}
                             </Button>
                         </Space>
                         </>

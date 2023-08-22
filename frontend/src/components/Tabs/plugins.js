@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Button, Card, Checkbox, Avatar, Tag, Space } from 'antd';
 import { CloseOutlined, ExperimentTwoTone } from '@ant-design/icons';
 import { UserContext } from "../../contexts/UserContext";
@@ -17,10 +18,12 @@ function TabPlugins ({ onCloseTab }) {
         setLoaded(true);
     }, []);
 
+    let {t} = useTranslation('Tabs_plugins')
+
     return(
         <Layout style={{ height: '100%'}}>
             <Header className='Header' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Space><h2>插件商店</h2><ExperimentTwoTone style={{fontSize:'18px'}}/></Space>
+                    <Space><h2>{t('Tabs_plugins_Header')}</h2><ExperimentTwoTone style={{fontSize:'18px'}}/></Space>
                 <Button icon={<CloseOutlined />} onClick={onCloseTab}/>
             </Header>
             <Content className={loaded ? 'tab-content float-up' : 'tab-content'} style={{ overflow: 'auto'}}>

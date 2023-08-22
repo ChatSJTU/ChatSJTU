@@ -536,7 +536,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             }
                             <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
                                 onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
-                                {t('ChatBox_PluginShop_Btn')}
+                                {t('ChatBox_PluginStore_Btn')}
                             </Button>
                         </Space>
                         </>

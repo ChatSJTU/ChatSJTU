@@ -20,7 +20,7 @@
     "ChatBox_ErrorText": "Result Generation Failed",
     "ChatBox_CardLabel_1": "Model",
     "ChatBox_CardLabel_2": "Plugin",
-    "ChatBox_PluginShop_Btn": "Plugin Store",
+    "ChatBox_PluginStore_Btn": "Plugin Store",
     "ChatBox_PluginList_Title": "Activated Plugins:",
     "ChatBox_PluginList_NoActivated": "No activated plugins",
     "ChatBox_Popover_Title":"This reply is based on plugins:"

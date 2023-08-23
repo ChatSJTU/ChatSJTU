@@ -79,24 +79,35 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
-                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/VegetablesKimi"><GithubOutlined/></a>,
-                                    <span />
-                                ]}>
-                                <Meta
-                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/VegetablesKimi" />}
-                                    title="VegetablesKimi"
-                                    description={t('Tabs_about_Dev5_Desc')}
-                                />
-                            </Card>
-                            <Card hoverable className="developer-card" size="small"
-                                actions={[
                                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/xjxyys"><GithubOutlined/></a>,
                                     <span />
                                 ]}>
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/xjxyys" />}
                                     title="xjxyys"
+                                    description={t('Tabs_about_Dev5_Desc')}
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/peterzheng98"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/peterzheng98" />}
+                                    title="peterzheng98"
                                     description={t('Tabs_about_Dev6_Desc')}
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/VegetablesKimi"><GithubOutlined/></a>,
+                                    <span />
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/VegetablesKimi" />}
+                                    title="VegetablesKimi"
+                                    description={t('Tabs_about_Dev7_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -107,7 +118,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ff98sha" />}
                                     title="ff98sha"
-                                    description={t('Tabs_about_Dev7_Desc')}
+                                    description={t('Tabs_about_Dev8_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -118,7 +129,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
                                     title="Musicminion"
-                                    description={t('Tabs_about_Dev8_Desc')}
+                                    description={t('Tabs_about_Dev9_Desc')}
                                 />
                             </Card>
                         </div>

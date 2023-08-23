@@ -561,7 +561,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                         {t('ChatBox_PluginStore_Btn')}
                                     </Button>
                                 </>
-                                : '本模型尚未支持插件'
+                                : t('ChatBox_Plugin_NotSupported')
                             }
                         </Space>
                         </>

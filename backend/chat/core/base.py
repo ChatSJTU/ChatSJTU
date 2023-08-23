@@ -1,7 +1,7 @@
 from chat.models import UserPreference, Session, Message
 from chat.core.errors import ChatError
 
-from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
+from .gpt import interact_with_openai_gpt, interact_with_azure_gpt, interact_with_llama2
 from .utils import senword_detector, senword_detector_strict
 from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
 from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
@@ -149,6 +149,13 @@ async def handle_message(
             temperature=user_preference.temperature,
             max_tokens=user_preference.max_tokens,
             selected_plugins=selected_plugins,
+        )
+    elif selected_model == "LLAMA 2":
+        response = await interact_with_llama2(
+            msg=input_list,
+            model_engine="chinese-llama-alpaca-2",
+            temperature=user_preference.temperature,
+            max_tokens=user_preference.max_tokens,
         )
     else:
         raise ChatError("模型名错误")

@@ -44,7 +44,7 @@ async def __interact_openai(
     async def __parse_response(
         response: dict, gpt_request_func: Callable[[], Coroutine[Any, Any, dict]]
     ) -> Message:
-        finish_reason: str = response["choices"][0]["finish_reason"]
+        finish_reason: str = response["choices"][0].get("finish_reason", "")
         plugin_group = ""
 
         if finish_reason == "function_call":
@@ -168,6 +168,23 @@ async def interact_with_azure_gpt(
         msg, temperature, max_tokens, selected_plugins, engine=model_engine
     )
 
+async def interact_with_llama2(
+    msg: list,
+    model_engine="llama2",
+    temperature=0.5,
+    max_tokens=1000,
+    selected_plugins: list[FCSpec] = [],
+) -> Message:
+    # 与部署微调的llama2交互（llama2侧提供仿openai server的接口调用）
+
+    openai.api_type = "open_ai"
+    openai.organization = None
+    openai.api_key = "llama2"
+    openai.api_base = LLAMA2_ENDPOINT
+
+    return await __interact_openai(
+        msg, temperature, max_tokens, selected_plugins, model=model_engine
+    )
 
 """
 与GPT交互，两方API略有不同，但输入输出几乎一致

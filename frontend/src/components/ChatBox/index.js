@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -356,6 +356,24 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         />
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
+
+    const modelInfo = {
+        "Azure GPT3.5": {
+            label: 'GPT 3.5', 
+            icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
+            plugin_support: true
+        },
+        "OpenAI GPT4": {
+            label: 'GPT 4', 
+            icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
+            plugin_support: true
+        },
+        "LLAMA 2": {
+            label: '教我算', 
+            icon: <FireOutlined style={{color:'#f5c004'}}/>,
+            plugin_support: false
+        }
+    }
     
     // sender标识：AI-0，用户-1，错误提示信息-2（仅留在前端）
 
@@ -516,37 +534,42 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
                             <Segmented value={selectedModel}
                                 onChange={value => setSelectedModel(value)}
-                                options={[
-                                    {label:'GPT 3.5', value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
-                                    {label:'GPT 4', value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
-                            ]}/>
+                                options={Object.keys(modelInfo).map(key => ({
+                                    value: key,
+                                    label: modelInfo[key].label,
+                                    icon: modelInfo[key].icon,
+                                  }))
+                                }/>
                             <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
-                            {selectedPlugins.length <= 0 
-                                ? t('ChatBox_PluginList_NoActivated')
-                                : <Space direction='vertical'>
-                                    {t('ChatBox_PluginList_Title')}
-                                    {pluginList.map(item => (
-                                        selectedPlugins.includes(item.id) && 
-                                        <Space>
-                                            <Avatar shape="square" size={24} src={item.icon}/>
-                                            {item.name}
+                            {modelInfo[selectedModel].plugin_support
+                                ? <>
+                                    {selectedPlugins.length <= 0 
+                                        ? t('ChatBox_PluginList_NoActivated')
+                                        : <Space direction='vertical'>
+                                            {t('ChatBox_PluginList_Title')}
+                                            {pluginList.map(item => (
+                                                selectedPlugins.includes(item.id) && 
+                                                <Space>
+                                                    <Avatar shape="square" size={24} src={item.icon}/>
+                                                    {item.name}
+                                                </Space>
+                                            ))}
                                         </Space>
-                                    ))}
-                                </Space>
+                                    }
+                                    <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
+                                        onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
+                                        {t('ChatBox_PluginStore_Btn')}
+                                    </Button>
+                                </>
+                                : t('ChatBox_Plugin_NotSupported')
                             }
-                            <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
-                                onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
-                                {t('ChatBox_PluginStore_Btn')}
-                            </Button>
                         </Space>
                         </>
                     }>
                     <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
-                        {selectedModel === 'Azure GPT3.5' 
-                            ? <ThunderboltOutlined style={{color:'#73c9ca'}} />
-                            : <StarOutlined style={{color:'#6d3eb8'}}/>}
-                        {selectedModel === 'Azure GPT3.5' ? 'GPT 3.5' : 'GPT 4'}
-                        {selectedPlugins.length > 0 && 
+                        {modelInfo[selectedModel].icon}
+                        {modelInfo[selectedModel].label}
+                        {modelInfo[selectedModel].plugin_support && selectedPlugins.length > 0 && 
                             <>
                                 <Divider type='vertical'/>
                                 {pluginList.map(item => (

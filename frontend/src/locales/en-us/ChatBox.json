@@ -23,5 +23,6 @@
     "ChatBox_PluginStore_Btn": "Plugin Store",
     "ChatBox_PluginList_Title": "Activated Plugins:",
     "ChatBox_PluginList_NoActivated": "No activated plugins",
-    "ChatBox_Popover_Title":"This reply is based on plugins:"
+    "ChatBox_Popover_Title":"This reply is based on plugins:",
+    "ChatBox_Plugin_NotSupported": "This model does not yet support plugins"
 }

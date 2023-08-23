@@ -1,5 +1,4 @@
-from .utils import StandardPlugin
-import requests
+from .basePlugin import BasePlugin
 
 SUMMER_INFO = """<details>
 <summary>暑期生活信息详情</summary>
@@ -304,11 +303,17 @@ SUMMER_INFO = """<details>
 </table>
 </details>"""
 
-class SummerInfoPlugin(StandardPlugin):
+
+class SummerInfoPlugin(BasePlugin):
     """
     暑期信息插件
     """
+
+    def qcmd_description(self) -> dict[str, str]:
+        return {"name": "暑期信息", "description": "🏡获取暑期校园生活信息", "command": "/summer"}
+
     def qcmd_trigger(self, msg: str) -> bool:
-        return msg == '/summer'
+        return msg == "/summer"
+
     def qcmd_response(self, msg: str):
         return True, SUMMER_INFO

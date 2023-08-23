@@ -43,7 +43,7 @@
 
 .developer-card .ant-card-meta-avatar {
     margin-top: 8px;
-    margin-left:4px;
+    margin-left: 4px;
 }
   
 
@@ -55,6 +55,33 @@
 .developer-card .ant-card-meta-title {
     margin-top: 4px;
 }   
+
+/* 插件选项卡 */
+.plugin-card-container{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: -12px;
+}
+
+.plugin-card{
+    width: 320px; 
+    margin: 12px; 
+}
+
+.plugin-card .ant-card-meta-avatar {
+    margin-top: 4px;
+    margin-left: 4px;
+}
+
+.plugin-card .ant-card-meta-description {
+    margin-bottom: 4px;
+    margin-top: -4px;
+}   
+
+.plugin-card .ant-card-meta-title {
+    margin-top: 0px;
+}  
 
 /* 设置选项卡 */
 .setting-title{

@@ -20,6 +20,7 @@ class Message(models.Model):
     )
     regenerated = models.BooleanField(verbose_name="是否为重新生成", default=False)
     generation = models.IntegerField(verbose_name="生成的第几次回答", default=1)
+    plugin_group = models.TextField(verbose_name="使用的插件组", default="")
 
     def __str__(self):
         return self.content

@@ -3,5 +3,6 @@
     "MainLayout_Footer_TechSupport": "技术支持：ChatSJTU 学生开发团队",
     "MainLayout_Footer_ContactLinkText": "联系我们",
     "MainLayout_FetchUserError": "用户不存在",
-    "MainLayout_FetchSettingsError": "获取设置项失败"
+    "MainLayout_FetchSettingsError": "获取设置项失败",
+    "MainLayout_FetchPluginsError": "获取插件列表失败"
 }

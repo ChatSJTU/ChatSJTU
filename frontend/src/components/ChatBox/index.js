@@ -1,8 +1,8 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider } from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -10,19 +10,20 @@ import { useTranslation } from 'react-i18next';
 
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
-import { qcmdsList, qcmdPromptsList } from '../../services/qcmd'
+import { qcmdPromptsList } from '../../services/plugins'
 import { SessionContext } from '../../contexts/SessionContext';
+import { UserContext } from '../../contexts/UserContext';
 import { Base64 } from 'js-base64';
 
 import './index.css'
-import { Base64 } from 'js-base64';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 
-function ChatBox({ onChangeSessionInfo, curRightComponent}) {
+function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const {selectedSession} = useContext(SessionContext);
+    const {pluginList, qcmdsList, selectedPlugins} = useContext(UserContext);
     const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
@@ -32,6 +33,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     
     const isFold = useMediaQuery({ minWidth: 768.1, maxWidth: 960 })
     const isFoldMobile = useMediaQuery({ maxWidth: 432 })
@@ -124,7 +126,8 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
         try {
             const messageData = { 
                 message: Base64.encode(userMessage),
-                model: selectedModel
+                model: selectedModel,
+                plugins: selectedPlugins,
             };  // 存储请求数据到变量
             setInput('');
             handleCalcRows('');
@@ -353,6 +356,24 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
         />
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
+
+    const modelInfo = {
+        "Azure GPT3.5": {
+            label: 'GPT 3.5', 
+            icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
+            plugin_support: true
+        },
+        "OpenAI GPT4": {
+            label: 'GPT 4', 
+            icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
+            plugin_support: true
+        },
+        "LLAMA 2": {
+            label: '教我算', 
+            icon: <FireOutlined style={{color:'#f5c004'}}/>,
+            plugin_support: false
+        }
+    }
     
     // sender标识：AI-0，用户-1，错误提示信息-2（仅留在前端）
 
@@ -383,6 +404,25 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd) &&
                                         <Tag bordered={false} style={{marginLeft:'15px'}}>{item.use_model}</Tag>
+                                        }
+                                    {(item.sender === 0 && !item.flag_qcmd && item.plugin_group!=='') &&
+                                        <Popover placement="topLeft" arrow={false} 
+                                            content={
+                                                <Space direction='vertical'>
+                                                    {t('ChatBox_Popover_Title')}
+                                                    {pluginList.map(plugin => (
+                                                        item.plugin_group === plugin.id && 
+                                                        <Space>
+                                                            <Avatar shape="square" size={24} src={plugin.icon}/>
+                                                            {plugin.name}
+                                                        </Space>
+                                                    ))}
+                                                </Space>
+                                            }>
+                                            {pluginList.map(plugin => item.plugin_group === plugin.id && 
+                                                <Avatar shape="square" size={20} src={plugin.icon} style={{marginTop: '-2px'}}/>
+                                            )}
+                                        </Popover>
                                         }
                                     {(item.sender === 0 && !item.flag_qcmd && item.generation !== 0) &&
                                         <div style={{marginLeft:'7px'}}>{t('ChatBox_Tag_Reply')} {`${item.generation}`}</div> }
@@ -457,7 +497,7 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                     onClick={scrollToBottom}
                 /> */}
             <Dropdown placement="topLeft" overlay={
-                    <div style={{display: curRightComponent === 1 ? '' : 'none', width: `${textareaWidth}px`}}>
+                    <div style={{display: curRightComponent === 1 && !isPopoverOpen ? '' : 'none', width: `${textareaWidth}px`}}>
                         <Menu style={{maxHeight: '320px', overflowY: 'auto' }}>
                             {qcmdOptions.map(option => (
                                 <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value, option.label)}>
@@ -486,12 +526,61 @@ function ChatBox({ onChangeSessionInfo, curRightComponent}) {
                 /></div>
             </Dropdown>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Segmented size="large" style={{border: '1px solid #d9d9d9'}} value={selectedModel}
-                    onChange={value => setSelectedModel(value)}
-                    options={[
-                        {label:`${isFold||isFoldMobile ? '3.5':'GPT3.5'}`, value:'Azure GPT3.5', icon:<ThunderboltOutlined style={{color:'#73c9ca'}} />},
-                        {label:`${isFold||isFoldMobile ? '4':'GPT4'}`, value:'OpenAI GPT4', icon:<StarOutlined style={{color:'#6d3eb8'}}/>}
-                ]}/>
+                <Popover trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen}
+                    onOpenChange={(newOpen) => setIsPopoverOpen(newOpen)}
+                    content={
+                        <> 
+                        <Space direction='vertical'>
+                            <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
+                            <Segmented value={selectedModel}
+                                onChange={value => setSelectedModel(value)}
+                                options={Object.keys(modelInfo).map(key => ({
+                                    value: key,
+                                    label: modelInfo[key].label,
+                                    icon: modelInfo[key].icon,
+                                  }))
+                                }/>
+                            <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
+                            {modelInfo[selectedModel].plugin_support
+                                ? <>
+                                    {selectedPlugins.length <= 0 
+                                        ? t('ChatBox_PluginList_NoActivated')
+                                        : <Space direction='vertical'>
+                                            {t('ChatBox_PluginList_Title')}
+                                            {pluginList.map(item => (
+                                                selectedPlugins.includes(item.id) && 
+                                                <Space>
+                                                    <Avatar shape="square" size={24} src={item.icon}/>
+                                                    {item.name}
+                                                </Space>
+                                            ))}
+                                        </Space>
+                                    }
+                                    <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
+                                        onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
+                                        {t('ChatBox_PluginStore_Btn')}
+                                    </Button>
+                                </>
+                                : t('ChatBox_Plugin_NotSupported')
+                            }
+                        </Space>
+                        </>
+                    }>
+                    <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
+                        {modelInfo[selectedModel].icon}
+                        {modelInfo[selectedModel].label}
+                        {modelInfo[selectedModel].plugin_support && selectedPlugins.length > 0 && 
+                            <>
+                                <Divider type='vertical'/>
+                                {pluginList.map(item => (
+                                    selectedPlugins.includes(item.id) && 
+                                    <Avatar shape="square" size={20} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
+                                ))}
+                            </>
+                        }
+                        <EllipsisOutlined style={{marginLeft: '7px'}}/>
+                    </Button>
+                </Popover>
                 <Space>
                     <Button size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
                         {t('ChatBox_ClearInput_Btn')}

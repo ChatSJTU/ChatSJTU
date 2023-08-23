@@ -12,6 +12,7 @@ from chat.core import (
     senword_detector_strict,
 )
 from chat.core.errors import ChatError
+from chat.core.plugin import plugins_list_serialized
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
@@ -21,7 +22,7 @@ from asgiref.sync import sync_to_async
 from adrf.decorators import api_view
 from django.contrib.admin.options import transaction
 from django.forms.utils import ValidationError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import F
 
@@ -145,6 +146,10 @@ async def session_messages(request, session_id):
 async def send_message(request, session_id):
     user_message: str = base64.b64decode(request.data.get("message")).decode()
     selected_model: str = request.data.get("model")
+
+    plugins = request.data.get("plugins")
+    plugins: list[str] = plugins if plugins is not None else []
+
     regenerate: bool = user_message == "%regenerate%"
     cont: bool = user_message == "continue"
     permission, isStu = await check_usage(request.user)
@@ -201,6 +206,7 @@ async def send_message(request, session_id):
             session=session,
             permission=permission,
             before=before,
+            plugins=plugins,
         )
 
         # 这里需要原子性 如果在传输途中session被删除仍然可以进行rollback
@@ -265,6 +271,7 @@ async def send_message(request, session_id):
                 "send_timestamp": user_message_obj.timestamp.isoformat(),
                 "response_timestamp": ai_message_obj.timestamp.isoformat(),
                 "session_rename": session_rename,
+                "plugin_group": ai_message_obj.plugin_group,
             }
         )
 
@@ -378,3 +385,14 @@ async def user_preference(request):
         await preference.asave()
         serializer = UserPreferenceSerializer(preference)
         return JsonResponse(serializer.data)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def list_plugins(request):
+    return HttpResponse(
+        plugins_list_serialized,
+        content_type="application/json",
+        status=200,
+    )

@@ -1,10 +1,24 @@
-export const qcmdsList = [
-    { command: '/jczs', description: '🍜查询食堂实时就餐指数' },
-    { command: '/lib', description: '📖查询图书馆实时人数' },
-    { command: '/sjmc', description: '⛏️获取 SJMC 服务器信息' },
-    { command: '/summer', description: '🏡获取暑期校园生活信息' },
-];
+import { request } from "./request";
 
+// export const qcmdsList = [
+//     { command: '/jczs', description: '🍜查询食堂实时就餐指数' },
+//     { command: '/lib', description: '📖查询图书馆实时人数' },
+//     { command: '/sjmc', description: '⛏️获取 SJMC 服务器信息' },
+//     { command: '/summer', description: '🏡获取暑期校园生活信息' },
+// ];
+
+//获取插件列表等
+export async function fetchPluginList() {
+    try {
+        const response = await request.get('/api/list-plugins/'); 
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch plugin list:', error);
+        throw error;
+    }
+};
+
+//自动补全提示词列表
 export const qcmdPromptsList = [
     {role: 'IEEE Academic Writing Consultant', prompt: "I want you to act as an academic writing consultant and assist me in polishing an IEEE paper. Please focus on improving the paper's language, clarity, and overall presentation to meet the high standards required by IEEE publications. My first request is '%userinput%'"},
     {role: 'SCI Academic Writing Consultant', prompt: "Act as an academic consultant to improve my SCI paper's acceptance chances. Refine language, enhance clarity, and maintain scientific terminology. Check data accuracy and structure, follow journal guidelines. My first request is '%userinput%'"},

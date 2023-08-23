@@ -203,7 +203,7 @@ function TabSettings({ onCloseTab, changeLanguage}) {
                         </Row>
                     </Card>
                     <Title level={4} style={{ marginTop: '25px' }}>{t('Tabs_settings_Subtitle_3')}</Title>
-                    <Card style={{ marginTop: '25px' }} >
+                    <Card style={{ marginTop: '25px' , borderColor: 'rgba(255, 129, 130, 0.4)'}} >
                         <Row>
                             <Col span={18} className="setting-title">
                                 <div><span>{t('Tabs_settings_Risky_1_Head')}</span></div>

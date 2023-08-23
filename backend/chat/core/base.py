@@ -1,18 +1,22 @@
 from chat.models import UserPreference, Session, Message
 from chat.core.errors import ChatError
-from .gpt import interact_with_openai_gpt, interact_with_azure_gpt
+
+from .gpt import interact_with_openai_gpt, interact_with_azure_gpt, interact_with_llama2
 from .utils import senword_detector, senword_detector_strict
 from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
-from .qcmd import *
+from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
+from .plugins.fc import FCSpec
 
 from django.utils.timezone import datetime
 from django.contrib.auth.models import User
 from typing import Union
 
 import logging
+import functools
 import time
 
 logger = logging.getLogger(__name__)
+
 
 async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
     """检查并处理是否为快捷命令
@@ -24,15 +28,19 @@ async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
     Error:
         ChatError: 若出错则抛出
     """
-    flag_trig, flag_success, resp = check_and_exec_qcmds(msg)
+    resp: PluginResponse = check_and_exec_qcmds(msg)
 
-    if flag_trig:
-        if flag_success:
-            return Message(content=resp, flag_qcmd=True, sender=0)
+    if resp.triggered:
+        if resp.success:
+            return Message(content=resp.content, flag_qcmd=True, sender=0)
         else:
-            raise ChatError(resp)
+            raise ChatError(resp.content)
 
     return None
+
+
+async def check_and_handle_fc(msg: str, selected_model: str) -> Union[Message, None]:
+    pass
 
 
 async def handle_message(
@@ -42,6 +50,7 @@ async def handle_message(
     session: Session,
     permission: bool,
     before: datetime,
+    plugins: list[str],
 ) -> Message:
     """消息处理的主入口
 
@@ -69,6 +78,16 @@ async def handle_message(
     if senword_detector_strict.find(msg):
         time.sleep(1)  # 避免处理太快前端显示闪烁
         raise ChatError("请求存在敏感词")
+
+    def build_fcspec(id: str):
+        try:
+            return fc_get_specs(id)
+        except KeyError:
+            raise ChatError("无插件匹配")
+
+    selected_plugins: list[FCSpec] = functools.reduce(
+        lambda x, y: x + y, map(build_fcspec, plugins), []
+    )
 
     use_strict_prompt = senword_detector.find(msg)
 
@@ -121,11 +140,20 @@ async def handle_message(
             model_engine="gpt-35-turbo-16k",
             temperature=user_preference.temperature,
             max_tokens=user_preference.max_tokens,
+            selected_plugins=selected_plugins,
         )
     elif selected_model == "OpenAI GPT4":
         response = await interact_with_openai_gpt(
             msg=input_list,
             model_engine="gpt-4",
+            temperature=user_preference.temperature,
+            max_tokens=user_preference.max_tokens,
+            selected_plugins=selected_plugins,
+        )
+    elif selected_model == "LLAMA 2":
+        response = await interact_with_llama2(
+            msg=input_list,
+            model_engine="chinese-llama-alpaca-2",
             temperature=user_preference.temperature,
             max_tokens=user_preference.max_tokens,
         )

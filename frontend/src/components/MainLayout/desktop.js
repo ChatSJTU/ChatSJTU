@@ -7,15 +7,17 @@ import LeftSidebar from '../LeftSidebar';
 import TabAbout from '../Tabs/about';
 import TabDisclaimers from '../Tabs/disclaimers';
 import TabHelp from '../Tabs/help';
+import TabPlugins from '../Tabs/plugins';
 import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
 import { fetchUserProfile, getSettings } from '../../services/user';
+import { fetchPluginList } from '../../services/plugins';
 
 import './index.css'
 
-const { Content, Sider, Footer } = Layout;
+const { Content, Sider } = Layout;
 
 const MainLayout = ({handleLogout, changeLanguage}) => {
 
@@ -23,6 +25,9 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
     const [selectedSession, setSelectedSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
+    const [qcmdsList, setQcmdsList] = useState(null);
+    const [pluginList, setPluginList] = useState(null);
+    const [selectedPlugins, setSelectedPlugins] = useState([]);
 
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -32,6 +37,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
     useEffect(() => {
         fetchUserInfo();
         fetchSettings();
+        fetchPluginAndQcmds();
     }, []);
 
     // 获取登录用户信息
@@ -57,6 +63,18 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
         }
     };
 
+    //获取插件列表、快捷指令列表
+    const fetchPluginAndQcmds = async () => {
+        try {
+            const data = await fetchPluginList();
+            setQcmdsList(data.qcmd);
+            setPluginList(data.fc);
+        } catch (error) {
+            console.error('Failed to fetch plugins:', error);
+            message.error(t('MainLayout_FetchPluginsError'), 2);
+        }
+    }
+
     //选中会话（在LeftSider中）
     const handleSelectSession = (session) => {
         setCurRightComponent(1);    //切换为聊天框
@@ -78,16 +96,26 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                 }));
         }
     };
+
+    //选择或取消选择插件
+    const handleSelectPlugin = (pluginId) => {
+        if (selectedPlugins.includes(pluginId)) {
+            setSelectedPlugins(selectedPlugins.filter(id => id !== pluginId));
+        } else {
+            setSelectedPlugins([...selectedPlugins, pluginId]);
+        }
+    };
     
     //右侧可显示的组件列表
     const componentList = [
         <div/>,
-        <ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>,
+        <div/>, //<ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>,
         <TabAbout onCloseTab={() => handleChangeComponent(1)}/>,
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
+        <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
         <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
-        <TabWallet onCloseTab={() => handleChangeComponent(1)}/>
+        <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 
     const handleChangeComponent = (index) => {
@@ -121,6 +149,10 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                     settings,
                     setSettings,
                     fetchSettings,
+                    qcmdsList,
+                    pluginList,
+                    selectedPlugins,
+                    handleSelectPlugin,
                 }}>
                 <Layout className="background fade-in"
                     style={{
@@ -159,7 +191,10 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                                         <Content style={{ minHeight: '0', flex: '1' }}>
                                         {selectedSession  && 
                                             <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                                                <ChatBox onChangeSessionInfo={handleChangeSessionInfo} curRightComponent={curRightComponent}/>
+                                                <ChatBox 
+                                                    onChangeSessionInfo={handleChangeSessionInfo} 
+                                                    onChangeComponent={handleChangeComponent}
+                                                    curRightComponent={curRightComponent}/>
                                             </div>}
                                         {curRightComponent !== 1 && componentList[curRightComponent]}
                                         </Content>

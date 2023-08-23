@@ -9,6 +9,7 @@ import Tabs_disclaimer_zh from '../../locales/zh-cn/Tabs_disclaimer.json';
 import Tabs_wallet_zh from '../../locales/zh-cn/Tabs_wallet.json';
 import Tabs_help_zh from '../../locales/zh-cn/Tabs_help.json';
 import Tabs_settings_zh from '../../locales/zh-cn/Tabs_settings.json';
+import Tabs_plugins_zh from '../../locales/zh-cn/Tabs_plugins.json';
 import ChatBox_zh from '../../locales/zh-cn/ChatBox.json';
 import MainLayout_zh from '../../locales/zh-cn/MainLayout.json';
 import MarkdownRenderer_zh from '../../locales/zh-cn/MarkdownRenderer.json';
@@ -20,6 +21,7 @@ import Tabs_disclaimer_en from '../../locales/en-us/Tabs_disclaimer.json';
 import Tabs_wallet_en from '../../locales/en-us/Tabs_wallet.json';
 import Tabs_help_en from '../../locales/en-us/Tabs_help.json';
 import Tabs_settings_en from '../../locales/en-us/Tabs_settings.json';
+import Tabs_plugins_en from '../../locales/en-us/Tabs_plugins.json';
 import ChatBox_en from '../../locales/en-us/ChatBox.json';
 import MainLayout_en from '../../locales/en-us/MainLayout.json';
 import MarkdownRenderer_en from '../../locales/en-us/MarkdownRenderer.json';
@@ -38,6 +40,7 @@ const i18nResources = {
         Tabs_wallet: Tabs_wallet_en,
         Tabs_help: Tabs_help_en,
         Tabs_settings: Tabs_settings_en,
+        Tabs_plugins: Tabs_plugins_en,
         ChatBox: ChatBox_en,
         MainLayout: MainLayout_en,
         MarkdownRenderer: MarkdownRenderer_en
@@ -50,6 +53,7 @@ const i18nResources = {
         Tabs_wallet: Tabs_wallet_zh,
         Tabs_help: Tabs_help_zh,
         Tabs_settings: Tabs_settings_zh,
+        Tabs_plugins: Tabs_plugins_zh,
         ChatBox: ChatBox_zh,
         MainLayout: MainLayout_zh,
         MarkdownRenderer: MarkdownRenderer_zh

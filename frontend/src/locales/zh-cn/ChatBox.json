@@ -17,5 +17,12 @@
     "ChatBox_Retry_Btn": "重试",
     "ChatBox_List_Locale": "暂无数据",
     "ChatBox_WaitingText": "回复生成中（若结果较长或遇用量高峰期，请耐心等待~）",
-    "ChatBox_ErrorText": "回复生成失败"
+    "ChatBox_ErrorText": "回复生成失败",
+    "ChatBox_CardLabel_1": "模型",
+    "ChatBox_CardLabel_2": "插件",
+    "ChatBox_PluginStore_Btn": "浏览插件商店",
+    "ChatBox_PluginList_Title": "已启用的插件：",
+    "ChatBox_PluginList_NoActivated": "未启用插件",
+    "ChatBox_Popover_Title":"本回复调用了插件：",
+    "ChatBox_Plugin_NotSupported": "本模型尚未支持插件"
 }

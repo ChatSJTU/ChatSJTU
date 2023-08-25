@@ -1,7 +1,8 @@
 import React, {useRef, useState, useEffect, useContext} from 'react';
 import { useTranslation } from 'react-i18next';
 import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
-import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined} from '@ant-design/icons';
+import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined, ExportOutlined} from '@ant-design/icons';
+import * as htmlToImage from 'html-to-image';
 
 import { request } from "../../services/request";
 import { SessionContext } from '../../contexts/SessionContext';
@@ -9,7 +10,7 @@ import { UserContext } from '../../contexts/UserContext';
 import './index.css'
 
 const { Content, Footer, Header } = Layout;
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onChangeSessionInfo}) {
     
@@ -132,6 +133,28 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
         }
     }
 
+    //导出(打印）会话
+    const ChatToPic = () => {
+        const container = document.createElement('div');
+        container.style.width = '1080px';
+        const listClone = document.getElementById('chat-history-list').cloneNode(true);
+        listClone.style.overflow = 'visible';
+        container.appendChild(listClone);
+        document.body.appendChild(container);
+
+        const now = new Date();
+        const fileName = `ChatHistory_${now.toLocaleString('default', timeOptions)}.png`;
+    
+        htmlToImage.toPng(container)
+          .then(function (dataUrl) {
+            document.body.removeChild(container); //销毁
+            const link = document.createElement('a');
+            link.download = fileName
+            link.href = dataUrl;
+            link.click();
+          });
+    };
+
     //选中会话
     // const handleSelectSession = (session) => {
     //     // 同步改名selectSession到sessions中
@@ -222,7 +245,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                                 {selectedSession && selectedSession.id === session.id && (
                                     <Space size={0}>
                                         <Button
-                                            className='edit-button'
+                                            className='small-button'
                                             style={{ backgroundColor: 'transparent', marginRight: '-10px' }}
                                             type="text" icon={<EditOutlined />}
                                             onClick= {() => setModalInputOpen(true)}
@@ -245,7 +268,13 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                                             </div>
                                         </Modal>
                                         <Button
-                                            className='delete-button'
+                                            className='small-button'
+                                            style={{backgroundColor:'transparent', marginRight: '-10px'}}
+                                            type="text" icon={<ExportOutlined />}
+                                            onClick={ChatToPic}
+                                        />
+                                        <Button
+                                            className='small-button'
                                             style={{backgroundColor:'transparent', marginRight: '-10px'}}
                                             type="text" icon={<DeleteOutlined />}
                                             onClick={(event) => {

@@ -46,11 +46,7 @@
     box-shadow: none !important;
 }
 
-.delete-button:hover {
-    color: #4287e1 !important;
-}
-
-.edit-button:hover {
+.small-button:hover {
     color: #4287e1 !important;
 }
 

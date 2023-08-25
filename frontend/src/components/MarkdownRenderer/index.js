@@ -65,13 +65,13 @@ const MarkdownRenderer = ({content}) =>{
                     </Space>
                 </div>
                 <pre className={className} style={{fontSize:'14px', margin:'0px', padding:'5px 0px'}}>
-                    {Prism.languages[match[1]] ? <code dangerouslySetInnerHTML={{
+                    {Prism.languages[match[1]] ? <code id='codeblock-content' dangerouslySetInnerHTML={{
                         __html: Prism.highlight(children[0], Prism.languages[match[1]], match[1])
                         }}></code>
-                        : children[0]}
+                        : <code id='codeblock-content'>{children[0]}</code>}
                 </pre>
             </div>
-            : <code className={className} {...props}>
+            : <code id='codeblock-content' className={className} {...props}>
                 {children}
             </code>
         }

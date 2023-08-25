@@ -135,10 +135,17 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
 
     //导出(打印）会话
     const ChatToPic = () => {
-        const container = document.createElement('div');
+        const container = document.createElement('div');    //创建容器并放入list
         container.style.width = '1080px';
         const listClone = document.getElementById('chat-history-list').cloneNode(true);
         listClone.style.overflow = 'visible';
+
+        const codeBlocks = listClone.querySelectorAll('#codeblock-content');
+        console.log(codeBlocks)
+        codeBlocks.forEach((codeBlock) => {
+            codeBlock.style.whiteSpace = 'pre-wrap'; // 设置pre元素自动换行（代码块）
+        });
+
         container.appendChild(listClone);
         document.body.appendChild(container);
 
@@ -146,13 +153,13 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
         const fileName = `ChatHistory_${now.toLocaleString('default', timeOptions)}.png`;
     
         htmlToImage.toPng(container)
-          .then(function (dataUrl) {
-            document.body.removeChild(container); //销毁
-            const link = document.createElement('a');
-            link.download = fileName
-            link.href = dataUrl;
-            link.click();
-          });
+            .then(function (dataUrl) {
+                document.body.removeChild(container); //销毁
+                const link = document.createElement('a');
+                link.download = fileName
+                link.href = dataUrl;
+                link.click();
+            });
     };
 
     //选中会话

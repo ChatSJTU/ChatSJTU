@@ -74,8 +74,10 @@ async def __interact_openai(
                     }
                 )
                 response = await gpt_request_func()
-
-        content: str = response["choices"][0]["message"]["content"]
+        try:
+            content: str = response["choices"][0]["message"]["content"]
+        except KeyError:
+            raise ChatError("服务器网络错误，请稍候重试")
 
         return Message(
             sender=0,

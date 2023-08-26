@@ -54,9 +54,13 @@ async def __interact_openai(
             ]
 
             fc = func_map[fc_gpt_resp["name"]]
-            arguments = fc_gpt_resp["arguments"]
-            fc_success, fc_content = await fc.exec(arguments)
             plugin_group = fc.group_id
+            arguments = fc_gpt_resp["arguments"]
+
+            try:
+                fc_success, fc_content = await fc.exec(arguments)
+            except Exception:
+                raise ChatError('服务器网络错误，请稍候重试')
 
             if not fc_success:
                 raise ChatError(fc_content)

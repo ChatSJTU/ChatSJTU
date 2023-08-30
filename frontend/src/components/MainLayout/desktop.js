@@ -146,6 +146,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
             <UserContext.Provider
                 value={{
                     userProfile,
+                    fetchUserInfo,
                     settings,
                     setSettings,
                     fetchSettings,

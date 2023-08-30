@@ -380,6 +380,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' ,minHeight: '100%',maxHeight: '100%'}}>
         <List
+            id='chat-history-list'
             style={{ flex: 1, overflow: 'auto'}}
             dataSource={messages}
             renderItem={(item, index) => (

@@ -45,7 +45,12 @@ async def sessions(request):
     if request.method == "GET":
         user = request.user  # 从request.user获取当前用户
         # sessions = await Session.objects.filter(user=user)  # 基于当前用户过滤会话
-        sessions = [session async for session in Session.objects.filter(user=user)]
+        sessions = [
+            session
+            async for session in Session.objects.filter(
+                user=user, deleted_time__isnull=True
+            )
+        ]
         data = await sync_to_async(
             lambda sessions: SessionSerializer(sessions, many=True).data
         )(sessions)
@@ -70,7 +75,10 @@ async def sessions(request):
 @permission_classes([IsAuthenticated])
 async def delete_session(request, session_id):
     try:
-        await Session.objects.filter(id=session_id, user=request.user).adelete()
+        session = Session.objects.filter(
+            id=session_id, user=request.user, deleted_time__isnull=True
+        )
+        await sync_to_async(session.update)(deleted_time=timezone.now())
         return JsonResponse({"message": "成功删除会话"})
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
@@ -84,7 +92,8 @@ async def delete_session(request, session_id):
 @permission_classes([IsAuthenticated])
 async def delete_all_sessions(request):
     try:
-        await Session.objects.filter(user=request.user).adelete()
+        sessions = Session.objects.filter(user=request.user, deleted_time__isnull=True)
+        await sync_to_async(sessions.update)(deleted_time=timezone.now())
         return JsonResponse({"message": "All sessions deleted successfully"})
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
@@ -105,7 +114,9 @@ async def rename_session(request, session_id):
             return JsonResponse({"error": "会话名过长"}, status=400)
         if senword_detector_strict.find(new_name):
             return JsonResponse({"error": "存在敏感词"}, status=400)
-        session = await Session.objects.aget(id=session_id, user=request.user)
+        session = await Session.objects.aget(
+            id=session_id, user=request.user, deleted_time__isnull=True
+        )
         session.name = new_name
         session.is_renamed = True
         await session.asave()
@@ -122,7 +133,11 @@ async def rename_session(request, session_id):
 @permission_classes([IsAuthenticated])
 async def session_messages(request, session_id):
     try:
-        filters = {"session__id": session_id, "session__user": request.user}
+        filters = {
+            "session__id": session_id,
+            "session__user": request.user,
+            "session__deleted_time__isnull": True
+        }
 
         messages = [
             message
@@ -158,7 +173,9 @@ async def send_message(request, session_id):
     #     time.sleep(1)   # 避免处理太快前端显示闪烁
     #     return errorresp
     try:
-        session = await Session.objects.aget(id=session_id, user=request.user)
+        session = await Session.objects.aget(
+            id=session_id, user=request.user, deleted_time__isnull=True
+        )
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
 

@@ -13,10 +13,11 @@ const { Title } = Typography;
 function TabWallet ({ onCloseTab }) {
 
     const [loaded, setLoaded] = useState(true);
-    const { userProfile } = useContext(UserContext)
+    const { userProfile, fetchUserInfo } = useContext(UserContext)
 
     useEffect(() => {
         setLoaded(true);
+        fetchUserInfo();
     }, []);
 
     let { t } = useTranslation('Tabs_wallet');

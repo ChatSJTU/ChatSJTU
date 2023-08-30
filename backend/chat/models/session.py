@@ -17,6 +17,7 @@ class Session(models.Model):
     created_time = models.DateTimeField(
         default=timezone.now, db_index=True, editable=True
     )
+    deleted_time = models.DateTimeField(blank=True, null=True, editable=True)
 
     def __str__(self):
         return f"{self.user} : {self.name}"

@@ -23,6 +23,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
+    const [messages, setMessages] = useState([]); 
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
     const [qcmdsList, setQcmdsList] = useState(null);
@@ -142,6 +143,8 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                 setSessions,
                 selectedSession,
                 setSelectedSession,
+                messages,
+                setMessages,
             }}>
             <UserContext.Provider
                 value={{

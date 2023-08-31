@@ -22,7 +22,7 @@ function ExportModalContent ({closeModal} ) {
         minute: '2-digit',
         second: '2-digit',
     };
-    let roleDesc = ['ChatSJTU', userProfile.username, '系统提示'];
+    let roleDesc = ['ChatSJTU', userProfile.username, ''];
 
     //导出会话为图片
     const ChatToPic = () => {
@@ -53,9 +53,12 @@ function ExportModalContent ({closeModal} ) {
     const ChatToMdFile = () => {
         const now = new Date().toLocaleString('default', timeOptions);
         let inputStr = `> 以下会话内容于${now}导出自Chat SJTU\n\n`
-        inputStr += messages.map(
-            message => `**${roleDesc[message.sender]}**  ${message.time}\n\n${message.content}`
-        ).join('\n\n---\n\n');
+        inputStr += messages.map(message => {
+            return message.sender === 2 ?
+                `**${message.time}**\n\n${message.content}` : //系统提示消息，time字段即为“系统提示”
+                `**${roleDesc[message.sender]}**  ${message.time}\n\n${message.content}`;
+        }).join('\n\n---\n\n');
+        
 
         const fileName = `ChatHistory_${now}.md`;
         download(inputStr, fileName, "text/plain");

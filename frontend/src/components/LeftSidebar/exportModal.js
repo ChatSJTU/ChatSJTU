@@ -52,7 +52,7 @@ function ExportModalContent ({closeModal} ) {
 
     const ChatToMdFile = () => {
         const now = new Date().toLocaleString('default', timeOptions);
-        let inputStr = `> 以下会话内容于${now}导出自Chat SJTU\n\n`
+        let inputStr = `> 以下会话内容于 ${now} 导出自 ChatSJTU\n\n`
         inputStr += messages.map(message => {
             return message.sender === 2 ?
                 `**${message.time}**\n\n${message.content}` : //系统提示消息，time字段即为“系统提示”

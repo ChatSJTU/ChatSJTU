@@ -29,6 +29,7 @@
     "react-string-replace": "^1.1.1",
     "rehype-katex": "^6.0.3",
     "rehype-raw": "^6.1.1",
+    "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^3.0.1",
     "remark-html": "^15.0.2",
     "remark-math": "^5.1.1",

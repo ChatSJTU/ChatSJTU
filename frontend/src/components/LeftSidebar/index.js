@@ -136,7 +136,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
 
     const openExportModal = (rounds) => {
         if (rounds === 0) {
-            message.warning("会话为空，无法导出");
+            message.warning(t('LeftSidebar_exportModalError'));
         } else {
             setModalExportOpen(true);
         }
@@ -260,7 +260,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                                             type="text" icon={<ExportOutlined />}
                                             onClick={() => openExportModal(session.rounds)}
                                         />
-                                        <Modal title="导出" open={isModalExportOpen} footer={null} 
+                                        <Modal title={t('LeftSidebar_exportModalTitle')} open={isModalExportOpen} footer={null} 
                                             onCancel={() => setModalExportOpen(false)}
                                             >
                                             <ExportModalContent closeModal={() => setModalExportOpen(false)}/>

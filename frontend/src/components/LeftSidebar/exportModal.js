@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { useTranslation } from 'react-i18next';
 import { Typography, Button, Space } from 'antd';
 import { PictureOutlined, FileMarkdownOutlined } from '@ant-design/icons';
 import { toPng } from 'html-to-image';
@@ -23,6 +24,7 @@ function ExportModalContent ({closeModal} ) {
         second: '2-digit',
     };
     let roleDesc = ['ChatSJTU', userProfile.username, ''];
+    let { t } = useTranslation('exportModal')
 
     //导出会话为图片
     const ChatToPic = () => {
@@ -52,7 +54,7 @@ function ExportModalContent ({closeModal} ) {
 
     const ChatToMdFile = () => {
         const now = new Date().toLocaleString('default', timeOptions);
-        let inputStr = `> 以下会话内容于 ${now} 导出自 ChatSJTU\n\n`
+        let inputStr = `> ${t('exportModal_Msg_Head')} ${now} ${t('exportModal_Msg_Body')} ChatSJTU\n\n`
         inputStr += messages.map(message => {
             return message.sender === 2 ?
                 `**${message.time}**\n\n${message.content}` : //系统提示消息，time字段即为“系统提示”
@@ -72,16 +74,16 @@ function ExportModalContent ({closeModal} ) {
                         icon={<PictureOutlined />} 
                         onClick={ChatToPic}
                         >
-                        导出为图片
+                        {t('exportModal_ExportOpt1')}
                     </Button>
                     <Button 
                         icon={<FileMarkdownOutlined />} 
                         onClick={ChatToMdFile}
                         >
-                        导出为Markdown
+                        {t('exportModal_ExportOpt2')}
                     </Button>
                 </Space>
-            <Title level={5}>分享</Title>
+            <Title level={5}>{t('exportModal_Title2')}</Title>
                 <Text>链接分享暂未上线</Text>
         </Typography>
     )

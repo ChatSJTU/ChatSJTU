@@ -15,5 +15,7 @@
     "LeftSidebar_Utils_Btn_Layer1": "Plugins development",
     "LeftSidebar_Utils_Btn_Layer2": "Disclaimer",
     "LeftSidebar_Utils_Btn_Layer3": "About",
-    "LeftSidebar_CountSession": "Rounds"
+    "LeftSidebar_CountSession": "Rounds",
+    "LeftSidebar_exportModalTitle": "Export",
+    "LeftSidebar_exportModalError": "Cannot export an empty talk"
 }

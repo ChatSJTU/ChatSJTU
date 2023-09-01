@@ -4,6 +4,7 @@ import i18n from "i18next";                     // i18n 的主要模块
 
 import LoginLayout_zh from '../../locales/zh-cn/LoginLayout.json';
 import LeftSidebar_zh  from '../../locales/zh-cn/LeftSidebar.json';
+import exportModal_zh from '../../locales/zh-cn/exportModal.json';
 import Tabs_about_zh from '../../locales/zh-cn/Tabs_about.json';
 import Tabs_disclaimer_zh from '../../locales/zh-cn/Tabs_disclaimer.json';
 import Tabs_wallet_zh from '../../locales/zh-cn/Tabs_wallet.json';
@@ -16,6 +17,7 @@ import MarkdownRenderer_zh from '../../locales/zh-cn/MarkdownRenderer.json';
 
 import LoginLayout_en from '../../locales/en-us/LoginLayout.json';
 import LeftSidebar_en  from '../../locales/en-us/LeftSidebar.json';
+import exportModal_en from '../../locales/en-us/exportModal.json';
 import Tabs_about_en from '../../locales/en-us/Tabs_about.json';
 import Tabs_disclaimer_en from '../../locales/en-us/Tabs_disclaimer.json';
 import Tabs_wallet_en from '../../locales/en-us/Tabs_wallet.json';
@@ -35,6 +37,7 @@ const i18nResources = {
     en: {
         LoginLayout: LoginLayout_en,
         LeftSidebar: LeftSidebar_en,
+        exportModal: exportModal_en,
         Tabs_about: Tabs_about_en,
         Tabs_disclaimer: Tabs_disclaimer_en,
         Tabs_wallet: Tabs_wallet_en,
@@ -48,6 +51,7 @@ const i18nResources = {
     zh: {
         LoginLayout: LoginLayout_zh,
         LeftSidebar: LeftSidebar_zh,
+        exportModal: exportModal_zh,
         Tabs_about: Tabs_about_zh,
         Tabs_disclaimer: Tabs_disclaimer_zh,
         Tabs_wallet: Tabs_wallet_zh,

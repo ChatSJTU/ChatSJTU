@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect, useContext} from 'react';
 import { useTranslation } from 'react-i18next';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input, Tag} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined, ExportOutlined} from '@ant-design/icons';
 
 import ExportModalContent from './exportModal';
@@ -183,7 +183,9 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
         <Layout style={{ height: '100%'}}>
             <Header className='Sider-content'>
                 <Typography style={{margin:'0px 25px'}}>
-                    <Title className='chat-sjtu-title' level={2}>Chat SJTU</Title>
+                    <Title className='chat-sjtu-title' level={2} style={{display: 'flex', alignItems: 'start'}}>Chat SJTU
+                        <Tag style={{ fontWeight: 'normal', marginLeft: '6px'}} color="#4287e1">内测版</Tag>
+                    </Title>
                     <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>{t('LeftSidebar_Subtitle')}</Paragraph>
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>

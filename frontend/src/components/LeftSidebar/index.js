@@ -1,9 +1,9 @@
 import React, {useRef, useState, useEffect, useContext} from 'react';
 import { useTranslation } from 'react-i18next';
-import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input} from 'antd';
+import {Layout, Menu, Typography, Divider, Col, Row, Button, Dropdown, message, Space, Modal, Input, Tag} from 'antd';
 import {PlusCircleOutlined, RocketOutlined, UserOutlined, EllipsisOutlined, QuestionCircleOutlined, DeleteOutlined, EditOutlined, LogoutOutlined, SettingOutlined, CodeOutlined, InfoCircleOutlined, WalletOutlined, AlertOutlined, ExportOutlined} from '@ant-design/icons';
-import * as htmlToImage from 'html-to-image';
 
+import ExportModalContent from './exportModal';
 import { request } from "../../services/request";
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
@@ -19,6 +19,7 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
     const [loaded, setLoaded] = useState(true);
     const [isModalInputOpen, setModalInputOpen] = useState(false);
     const [modalInputValue, setModalInputValue] = useState('');
+    const [isModalExportOpen, setModalExportOpen] = useState(false);
 
     const modalInputRef = useRef(null);
 
@@ -133,34 +134,13 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
         }
     }
 
-    //导出(打印）会话
-    const ChatToPic = () => {
-        const container = document.createElement('div');    //创建容器并放入list
-        container.style.width = '1080px';
-        const listClone = document.getElementById('chat-history-list').cloneNode(true);
-        listClone.style.overflow = 'visible';
-
-        const codeBlocks = listClone.querySelectorAll('#codeblock-content');
-        console.log(codeBlocks)
-        codeBlocks.forEach((codeBlock) => {
-            codeBlock.style.whiteSpace = 'pre-wrap'; // 设置pre元素自动换行（代码块）
-        });
-
-        container.appendChild(listClone);
-        document.body.appendChild(container);
-
-        const now = new Date();
-        const fileName = `ChatHistory_${now.toLocaleString('default', timeOptions)}.png`;
-    
-        htmlToImage.toPng(container)
-            .then(function (dataUrl) {
-                document.body.removeChild(container); //销毁
-                const link = document.createElement('a');
-                link.download = fileName
-                link.href = dataUrl;
-                link.click();
-            });
-    };
+    const openExportModal = (rounds) => {
+        if (rounds === 0) {
+            message.warning(t('LeftSidebar_exportModalError'));
+        } else {
+            setModalExportOpen(true);
+        }
+    }
 
     //选中会话
     // const handleSelectSession = (session) => {
@@ -203,7 +183,9 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
         <Layout style={{ height: '100%'}}>
             <Header className='Sider-content'>
                 <Typography style={{margin:'0px 25px'}}>
-                    <Title className='chat-sjtu-title' level={2}>Chat SJTU</Title>
+                    <Title className='chat-sjtu-title' level={2} style={{display: 'flex', alignItems: 'start'}}>Chat SJTU
+                        <Tag style={{ fontWeight: 'normal', marginLeft: '6px'}} color="#4287e1">内测版</Tag>
+                    </Title>
                     <Paragraph style={{ fontSize:'16px', marginBottom: 10}}>{t('LeftSidebar_Subtitle')}</Paragraph>
                 </Typography>
                 <Row style={{margin:'0px 17.5px'}}>
@@ -278,8 +260,13 @@ function LeftSidebar ({ onSelectSession, onLogoutClick, onChangeComponent, onCha
                                             className='small-button'
                                             style={{backgroundColor:'transparent', marginRight: '-10px'}}
                                             type="text" icon={<ExportOutlined />}
-                                            onClick={ChatToPic}
+                                            onClick={() => openExportModal(session.rounds)}
                                         />
+                                        <Modal title={t('LeftSidebar_exportModalTitle')} open={isModalExportOpen} footer={null} 
+                                            onCancel={() => setModalExportOpen(false)}
+                                            >
+                                            <ExportModalContent closeModal={() => setModalExportOpen(false)}/>
+                                        </Modal>
                                         <Button
                                             className='small-button'
                                             style={{backgroundColor:'transparent', marginRight: '-10px'}}

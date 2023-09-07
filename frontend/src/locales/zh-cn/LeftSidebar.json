@@ -15,5 +15,7 @@
     "LeftSidebar_Utils_Btn_Layer1": "扩展开发",
     "LeftSidebar_Utils_Btn_Layer2": "免责声明",
     "LeftSidebar_Utils_Btn_Layer3": "关于我们",
-    "LeftSidebar_CountSession": "轮对话"
+    "LeftSidebar_CountSession": "轮对话",
+    "LeftSidebar_exportModalTitle": "导出",
+    "LeftSidebar_exportModalError": "会话为空，无法导出"
 }

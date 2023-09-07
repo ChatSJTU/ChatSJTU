@@ -5,7 +5,8 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex'
 import remarkHtml from 'remark-html';
-import rehypeRaw from 'rehype-raw'
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import copy from 'copy-to-clipboard';
 import { Button, message, Popconfirm, Space } from 'antd';
 import { CopyOutlined, CodeOutlined } from '@ant-design/icons';
@@ -88,7 +89,7 @@ const MarkdownRenderer = ({content}) =>{
             className='markdown-body'
             children={content}
             remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
-            rehypePlugins={[rehypeKatex, rehypeRaw]}
+            rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSanitize]}
             components={renderers}
             style={{ wordWrap: 'break-word', overflowWrap: 'break-word'}}
             skipHtml={false}

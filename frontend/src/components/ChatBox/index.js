@@ -18,13 +18,12 @@ import { Base64 } from 'js-base64';
 import './index.css'
 
 const { TextArea } = Input;
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
-    const {selectedSession} = useContext(SessionContext);
+    const {selectedSession, messages, setMessages} = useContext(SessionContext);
     const {pluginList, qcmdsList, selectedPlugins} = useContext(UserContext);
-    const [messages, setMessages] = useState([]);           //消息列表中的消息
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
     const [textareaWidth, setTextareaWidth] = useState(0);

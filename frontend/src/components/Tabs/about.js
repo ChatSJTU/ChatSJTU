@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Divider, Button, Card, Avatar } from 'antd';
-import { CloseOutlined, GithubOutlined } from '@ant-design/icons';
+import { CloseOutlined, GithubOutlined, ReadOutlined } from '@ant-design/icons';
 import './style.css'
 
 const { Header, Content } = Layout;
@@ -69,7 +69,7 @@ function TabAbout ({ onCloseTab }) {
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
                                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/Ichigo2315"><GithubOutlined/></a>,
-                                    <span />
+                                    <a target="_blank" rel="noopener noreferrer" href="https://ichigo2315.top"><ReadOutlined /></a>
                                 ]}>
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Ichigo2315" />}
@@ -101,13 +101,24 @@ function TabAbout ({ onCloseTab }) {
                             </Card>
                             <Card hoverable className="developer-card" size="small"
                                 actions={[
+                                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/xxyQwQ"><GithubOutlined/></a>,
+                                    <a target="_blank" rel="noopener noreferrer" href="https://xxyqwq.github.io"><ReadOutlined /></a>
+                                ]}>
+                                <Meta
+                                    avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/xxyQwQ" />}
+                                    title="xxyQwQ"
+                                    description={t('Tabs_about_Dev7_Desc')}
+                                />
+                            </Card>
+                            <Card hoverable className="developer-card" size="small"
+                                actions={[
                                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/VegetablesKimi"><GithubOutlined/></a>,
                                     <span />
                                 ]}>
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/VegetablesKimi" />}
                                     title="VegetablesKimi"
-                                    description={t('Tabs_about_Dev7_Desc')}
+                                    description={t('Tabs_about_Dev8_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -118,7 +129,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/ff98sha" />}
                                     title="ff98sha"
-                                    description={t('Tabs_about_Dev8_Desc')}
+                                    description={t('Tabs_about_Dev9_Desc')}
                                 />
                             </Card>
                             <Card hoverable className="developer-card" size="small"
@@ -129,7 +140,7 @@ function TabAbout ({ onCloseTab }) {
                                 <Meta
                                     avatar={<Avatar size={40} src="https://avatars.githubusercontent.com/Musicminion" />}
                                     title="Musicminion"
-                                    description={t('Tabs_about_Dev9_Desc')}
+                                    description={t('Tabs_about_Dev10_Desc')}
                                 />
                             </Card>
                         </div>

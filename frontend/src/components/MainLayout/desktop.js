@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layout, message } from 'antd';
 
@@ -12,6 +12,7 @@ import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
+import { ThemeContext } from "../../contexts/ThemeContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
 import { fetchPluginList } from '../../services/plugins';
 
@@ -20,6 +21,8 @@ import './index.scss'
 const { Content, Sider } = Layout;
 
 const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
+
+    const userTheme = useContext(ThemeContext);
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
@@ -166,17 +169,17 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                         width: '100vw',
                         height: '100vh',
                         overflow: 'hidden',
-                        background: '#fafafa',
+                        background: userTheme === 'light' ? '#fafafa' :  '#080f18',
                         position: 'relative',
                     }}>
                         <div
                             style={{
                                 width: '80%',
                                 height: '88%',
-                                background: '#fff',
+                                background: userTheme === 'light' ? '#fff' : '#080f18',
                                 borderRadius: '12px',
                                 overflow: 'hidden',
-                                border: '1px solid #ccc',
+                                border: '1px solid ' + userTheme === 'light' ? '#000' : '#080f18',
                                 boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
                                 marginTop: '-14px',
                                 // WebkitMaskImage: '-webkit-radial-gradient(white, black)',

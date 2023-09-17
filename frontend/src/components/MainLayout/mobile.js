@@ -20,7 +20,7 @@ import './index.css'
 
 const { Content, Sider, Footer, Header } = Layout;
 
-const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
+const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
@@ -122,7 +122,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 

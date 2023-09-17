@@ -1,0 +1,94 @@
+@import '../../assets/themes/_themify.scss';
+
+.chat-sjtu-title{
+    font-family: 'Trebuchet MS', Arial, sans-serif;
+    margin-bottom: 5px !important;
+}
+
+.Sider-content{
+    /* background-color: #e8f2ff !important; */
+    @include themify {
+        background-color: themed('Sider-content-color');
+    }
+    height: auto;
+    padding:0px 0px;
+}
+
+.Sider-content Button{
+    @include themify {
+        background-color: themed('primary-color');
+    }
+}
+
+.button-col{
+    padding-left: 7.5px;
+    padding-right: 7.5px;
+}
+
+/* 为 Menu 组件自身的背景设置颜色 */
+.ant-menu {
+    @include themify {
+        background-color: themed('ant-menu-color');
+    }
+    border: none !important;
+}
+
+.ant-menu-item {
+    @include themify {
+        background-color: themed('primary-color');
+    }
+    border-radius: 15px;  
+}
+
+.ant-menu-item:hover{
+    @include themify {
+        background-color: themed('ant-menu-item-hover-color');
+    }
+}
+
+/* 选中时的样式 */
+.ant-menu-item-selected {
+    @include themify {
+        background-color: themed('ant-menu-item-selected-bg-color');
+        box-shadow: 0px 0px 8px themed('ant-menu-item-selected-box-shadow-color');
+        color: themed('reversed-color')
+    }
+}
+
+.ant-menu-item-unselected{
+    @include themify {
+        background-color: themed('primary-color');
+    }
+    box-shadow: none !important;
+}
+
+.delete-button:hover {
+    @include themify {
+        color: themed('button-hover-color');
+    }
+}
+
+.edit-button:hover {
+    @include themify {
+        color: themed('button-hover-color');
+    }
+}
+
+.gradient-divider {
+    height: 1.5px;
+    background: linear-gradient(to right, #a3c2eb, #4287e1, #a3c2eb);
+}
+
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+}
+
+.session-name {
+    animation: fadeIn 0.7s;
+    font-weight: bold;
+}

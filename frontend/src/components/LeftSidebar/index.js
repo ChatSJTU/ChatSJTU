@@ -7,7 +7,7 @@ import ExportModalContent from './exportModal';
 import { request } from "../../services/request";
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
-import './index.css'
+import './index.scss'
 
 const { Content, Footer, Header } = Layout;
 const { Title, Paragraph } = Typography;

@@ -1,0 +1,30 @@
+$light:(
+    primary-color: white,
+    reversed-color: black,
+    prism-text-ordinary: black,
+    Sider-content-color: #e8f2ff,
+    ant-menu-color: #e8f2ff,
+    ant-menu-item-hover-color: #eaeaea,
+    ant-menu-item-selected-bg-color: #f8f8f8,
+    ant-menu-item-selected-box-shadow-color: #296cc4,
+    button-hover-color: #4287e1,
+    gradient-divider-color: #a3c2eb,
+);
+
+$dark:(
+    primary-color: black,
+    reversed-color: white,
+    prism-text-ordinary: slategrey,
+    Sider-content-color: #131923,
+    ant-menu-color: #131923,
+    ant-menu-item-hover-color: #152337,
+    ant-menu-item-selected-bg-color: black,
+    ant-menu-item-selected-box-shadow-color: #224d86,
+    button-hover-color: #4287e1,
+    gradient-divider-color: #1a2e49,
+);
+
+$themes:(
+    light: $light,
+    dark: $dark,
+)

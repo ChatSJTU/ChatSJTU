@@ -1,0 +1,38 @@
+@import '../../assets//themes/_themify.scss';
+
+.user-message {
+    @include themify {
+        background-color: themed('markdown-body-input-bg-color'); /* 用户输入的背景颜色 */
+    }
+    font-size: 16px;
+}
+  
+.bot-message {
+    @include themify {
+        background-color: themed('markdown-body-reply-bg-color'); /* 机器人回复的背景颜色 */
+    }
+    font-size: 16px;
+}
+
+.sendbox-area{
+    @include themify {
+        border-top: 1px solid themed('sendbox-border-top-color'); /* 上边框样式 */
+        box-shadow: 0px -2px 10px themed('sendbox-box-shadow-color');
+        background-color: themed('sendbox-bg-color');
+    }
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.sendbox{
+    min-height: 72px;   /* 初始高度为三行，每行高度为 24px */
+    max-height: 144px;  /* 高于六行时不再变化 */
+    overflow-y: auto;
+}
+
+.card_label{
+    color: #aaaaaa;
+    font-size: 0.8125rem;
+	letter-spacing: 0.75px;
+}

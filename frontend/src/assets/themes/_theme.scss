@@ -13,6 +13,11 @@ $light:(
     Tabs-Header-bg-color: #ffffff,
     Tabs-Header-border-bottom-color: #cccccc,
     Tabs-Content-bg-color: #f8f8f8,
+    markdown-body-input-bg-color: #f8f8f8,
+    markdown-body-reply-bg-color: #ffffff,
+    sendbox-border-top-color: #cccccc,
+    sendbox-box-shadow-color: #dddddd,
+    sendbox-box-bg-color: #f8f8f8,
 );
 
 $dark:(
@@ -28,8 +33,13 @@ $dark:(
     button-hover-color: #4287e1,
     gradient-divider-color: #1a2e49,
     Tabs-Header-bg-color: #131923,
-    Tabs-Header-border-bottom-color: #131923,
+    Tabs-Header-border-bottom-color: #477fbe,
     Tabs-Content-bg-color: #131923,
+    markdown-body-input-bg-color: #04080e,
+    markdown-body-reply-bg-color: #0d1117,
+    sendbox-border-top-color: #131629,
+    sendbox-box-shadow-color: black,
+    sendbox-box-bg-color: #040e1a,
 );
 
 $themes:(

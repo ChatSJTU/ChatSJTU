@@ -4,6 +4,9 @@ import './index.css';
 import App from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const defaultTheme = 'light';
+document.documentElement.setAttribute('data-theme', defaultTheme);
+
 root.render(
   <React.StrictMode>
     <App />

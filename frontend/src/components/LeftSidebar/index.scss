@@ -75,8 +75,11 @@
 }
 
 .gradient-divider {
+    @include themify {
+        background: linear-gradient(to right, themed('gradient-divider-tip-color'), themed('gradient-divider-center-color'), themed('gradient-divider-tip-color'));
+    }
     height: 1.5px;
-    background: linear-gradient(to right, #a3c2eb, #4287e1, #a3c2eb);
+    
 }
 
 @keyframes fadeIn {

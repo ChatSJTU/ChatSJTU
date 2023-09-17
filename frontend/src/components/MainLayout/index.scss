@@ -1,5 +1,9 @@
+@import '../../assets//themes/_themify.scss';
+
 .Sider {
-    border-right: 1.5px solid #dddddd;
+    @include themify {
+        border-right: 1.5px solid themed('Sider-border-right-color');
+    }
     overflow-y: auto;
     scrollbar-width: none;
     z-index: 4;

@@ -16,7 +16,7 @@ import { UserContext } from '../../contexts/UserContext';
 import { fetchUserProfile, getSettings } from '../../services/user';
 import { fetchPluginList } from '../../services/plugins';
 
-import './index.css'
+import './index.scss'
 
 const { Content, Sider, Footer, Header } = Layout;
 

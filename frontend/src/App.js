@@ -13,7 +13,7 @@ import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
 import i18n from './components/I18n/i18n';
 
-import './App.css';
+import './App.scss';
 
 const { Title } = Typography;
 

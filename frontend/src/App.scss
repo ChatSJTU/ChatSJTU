@@ -1,15 +1,21 @@
+@import './assets//themes/_themify.scss';
+
 ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
 }
   
 ::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    @include themify{
+        background-color: themed('scrollbar-thumb-color');
+    }
     border-radius: 2px;
 }
   
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #aaa;
+    @include themify{
+        background-color: themed('scrollbar-thumb-hover-color');
+    }
 }
 
 /* Badge*/

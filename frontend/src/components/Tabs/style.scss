@@ -1,11 +1,15 @@
+@import '../../assets//themes/_themify.scss';
+
 .Header{
-    background-color: #ffffff !important;
+    @include themify {
+        background-color: themed('Tabs-Header-bg-color');
+        border-bottom: 1px solid themed('Tabs-Header-border-bottom-color');
+    }
     padding-bottom: 40px;
     padding-top: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #cccccc;
 }
 
 @keyframes floatUp {
@@ -24,7 +28,9 @@
 }
 
 .tab-content{
-    background-color: #f8f8f8;
+    @include themify {
+        background-color: themed('Tabs-Content-bg-color');
+    }
     padding: 0px 50px 25px 50px;
 }
 

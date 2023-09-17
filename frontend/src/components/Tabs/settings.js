@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Layout, Button, Card, Divider, Col, Row, Typography, message, InputNumber, Select, Switch, Modal} from 'antd';
 import { CloseOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import './style.css'
+import './style.scss'
 import { request } from "../../services/request";
 import { updateSettings } from "../../services/user";
 import { ThemeContext } from "../../contexts/ThemeContext";

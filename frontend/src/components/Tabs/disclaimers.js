@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
-import './style.css'
+import './style.scss'
 
 const { Header, Content } = Layout;
 const { Title, Paragraph, Text } = Typography;

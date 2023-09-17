@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Layout, Typography, Divider, Button, Card, Avatar } from 'antd';
 import { CloseOutlined, GithubOutlined, ReadOutlined } from '@ant-design/icons';
-import './style.css'
+import './style.scss'
 
 const { Header, Content } = Layout;
 const { Title, Paragraph, Text, Link } = Typography;

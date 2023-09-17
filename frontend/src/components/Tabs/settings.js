@@ -2,9 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { Layout, Button, Card, Divider, Col, Row, Typography, message, InputNumber, Select, Switch, Modal} from 'antd';
 import { CloseOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import './style.css'
+import './style.scss'
 import { request } from "../../services/request";
 import { updateSettings } from "../../services/user";
+import { ThemeContext } from "../../contexts/ThemeContext";
 import { UserContext } from '../../contexts/UserContext';
 import i18n from '../../components/I18n/i18n'
 
@@ -12,8 +13,9 @@ const { Header, Content } = Layout;
 const { Title } = Typography;
 const { confirm } = Modal;
 
-function TabSettings({ onCloseTab, changeLanguage}) {
+function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
 
+    const userTheme = useContext(ThemeContext);
     const [loaded, setLoaded] = useState(true);
     const { settings, setSettings, fetchSettings } = useContext(UserContext);
 
@@ -135,6 +137,16 @@ function TabSettings({ onCloseTab, changeLanguage}) {
                                         },
                                     ]}
                                 />
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={18} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_2_Head')}</span></div>
+                            </Col>
+                            <Col span={6} className="setting-item">
+                                <Switch checked={userTheme === 'light' ? false : true}
+                                onChange={() => { changeTheme(); }}/>
                             </Col>
                         </Row>
                     </Card>

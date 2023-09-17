@@ -1,5 +1,5 @@
 //github风格markdown渲染组件封装
-import React from 'react';
+import React, {useContext} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -11,16 +11,19 @@ import copy from 'copy-to-clipboard';
 import { Button, message, Popconfirm, Space } from 'antd';
 import { CopyOutlined, CodeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { ThemeContext } from "../../contexts/ThemeContext";
 
 import Prism from "prismjs";
-import "prismjs/themes/prism.css";
+import "./prism.scss";
 import "./prismlang";
 
 import 'katex/dist/katex.min.css';
-import 'github-markdown-css/github-markdown-light.css';
+import './github-markdown-light.css';
+import './github-markdown-dark.css';
 
 const MarkdownRenderer = ({content}) =>{
 
+    const userTheme = useContext(ThemeContext);
     const { t } = useTranslation('MarkdownRenderer');
 
     const CodeBlock = {
@@ -86,7 +89,7 @@ const MarkdownRenderer = ({content}) =>{
 
     return(
         <ReactMarkdown
-            className='markdown-body'
+        className={'markdown-body-' + userTheme}
             children={content}
             remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
             rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSanitize]}

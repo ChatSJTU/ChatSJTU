@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layout, Button, message } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
@@ -13,14 +13,17 @@ import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
+import { ThemeContext } from "../../contexts/ThemeContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
 import { fetchPluginList } from '../../services/plugins';
 
-import './index.css'
+import './index.scss'
 
 const { Content, Sider, Footer, Header } = Layout;
 
-const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
+const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
+
+    const userTheme = useContext(ThemeContext);
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
@@ -122,7 +125,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage}) => {
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 

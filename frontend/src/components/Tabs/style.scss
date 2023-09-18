@@ -116,6 +116,28 @@
     height: 1px; /* 调整 Divider 的高度 */
 }
 
+.theme-card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-bottom: -2px;
+}
+
+.theme-card {
+    margin: 0px 0px 5px 15px;
+    width: 75px;
+}
+
+.theme-card-button {
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.theme-card-button:hover {
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.3);
+}
+
 /* 账户选项卡 */
 .permission-display-container{
     display: flex;

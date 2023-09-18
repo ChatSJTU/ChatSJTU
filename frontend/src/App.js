@@ -32,15 +32,9 @@ const App = () => {
         }
     }
 
-    const changeTheme = () => {        
-        if(userTheme === 'light') {
-            setUserTheme('dark');
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-        else {
-            setUserTheme('light');
-            document.documentElement.setAttribute('data-theme', 'light');
-        }
+    const changeTheme = (themeName) => {        
+        setUserTheme(themeName);
+        document.documentElement.setAttribute('data-theme', themeName);
     }
 
     //移动端检测

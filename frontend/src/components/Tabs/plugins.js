@@ -32,7 +32,7 @@ function TabPlugins ({ onCloseTab }) {
                     {pluginList.map(item => (
                         <Card hoverable className="plugin-card"
                             key={item.id}
-                            style={{border: selectedPlugins.includes(item.id) ? '2px solid #1677FF' : ''}}
+                            style={{outline: selectedPlugins.includes(item.id) ? '2px solid #1677FF' : ''}}
                         >
                         <Checkbox 
                             style={{ float: 'right', marginTop:'-2px' }} 

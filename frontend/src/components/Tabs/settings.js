@@ -154,7 +154,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                                     style={{width:'100%', outline: userTheme === item ? '2px solid #1677FF' : ''}}
                                                     src={require(`../../assets/themes/${item}.svg`)} 
                                                     onClick={()=>changeTheme(item)}/>
-                                                {item}
+                                                {t(`Tabs_settings_Theme_Desc_${item}`)}
                                             </div>
                                     ))}
                                 </div>

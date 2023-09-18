@@ -29,5 +29,7 @@
     "Tabs_settings_Risky_1_Btn": "Clear",
     "Tabs_settings_Risky_2_Head": "Reset Account",
     "Tabs_settings_Risky_2_Desc": "All data, conversations and settings of the account will be removed.",
-    "Tabs_settings_Risky_2_Btn": "Reset"
+    "Tabs_settings_Risky_2_Btn": "Reset",
+    "Tabs_settings_Theme_Desc_light": "Light",
+    "Tabs_settings_Theme_Desc_dark": "Dark"
 }

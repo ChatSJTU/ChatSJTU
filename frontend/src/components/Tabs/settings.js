@@ -240,7 +240,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                             <Col span={9} className="setting-item">
                                 <Button danger onClick={() => setRiskyModal1Open(true)}>{t('Tabs_settings_Risky_1_Btn')}</Button>
                                 <Modal
-                                    title={<><ExclamationCircleFilled style={{color: 'orange'}}/> {t('Tabs_settings_DeleteAllSessionsConfirm_Title')}</>}
+                                    title={<Space size="small"><ExclamationCircleFilled style={{color: 'orange'}}/>{t('Tabs_settings_DeleteAllSessionsConfirm_Title')}</Space>}
                                     okText={t('Tabs_settings_ModalOK')}
                                     cancelText={t('Tabs_settings_ModalCancel')}
                                     onOk={() => {handleDeleteAllSessions(); setRiskyModal1Open(false);}}
@@ -260,7 +260,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                             <Col span={9} className="setting-item">
                                 <Button danger onClick={() => setRiskyModal2Open(true)}>{t('Tabs_settings_Risky_2_Btn')}</Button>
                                 <Modal
-                                    title={<><ExclamationCircleFilled style={{color: 'orange'}}/> {t('Tabs_settings_DeleteAccountConfirm_Title')}</>}
+                                    title={<Space size="small"><ExclamationCircleFilled style={{color: 'orange'}}/>{t('Tabs_settings_DeleteAccountConfirm_Title')}</Space>}
                                     okText={t('Tabs_settings_ModalOK')}
                                     cancelText={t('Tabs_settings_ModalCancel')}
                                     onOk={() => {handleDeleteAccount(); setRiskyModal2Open(false);}}

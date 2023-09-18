@@ -131,19 +131,29 @@ const App = () => {
     if (isLoggedIn) {
         return (
             <ThemeContext.Provider value={ userTheme }>
-            <ConfigProvider locale={locale} theme={{ algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+            <ConfigProvider
+                locale={locale}
+                theme={{
+                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm 
+                }}
+                >
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
                 {isDesktop ? 
                 <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/> 
                 : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/>}
-            </div>
+                </div>
             </ConfigProvider>
             </ThemeContext.Provider>
         );
     } else {
         return (
             <ThemeContext.Provider value={ userTheme }>
-            <ConfigProvider locale={locale} theme={{ algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+            <ConfigProvider
+                locale={locale}
+                theme={{ 
+                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm
+                }}
+            >
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
                     <LoginLayout 
                         handleLogin={() => jAccountLogin('/')}

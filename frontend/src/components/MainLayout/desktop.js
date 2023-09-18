@@ -179,7 +179,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                                 background: userTheme === 'light' ? '#fff' : '#080f18',
                                 borderRadius: '12px',
                                 overflow: 'hidden',
-                                border: '1px solid ' + userTheme === 'light' ? '#000' : '#080f18',
+                                border: userTheme === 'light' ? '1px solid #ccc' : '1px solid #080f18',
                                 boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
                                 marginTop: '-14px',
                                 // WebkitMaskImage: '-webkit-radial-gradient(white, black)',

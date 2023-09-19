@@ -18,8 +18,10 @@ import './App.scss';
 const { Title } = Typography;
 
 const App = () => {
+    const loadedTheme = localStorage.getItem('themeContextValue');
+
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userTheme, setUserTheme] = useState('light');
+    const [userTheme, setUserTheme] = useState(loadedTheme);
     const [locale, setLocal] = useState(zhCN);
 
     const changeLanguage = (e) => {
@@ -48,6 +50,10 @@ const App = () => {
             setLocal(enUS)
         }
     })
+
+    useEffect(() => {
+        localStorage.setItem('themeContextValue', userTheme);
+    },[userTheme])
 
     //无需点击jac登录按钮
     useEffect(() => {

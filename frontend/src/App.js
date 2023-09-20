@@ -14,6 +14,7 @@ import zhCN from 'antd/locale/zh_CN';
 import i18n from './components/I18n/i18n';
 
 import './App.scss';
+import styles from './assets/themes/_themify.scss';
 
 const { Title } = Typography;
 
@@ -136,8 +137,12 @@ const App = () => {
             <ThemeContext.Provider value={ userTheme }>
             <ConfigProvider
                 locale={locale}
-                theme={{
-                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm 
+                theme={{ 
+                    token: !(styles[`${userTheme}-antd-color-primary`] && styles[`${userTheme}-antd-color-bg-container`]) ? null : {
+                        colorPrimary: styles[`${userTheme}-antd-color-primary`],
+                        colorBgContainer:  styles[`${userTheme}-antd-color-bg-container`]
+                    },
+                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 }}
                 >
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
@@ -154,7 +159,11 @@ const App = () => {
             <ConfigProvider
                 locale={locale}
                 theme={{ 
-                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm
+                    token: !(styles[`${userTheme}-antd-color-primary`] && styles[`${userTheme}-antd-color-bg-container`]) ? null : {
+                        colorPrimary: styles[`${userTheme}-antd-color-primary`],
+                        colorBgContainer:  styles[`${userTheme}-antd-color-bg-container`]
+                    },
+                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 }}
             >
                 <div style={{ background: '#f0f2f5', height: '100%' }}>

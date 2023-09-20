@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layout, message } from 'antd';
 
@@ -12,14 +12,17 @@ import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
+import { ThemeContext } from "../../contexts/ThemeContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
 import { fetchPluginList } from '../../services/plugins';
 
-import './index.css'
+import './index.scss'
 
 const { Content, Sider } = Layout;
 
-const MainLayout = ({handleLogout, changeLanguage}) => {
+const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
+
+    const userTheme = useContext(ThemeContext);
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
@@ -115,7 +118,7 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 
@@ -158,53 +161,32 @@ const MainLayout = ({handleLogout, changeLanguage}) => {
                     selectedPlugins,
                     handleSelectPlugin,
                 }}>
-                <Layout className="background fade-in"
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100vw',
-                        height: '100vh',
-                        overflow: 'hidden',
-                        background: '#fafafa',
-                        position: 'relative',
-                    }}>
-                        <div
-                            style={{
-                                width: '80%',
-                                height: '88%',
-                                background: '#fff',
-                                borderRadius: '12px',
-                                overflow: 'hidden',
-                                border: '1px solid #ccc',
-                                boxShadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)',
-                                marginTop: '-14px',
-                                // WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-                            }}>
-                            <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
-                                <Sider className='Sider' width={300}>
-                                    <LeftSidebar 
-                                        onSelectSession={handleSelectSession}
-                                        onLogoutClick={handleLogout}
-                                        onChangeComponent={handleChangeComponent}
-                                        onChangeSessionInfo={handleChangeSessionInfo}
-                                        />
-                                </Sider>
+                <Layout className="background fade-in">
+                    <div className="center-box-container">
+                        <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
+                            <Sider className='Sider' width={300}>
+                                <LeftSidebar 
+                                    onSelectSession={handleSelectSession}
+                                    onLogoutClick={handleLogout}
+                                    onChangeComponent={handleChangeComponent}
+                                    onChangeSessionInfo={handleChangeSessionInfo}
+                                    />
+                            </Sider>
+                            <Layout>
                                 <Layout>
-                                    <Layout>
-                                        <Content style={{ minHeight: '0', flex: '1' }}>
-                                        {selectedSession  && 
-                                            <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
-                                                <ChatBox 
-                                                    onChangeSessionInfo={handleChangeSessionInfo} 
-                                                    onChangeComponent={handleChangeComponent}
-                                                    curRightComponent={curRightComponent}/>
-                                            </div>}
-                                        {curRightComponent !== 1 && componentList[curRightComponent]}
-                                        </Content>
-                                    </Layout>   
-                                </Layout>
+                                    <Content style={{ minHeight: '0', flex: '1' }}>
+                                    {selectedSession  && 
+                                        <div style={{ height: '100%',display: curRightComponent === 1 ? '' : 'none'}}>
+                                            <ChatBox 
+                                                onChangeSessionInfo={handleChangeSessionInfo} 
+                                                onChangeComponent={handleChangeComponent}
+                                                curRightComponent={curRightComponent}/>
+                                        </div>}
+                                    {curRightComponent !== 1 && componentList[curRightComponent]}
+                                    </Content>
+                                </Layout>   
                             </Layout>
+                        </Layout>
                     </div>
                     <div
                         style={{

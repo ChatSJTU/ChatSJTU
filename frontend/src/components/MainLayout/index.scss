@@ -1,0 +1,65 @@
+@import '../../assets//themes/_themify.scss';
+
+.Sider {
+    @include themify {
+        border-right: 1.5px solid themed('Sider-border-right-color');
+    }
+    overflow-y: auto;
+    scrollbar-width: none;
+    z-index: 4;
+}
+
+.background {
+    @include themify {
+        background: themed('outer-bg-color');
+    }
+    z-index: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }   
+}
+  
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.center-box {
+    z-index: 1;
+}
+
+.center-box-container {
+    @include themify {
+        background: themed('outer-bg-color');
+        border-color: themed('outer-bg-border-color');
+    }
+    width: 80%;
+    height: 88%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid;
+    box-shadow: 30px 30px 60px 10px rgba(0, 0, 0, 0.1);
+    margin-top: -14px;
+}
+
+.mobile-header {
+    @include themify {
+        background-color: themed('outer-bg-color');
+        border-color: themed('outer-bg-border-color');
+    }
+    width: 100%;
+    z-index: 2;
+    border-bottom: 1px solid;
+}

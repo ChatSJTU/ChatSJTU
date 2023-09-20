@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, message, Typography, ConfigProvider} from 'antd';
+import { Button, message, Typography, ConfigProvider, theme} from 'antd';
 import { useTranslation, Trans, Translation } from 'react-i18next'
 import { useMediaQuery } from 'react-responsive'
 
@@ -8,16 +8,21 @@ import MainLayoutMobile from './components/MainLayout/mobile';
 import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
+import { ThemeContext } from './contexts/ThemeContext';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
 import i18n from './components/I18n/i18n';
 
-import './App.css';
+import './App.scss';
+import styles from './assets/themes/_themify.scss';
 
 const { Title } = Typography;
 
 const App = () => {
+    const loadedTheme = localStorage.getItem('themeContextValue');
+
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userTheme, setUserTheme] = useState(loadedTheme);
     const [locale, setLocal] = useState(zhCN);
 
     const changeLanguage = (e) => {
@@ -28,6 +33,12 @@ const App = () => {
             setLocal(enUS);
             i18n.changeLanguage('en');
         }
+    }
+
+    const changeTheme = (themeName) => {        
+        setUserTheme(themeName);
+        document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('themeContextValue', themeName); //保存到缓存
     }
 
     //移动端检测
@@ -123,17 +134,38 @@ const App = () => {
 
     if (isLoggedIn) {
         return (
-            <ConfigProvider locale={locale}>
+            <ThemeContext.Provider value={ userTheme }>
+            <ConfigProvider
+                locale={locale}
+                theme={{ 
+                    token: !(styles[`${userTheme}-antd-color-primary`] && styles[`${userTheme}-antd-color-bg-container`]) ? null : {
+                        colorPrimary: styles[`${userTheme}-antd-color-primary`],
+                        colorBgContainer:  styles[`${userTheme}-antd-color-bg-container`]
+                    },
+                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                }}
+                >
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
                 {isDesktop ? 
-                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage}/> 
-                : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage}/>}
-            </div>
+                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/> 
+                : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/>}
+                </div>
             </ConfigProvider>
+            </ThemeContext.Provider>
         );
     } else {
         return (
-            <ConfigProvider locale={locale}>
+            <ThemeContext.Provider value={ userTheme }>
+            <ConfigProvider
+                locale={locale}
+                theme={{ 
+                    token: !(styles[`${userTheme}-antd-color-primary`] && styles[`${userTheme}-antd-color-bg-container`]) ? null : {
+                        colorPrimary: styles[`${userTheme}-antd-color-primary`],
+                        colorBgContainer:  styles[`${userTheme}-antd-color-bg-container`]
+                    },
+                    algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                }}
+            >
                 <div style={{ background: '#f0f2f5', height: '100%' }}>
                     <LoginLayout 
                         handleLogin={() => jAccountLogin('/')}
@@ -141,6 +173,7 @@ const App = () => {
                     />
                 </div>
             </ConfigProvider>
+            </ThemeContext.Provider>
         );
     }
 };

@@ -4,7 +4,7 @@ import { Layout, Typography, Button, Card, Checkbox, Avatar, Tag, Space } from '
 import { CloseOutlined, ExperimentTwoTone } from '@ant-design/icons';
 import { UserContext } from "../../contexts/UserContext";
 
-import './style.css'
+import './style.scss'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -32,7 +32,7 @@ function TabPlugins ({ onCloseTab }) {
                     {pluginList.map(item => (
                         <Card hoverable className="plugin-card"
                             key={item.id}
-                            style={{border: selectedPlugins.includes(item.id) ? '2px solid #1677FF' : ''}}
+                            style={{outline: selectedPlugins.includes(item.id) ? '2px solid #1677FF' : ''}}
                         >
                         <Checkbox 
                             style={{ float: 'right', marginTop:'-2px' }} 

@@ -5,7 +5,7 @@ import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { fetchUserProfile } from '../../services/user';
 import { UserContext } from '../../contexts/UserContext';
 
-import './style.css'
+import './style.scss'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;

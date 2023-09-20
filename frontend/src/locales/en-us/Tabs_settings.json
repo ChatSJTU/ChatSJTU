@@ -13,6 +13,7 @@
     "Tabs_settings_Subtitle_1": "Basic",
     "Tabs_settings_Subtitle_2": "Model",
     "Tabs_settings_Subtitle_3": "Risky",
+    "Tabs_settings_Basic_2_Head": "Color Theme",
     "Tabs_settings_Model_1_Head": "Variability (Temperature)",
     "Tabs_settings_Model_1_Desc": "The larger the value, the more random the responses will be.",
     "Tabs_settings_Model_2_Head": "Token Limit per Interaction",
@@ -28,5 +29,7 @@
     "Tabs_settings_Risky_1_Btn": "Clear",
     "Tabs_settings_Risky_2_Head": "Reset Account",
     "Tabs_settings_Risky_2_Desc": "All data, conversations and settings of the account will be removed.",
-    "Tabs_settings_Risky_2_Btn": "Reset"
+    "Tabs_settings_Risky_2_Btn": "Reset",
+    "Tabs_settings_Theme_Desc_light": "Light",
+    "Tabs_settings_Theme_Desc_dark": "Dark"
 }

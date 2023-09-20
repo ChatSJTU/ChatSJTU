@@ -169,13 +169,8 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
                     selectedPlugins,
                     handleSelectPlugin,
                 }}>
-                <Layout className="background fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-                    <Header style={{
-                        backgroundColor: '#FFF',
-                        width: '100%',
-                        zIndex: 2,
-                        borderBottom: '1px solid #bbbbbb',
-                    }}>
+                <Layout className="mobile-background fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <Header className="mobile-header">
                         <Button onClick={toggleSider}>
                             <MenuOutlined />
                         </Button>

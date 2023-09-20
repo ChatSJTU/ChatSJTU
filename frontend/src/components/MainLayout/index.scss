@@ -10,6 +10,9 @@
 }
 
 .background {
+    @include themify {
+        background: themed('outer-bg-color');
+    }
     z-index: 0;
     display: flex;
     justify-content: center;
@@ -17,7 +20,6 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: #fafafa;
     position: relative;
 }
 
@@ -39,21 +41,25 @@
 }
 
 .center-box-container {
+    @include themify {
+        background: themed('outer-bg-color');
+        border-color: themed('outer-bg-border-color');
+    }
     width: 80%;
     height: 88%;
-    background: #fff;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid;
-    border-color: #ccc;
     box-shadow: '30px 30px 60px 10px rgba(0, 0, 0, 0.1)';
     margin-top: -14px;
 }
 
 .mobile-header {
-    background-color: #FFF;
+    @include themify {
+        background-color: themed('outer-bg-color');
+        border-color: themed('outer-bg-border-color');
+    }
     width: 100%;
     z-index: 2;
     border-bottom: 1px solid;
-    border-color: #bbbbbb;
 }

@@ -1,6 +1,8 @@
 $light:(
     primary-color: white,
     reversed-color: black,
+    outer-bg-color: #fff,
+    outer-bg-border-color: #ccc,
     scrollbar-thumb-color: #ccc,
     scrollbar-thumb-hover-color: #aaa,
     prism-text-ordinary: black,
@@ -26,6 +28,8 @@ $light:(
 $dark:(
     primary-color: black,
     reversed-color: white,
+    outer-bg-color: #080f18,
+    outer-bg-border-color: #080f18,
     scrollbar-thumb-color: #a0b5cd,
     scrollbar-thumb-hover-color: #6f8296,
     prism-text-ordinary: slategrey,

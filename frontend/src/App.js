@@ -37,6 +37,7 @@ const App = () => {
     const changeTheme = (themeName) => {        
         setUserTheme(themeName);
         document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('themeContextValue', themeName); //保存到缓存
     }
 
     //移动端检测
@@ -50,10 +51,6 @@ const App = () => {
             setLocal(enUS)
         }
     })
-
-    useEffect(() => {
-        localStorage.setItem('themeContextValue', userTheme);
-    },[userTheme])
 
     //无需点击jac登录按钮
     useEffect(() => {

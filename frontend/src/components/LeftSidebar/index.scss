@@ -62,15 +62,9 @@
     box-shadow: none !important;
 }
 
-.delete-button:hover {
+.small-button:hover {
     @include themify {
-        color: themed('button-hover-color');
-    }
-}
-
-.edit-button:hover {
-    @include themify {
-        color: themed('button-hover-color');
+        color: themed('button-hover-color') !important;
     }
 }
 

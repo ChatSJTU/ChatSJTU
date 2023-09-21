@@ -16,7 +16,7 @@
 
 .Sider-content Button{
     @include themify {
-        background-color: themed('primary-color');
+        background-color: themed('button-bg-color');
     }
 }
 
@@ -35,7 +35,7 @@
 
 .ant-menu-item {
     @include themify {
-        background-color: themed('primary-color');
+        background-color: themed('ant-menu-item-color');
     }
     border-radius: 15px;  
 }
@@ -57,7 +57,7 @@
 
 .ant-menu-item-unselected{
     @include themify {
-        background-color: themed('primary-color');
+        background-color: themed('ant-menu-item-color');
     }
     box-shadow: none !important;
 }

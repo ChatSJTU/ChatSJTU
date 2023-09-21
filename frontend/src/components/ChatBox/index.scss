@@ -14,10 +14,16 @@
     font-size: 16px;
 }
 
+.user-text{
+    @include themify {
+        color: themed('reversed-color');
+    }
+}
+
 .sendbox-area{
     @include themify {
         border-top: 1px solid themed('sendbox-border-top-color'); /* 上边框样式 */
-        box-shadow: 0px -2px 10px themed('sendbox-box-shadow-color');
+        box-shadow: 0px -2px 10px themed('sendbox-shadow-color');
         background-color: themed('sendbox-bg-color');
     }
     z-index: 3;
@@ -35,4 +41,43 @@
     color: #aaaaaa;
     font-size: 0.8125rem;
 	letter-spacing: 0.75px;
+}
+
+.text-area{
+    @include themify {
+        background-color: themed('text-area-bg-color');
+    }
+}
+
+.model-popup{
+    @include themify {
+        background-color: themed('button-bg-color');
+    }
+}
+
+.clear-button{
+    @include themify {
+        background-color: themed('button-bg-color');
+    }
+}
+
+.ai-icon{
+    @include themify {
+        color: themed('ai-icon-color');
+        background-color: themed('ai-icon-bg-color');
+    }
+}
+
+.user-icon{
+    @include themify {
+        color: themed('user-icon-color');
+        background-color: themed('user-icon-bg-color');
+    }
+}
+
+.notice-icon{
+    @include themify {
+        color: themed('notice-icon-color');
+        background-color: themed('notice-icon-bg-color');
+    }
 }

@@ -333,26 +333,14 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     //头像图标
     const aiIcon = <Avatar 
-        icon={<RobotOutlined/>}
-        style={{
-                backgroundColor: '#c7ffaf',
-                color: '#62a645',
-            }}
-        />
+        className='ai-icon'
+        icon={<RobotOutlined/>} />
     const userIcon = <Avatar 
-        icon={<UserOutlined/>}
-        style={{
-                backgroundColor: '#fde3cf',
-                color: '#f56a00',
-            }}
-        />
+        className='user-icon'
+        icon={<UserOutlined/>} />
     const NoticeIcon = <Avatar
-        icon={<InfoCircleOutlined />}
-        style={{
-                backgroundColor: '#e8d3ff',
-                color: '#7945af',
-            }}
-        />
+        className='notice-icon'
+        icon={<InfoCircleOutlined />} />
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
 
@@ -452,7 +440,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                 </>
                             }
                             {item.sender === 1 &&
-                                <div style={{ whiteSpace: 'pre-wrap'}}>
+                                <div className='user-text' style={{ whiteSpace: 'pre-wrap' }}>
                                 {item.content === ContinuePrompt && 
                                     <span style={{color:'#0086D1'}}>
                                         <DoubleRightOutlined style={{marginRight:'10px'}}/>
@@ -509,7 +497,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                 open={showQcmdTips}
             >
                 <div style={{ position: 'relative', width: '100%' }}>
-                <TextArea ref={textareaRef}
+                <TextArea className='text-area' ref={textareaRef}
                     rows={rows}
                     value={input}
                     onChange={handleUserInput}
@@ -526,7 +514,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                 /></div>
             </Dropdown>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Popover trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen}
+                <Popover className='model-popup' trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen}
                     onOpenChange={(newOpen) => setIsPopoverOpen(newOpen)}
                     content={
                         <> 
@@ -582,7 +570,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                     </Button>
                 </Popover>
                 <Space>
-                    <Button size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
+                    <Button className='clear-button' size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
                         {t('ChatBox_ClearInput_Btn')}
                     </Button>
                     <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}

@@ -63,3 +63,15 @@
     z-index: 2;
     border-bottom: 1px solid;
 }
+
+.footer-link{
+    @include themify {
+        color: themed('link-color');
+    }
+}
+
+.footer-link:hover{
+    @include themify {
+        color: themed('link-hover-color');
+    }
+}

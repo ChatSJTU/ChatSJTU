@@ -1,5 +1,6 @@
 from chat.core.errors import ChatError
 from chat.models.message import Message
+from .testdata.lipsum import LIPSUM
 from .configs import *
 from .plugins.fc import FCSpec
 
@@ -24,6 +25,27 @@ class AbstractGPTConnection(ABC):
         selected_plugins: list[FCSpec] = [],
     ) -> Message:
         raise NotImplementedError()
+
+
+class MockGPTConnection(AbstractGPTConnection):
+    def __init__(self, model_engine: str, mode: str = "oneshot"):
+        self.model_engine = model_engine
+
+    async def interact(
+        self,
+        msg: list,
+        temperature=0.5,
+        max_tokens=1000,
+        selected_plugins: list[FCSpec] = [],
+    ) -> Message:
+        return Message(
+            sender=0,
+            flag_qcmd=False,
+            content=LIPSUM,
+            interrupted=0,
+            plugin_group="",
+            use_model=self.model_engine,
+        )
 
 
 class GPTConnection(AbstractGPTConnection):
@@ -200,6 +222,26 @@ class GPTConnection(AbstractGPTConnection):
         except openai.error.OpenAIError as e:
             logger.error(e)
             raise ChatError("API或网络错误，请稍作等待后重试")
+
+
+class GPTConnectionFactory:
+    def __init__(self):
+        self.__model_engine: str = "nil"
+        self.__mock: bool = False
+
+    def model_engine(self, model_engine: str):
+        self.__model_engine = model_engine
+        return self
+
+    def mock(self, mock: bool):
+        self.__mock = mock
+        return self
+
+    def build(self) -> AbstractGPTConnection:
+        if self.__mock:
+            return MockGPTConnection(self.__model_engine)
+        else:
+            return GPTConnection(self.__model_engine)
 
 
 """

@@ -1,9 +1,9 @@
 from chat.models import UserPreference, Session, Message
 from chat.core.errors import ChatError
 
-from .gpt import GPTConnection
+from .gpt import GPTConnection, GPTConnectionFactory
 from .utils import senword_detector, senword_detector_strict
-from .configs import SYSTEM_ROLE, SYSTEM_ROLE_STRICT
+from .configs import OPENAI_MOCK, SYSTEM_ROLE, SYSTEM_ROLE_STRICT
 from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
 from .plugins.fc import FCSpec
 
@@ -74,7 +74,6 @@ def build_fcspec(id: str):
 
 
 async def __build_input_list(request: GPTRequest, session: Session):
-
     context = request.context
     preference = request.preference
     use_strict_prompt = senword_detector.find(context.msg)
@@ -158,7 +157,12 @@ async def handle_message(
 
     logger.debug("GPT INPUT:{0}".format(input_list))
 
-    connection = GPTConnection(model_engine=request.model_engine)
+    connection = (
+        GPTConnectionFactory()
+        .model_engine(request.model_engine)
+        .mock(OPENAI_MOCK)
+        .build()
+    )
 
     response = await connection.interact(
         input_list,
@@ -172,7 +176,7 @@ async def handle_message(
 
     # 输出关键词检测
     if senword_detector_strict.find(context.msg):
-        raise ChatError("回复存在敏感词，已屏蔽")
+        raise ChatError("复存在敏感词，已屏蔽")
 
     return response
 

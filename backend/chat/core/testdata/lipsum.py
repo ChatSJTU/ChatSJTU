@@ -1,0 +1,8 @@
+LIPSUM = '''
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam a nibh vitae augue accumsan accumsan vitae nec turpis. Proin bibendum ipsum quis dui consequat egestas. Nam in bibendum lorem. Nunc diam metus, bibendum at mattis sit amet, vestibulum nec diam. Nullam sapien sem, laoreet nec eros malesuada, aliquet elementum ante. Phasellus elementum et purus et placerat. Donec neque metus, ullamcorper et elementum in, pellentesque sit amet arcu. Vestibulum sagittis nec nibh eu imperdiet.
+
+Nulla nec purus ut lectus malesuada auctor. Fusce iaculis mauris a varius tempus. Pellentesque fermentum mauris vel tortor dignissim rutrum. In finibus vulputate lacinia. Phasellus nec odio at leo venenatis euismod. Donec sodales rhoncus blandit. Quisque sit amet vestibulum arcu. Maecenas ultricies tortor tortor, in malesuada libero eleifend bibendum. Ut vel congue leo.
+
+Nulla hendrerit, turpis sed congue iaculis, orci orci dignissim est, non blandit orci nisl sit amet libero. Duis ligula mauris, dapibus at consequat ut, sollicitudin pellentesque massa. Nunc non turpis laoreet, finibus ipsum semper, tincidunt erat. Aenean sit amet mauris in lacus aliquam pretium quis nec eros. Nullam blandit accumsan purus vitae sodales. Aenean interdum justo urna, efficitur pulvinar ex dictum eget. Nam fermentum commodo libero et blandit. Aliquam laoreet justo quis efficitur vestibulum. Aenean pulvinar lectus ante, vel imperdiet erat accumsan in. Vivamus mattis ut leo et feugiat. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quis nulla sed ligula commodo ornare id vitae velit.
+
+'''

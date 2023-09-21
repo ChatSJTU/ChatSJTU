@@ -8,24 +8,30 @@
 
 .video{
     @include themify {
-        visibility: themed('light-visibility');
+        visibility: themed('loginlayout-light-visibility');
     }
 }
 
 .backImage{
     @include themify {
-        visibility: themed('dark-visibility');
+        visibility: themed('loginlayout-dark-visibility');
     }
 }
 
 .example{
     @include themify {
-        visibility: themed('light-visibility');
+        visibility: themed('loginlayout-light-visibility');
     }
 }
 
 .exampleDark{
     @include themify {
-        visibility: themed('dark-visibility');
+        visibility: themed('loginlayout-dark-visibility');
+    }
+}
+
+.i18n-icon {
+    @include themify {
+        color: themed('reversed-color');
     }
 }

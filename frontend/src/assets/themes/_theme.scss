@@ -25,8 +25,8 @@ $light:(
     sendbox-border-top-color: #cccccc,
     sendbox-box-shadow-color: #dddddd,
     sendbox-box-bg-color: #f8f8f8,
-    light-visibility: visible,
-    dark-visibility: hidden,
+    loginlayout-light-visibility: visible,
+    loginlayout-dark-visibility: hidden,
 );
 
 $dark:(
@@ -54,8 +54,8 @@ $dark:(
     sendbox-border-top-color: #131629,
     sendbox-box-shadow-color: black,
     sendbox-box-bg-color: #040e1a,
-    light-visibility: hidden,
-    dark-visibility: visible,
+    loginlayout-light-visibility: hidden,
+    loginlayout-dark-visibility: visible,
 );
 
 $themes:(

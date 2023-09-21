@@ -14,10 +14,10 @@
     font-size: 16px;
 }
 
-.sendbox-area{
+.sendbox-area {
     @include themify {
         border-top: 1px solid themed('sendbox-border-top-color'); /* 上边框样式 */
-        box-shadow: 0px -2px 10px themed('sendbox-box-shadow-color');
+        box-shadow: 0px -2px 10px themed('sendbox-shadow-color');
         background-color: themed('sendbox-bg-color');
     }
     z-index: 3;

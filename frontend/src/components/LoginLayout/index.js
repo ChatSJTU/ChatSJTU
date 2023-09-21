@@ -3,9 +3,13 @@ import { Layout, Typography, Tag, Button, Space, Select} from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import background from '../../assets/main-gradient.png';
+import background_dark from '../../assets/main-gradient-dark.png';
 import background_webm from '../../assets/new-main-gradient.webm'
 import img_example from '../../assets/main-example.png'
+import img_example_dark from '../../assets/main-example-dark.png'
 import { GlobalOutlined } from '@ant-design/icons';
+
+import './index.scss'
 
 const { Footer } = Layout;
 const { Title, Paragraph } = Typography;
@@ -48,7 +52,7 @@ function LoginLayout({ handleLogin, changeLanguage }) {
     let { t } = useTranslation('LoginLayout');
 
     return (
-        <Layout style={{ height: '100vh', background: '#FFF', position: 'relative' }}>
+        <Layout className="rootLayout" style={{ height: '100vh', position: 'relative' }}>
             <div
                 style={{
                     position: 'absolute',
@@ -97,7 +101,7 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                 </div>
             </div>
 
-            <div style={{ background: '#FFF', position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -106,16 +110,24 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                     zIndex: '2', overflow: 'hidden',
                     position: 'relative'
                 }}>
-                    <video style={{
+                    <video className='video' style={{
                         clipPath: 'inset(2px 2px)',
                         objectFit: 'contain',
                         overflowClipMargin: 'content-box',
                         overflow: 'clip',
-                        opacity: '50%'
-                    }}
-                        data-v-9a6be86a="" autoPlay="autoPlay" muted="muted" loop="loop" poster={background} data-fullscreen-container="true">
-                        <source data-v-9a6be86a="" src={background_webm} type="video/webm" />
+                        opacity: '50%',
+                    }} autoPlay="autoPlay" muted="muted" loop="loop" poster={background} data-fullscreen-container="true">
+                        <source src={background_webm} type="video/webm" />
                     </video>
+                    <img style={{
+                            clipPath: 'inset(2px 2px)',
+                            objectFit: 'contain',
+                            overflowClipMargin: 'content-box',
+                            overflow: 'clip',
+                            opacity: '50%', 
+                            position: 'absolute'
+                        }} className='backImage' src={background_dark}>
+                    </img>
                 </div>
                 <div style={{
                     display: 'flex',
@@ -166,8 +178,9 @@ function LoginLayout({ handleLogin, changeLanguage }) {
 
 
 
-                    <div>
-                        <img style={{ width: '80vw', marginTop: 65 }} src={img_example} ></img>
+                    <div style={{display: 'flex'}}>
+                        <img className='example' style={{ width: '80vw', marginTop: 65 }} src={img_example} ></img>
+                        <img className='exampleDark' style={{ width: '80vw', marginTop: 65, position: 'absolute' }} src={img_example_dark} ></img>
                     </div>
                 </div>
 
@@ -183,7 +196,6 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                 </div> */}
             </div>
             <Footer style={{
-                background: '#FFF',
                 padding: '0',
                 // position: 'absolute', 
                 marginTop: 'auto',

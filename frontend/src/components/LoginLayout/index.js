@@ -14,24 +14,6 @@ import './index.scss'
 const { Footer } = Layout;
 const { Title, Paragraph } = Typography;
 
-// const items = [
-//     {
-//         key: 'zh-CN',
-//         label: (
-//             <center>中文/zh-CN</center>
-//         ),
-//     },
-//     {
-//         key: 'en-US',
-//         label: (
-//             <center>
-//                 English/en-US
-//             </center>
-//         ),
-//     },
-// ];
-
-
 function LoginLayout({ handleLogin, changeLanguage }) {
     const LoadLanguage = () => {
         const { i18n } = useTranslation();
@@ -61,25 +43,8 @@ function LoginLayout({ handleLogin, changeLanguage }) {
                     zIndex: '5',
                 }}
             >
-                {/* <Dropdown
-                    menu={{
-                        items: items,
-                        onClick: ({ key }) => changeLanguage(key),
-                    }}
-                    // placement="bottomLeft"
-                    style={{
-                        position: 'absolute',
-                    }}
-                >
-                    <Button size="large"
-                        type='text'
-                    >
-                        <GlobalOutlined />
-                        {t('LoginLayout_ButtonText_ChangeLanguage')}
-                    </Button>
-                </Dropdown> */}
                 <div>
-                    <GlobalOutlined />
+                    <GlobalOutlined className="i18n-icon"/>
                     <Select
                         defaultValue={LoadLanguage()}
                         style={{

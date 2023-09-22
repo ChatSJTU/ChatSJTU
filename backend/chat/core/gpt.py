@@ -4,9 +4,10 @@ from .testdata.lipsum import LIPSUM
 from .configs import *
 from .plugins.fc import FCSpec
 
-from typing import Any, Callable, Coroutine
+from typing_extensions import Self
+from typing import Awaitable, Callable, Union
 from dataclasses import asdict
-from abc import ABC
+from abc import ABC, abstractmethod
 import tenacity
 import logging
 import openai
@@ -16,7 +17,119 @@ logger = logging.getLogger(__name__)
 openai.proxy = os.getenv("OPENAI_PROXY", None)
 
 
+class AbstractRespHandler(ABC):
+    @abstractmethod
+    def set_next(self, handler: Self) -> Self:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def handle(self, msg: list, response: dict) -> Message:
+        raise NotImplementedError()
+
+
+class RespHandler(AbstractRespHandler):
+    __next: Union[Self, None] = None
+
+    def __init__(self, model_engine: str):
+        self.model_engine = model_engine
+
+    def get_finish_reason(self, response: dict) -> str:
+        return response["choices"][0].get("finish_reason", "")
+
+    def get_content(self, response: dict) -> str:
+        try:
+            content: str = response["choices"][0]["message"]["content"]
+            return content
+        except KeyError:
+            raise ChatError("服务器网络错误，请稍候重试")
+
+    def set_next(self, handler: Self) -> Self:
+        self.__next = handler
+        return handler
+
+    async def handle(self, msg: list, response: dict) -> Message:
+        if self.__next:
+            return await self.__next.handle(msg, response)
+        return await super().handle(msg, response)
+
+
+class LengthRespHandler(RespHandler):
+    def __init__(self, model_engine: str):
+        return super().__init__(model_engine)
+
+    async def handle(self, msg: list, response: dict) -> Message:
+        if self.get_finish_reason(response) == "length":
+            return Message(
+                sender=0,
+                flag_qcmd=False,
+                content=self.get_content(response),
+                interrupted=1,
+                plugin_group=response.get("plugin_group", ""),
+                use_model=self.model_engine,
+            )
+
+        else:
+            return await super().handle(msg, response)
+
+
+class FunctionRespHandler(RespHandler):
+    def __init__(
+        self, model_engine: str, fc_map: dict, gpt: Callable[[list], Awaitable[dict]]
+    ):
+        self.gpt = gpt
+        self.fc_map = fc_map
+        return super().__init__(model_engine)
+
+    async def handle(self, msg: list, response: dict) -> Message:
+        if self.get_finish_reason(response) == "function_call":
+            fc_gpt_resp: dict[str, str] = response["choices"][0]["message"][
+                "function_call"
+            ]
+            fc = self.fc_map[fc_gpt_resp["name"]]
+            fc_plugin_group = fc.group_id
+            arguments = fc_gpt_resp["arguments"]
+            try:
+                fc_success, fc_content = await fc.exec(arguments)
+            except Exception:
+                raise ChatError("服务器网络错误，请稍候重试")
+
+            if not fc_success:
+                raise ChatError(fc_content)
+
+            else:
+                msg.append(
+                    {
+                        "role": "function",
+                        "name": fc.definition.name,
+                        "content": fc_content,
+                    }
+                )
+
+            response = await self.gpt(msg)
+            response["plugin_group"] = fc_plugin_group
+        return await super().handle(msg, response)
+
+
+class StopRespHandler(RespHandler):
+    def __init__(self, model_engine: str):
+        return super().__init__(model_engine)
+
+    async def handle(self, msg: list, response: dict) -> Message:
+        if self.get_finish_reason(response) == "stop":
+            return Message(
+                sender=0,
+                flag_qcmd=False,
+                content=self.get_content(response),
+                interrupted=0,
+                plugin_group=response.get("plugin_group", ""),
+                use_model=self.model_engine,
+            )
+        else:
+            return await super().handle(msg, response)
+
+
 class AbstractGPTConnection(ABC):
+    @abstractmethod
     async def interact(
         self,
         msg: list,
@@ -102,56 +215,22 @@ class GPTConnection(AbstractGPTConnection):
 
         self.gpt = gpt
 
+    def __setup_handlers(self):
+        self.__handler = FunctionRespHandler(self.model_engine, self.fc_map, self.gpt)
+        self.__handler.set_next(StopRespHandler(self.model_engine)).set_next(
+            LengthRespHandler(self.model_engine)
+        )
+
     def __pre_interact(
         self, temperature: float, max_tokens: int, selected_plugins: list[FCSpec]
     ):
         self.__setup_gpt_environment()
         self.__setup_plugins(selected_plugins)
         self.__setup_gpt(temperature, max_tokens)
+        self.__setup_handlers()
 
-    async def __post_interact(self, response: dict, msg: list) -> Message:
-        gpt_finish_reason: str = response["choices"][0].get("finish_reason", "")
-        fc_plugin_group = ""
-
-        if gpt_finish_reason == "function_call":
-            fc_gpt_resp: dict[str, str] = response["choices"][0]["message"][
-                "function_call"
-            ]
-
-            fc = self.fc_map[fc_gpt_resp["name"]]
-            fc_plugin_group = fc.group_id
-            arguments = fc_gpt_resp["arguments"]
-
-            try:
-                fc_success, fc_content = await fc.exec(arguments)
-            except Exception:
-                raise ChatError("服务器网络错误，请稍候重试")
-
-            if not fc_success:
-                raise ChatError(fc_content)
-
-            else:
-                msg.append(
-                    {
-                        "role": "function",
-                        "name": fc.definition.name,
-                        "content": fc_content,
-                    }
-                )
-                response = await self.gpt(msg)
-
-        try:
-            content: str = response["choices"][0]["message"]["content"]
-        except KeyError:
-            raise ChatError("服务器网络错误，请稍候重试")
-        return Message(
-            sender=0,
-            flag_qcmd=False,
-            content=content,
-            interrupted=gpt_finish_reason == "length",
-            plugin_group=fc_plugin_group,
-            use_model=self.model_engine,
-        )
+    async def __post_interact(self, msg: list, response: dict) -> Message:
+        return await self.__handler.handle(msg, response)
 
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -213,7 +292,7 @@ class GPTConnection(AbstractGPTConnection):
         try:
             response = await self.gpt(msg)
             assert isinstance(response, dict)
-            return await self.__post_interact(response, msg)
+            return await self.__post_interact(msg, response)
 
         except openai.error.RateLimitError as e:
             logger.error(e)

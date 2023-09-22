@@ -23,10 +23,22 @@ urlpatterns = [
     path(
         "sessions/rename/<int:session_id>/", views.rename_session, name="rename_session"
     ),
+    # 分享会话 POST
+    path(
+        "shared/<str:share_id>",
+        views.view_shared_session,
+        name="view_shared_sessions",
+    ),
+    # 浏览分享会话 GET
+    path(
+        "sessions/share/<int:session_id>/",
+        views.share_session,
+        name="share_session",
+    ),
     # 发送消息 POST
     path("send-message/<int:session_id>/", views.send_message, name="send_message"),
     # 读取或修改用户偏好 GET POST
     path("user-preference/", views.user_preference, name="user_preference"),
+    # 读取插件列表
     path("list-plugins/", views.list_plugins, name="list_plugins"),
 ]
-

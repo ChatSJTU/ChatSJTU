@@ -1,10 +1,11 @@
+from django.utils.http import base36_to_int, int_to_base36
 from chat.serializers import (
     UserPreferenceSerializer,
     SessionSerializer,
     MessageSerializer,
     ChatErrorSerializer,
 )
-from chat.models import Session, Message, UserAccount, UserPreference
+from chat.models import Session, Message, SessionShared, UserAccount, UserPreference
 from chat.core import (
     STUDENT_LIMIT,
     handle_message,
@@ -17,8 +18,8 @@ from chat.core.plugin import plugins_list_serialized
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication, base64
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from asgiref.sync import sync_to_async
 from adrf.decorators import api_view
 from django.contrib.admin.options import transaction
@@ -28,6 +29,10 @@ from django.utils import timezone
 from django.db.models import F
 
 import logging
+import django.db
+import base64
+import json
+import mmh3
 
 # def get_or_create_user(device_id):
 #     # 根据设备标识查找或创建对应的用户
@@ -45,13 +50,9 @@ logger = logging.getLogger(__name__)
 async def sessions(request):
     if request.method == "GET":
         user = request.user  # 从request.user获取当前用户
-        # sessions = await Session.objects.filter(user=user)  # 基于当前用户过滤会话
-        sessions = [
-            session
-            async for session in Session.objects.filter(
-                user=user, deleted_time__isnull=True
-            )
-        ]
+        sessions = await sync_to_async(
+            lambda: Session.objects.filter(user=user, deleted_time__isnull=True).all()
+        )()
         data = await sync_to_async(
             lambda sessions: SessionSerializer(sessions, many=True).data
         )(sessions)
@@ -140,13 +141,14 @@ async def session_messages(request, session_id):
             "session__deleted_time__isnull": True,
         }
 
-        messages = [
-            message
-            async for message in Message.objects.filter(**filters).order_by("timestamp")
-        ]
+        messages = await sync_to_async(
+            lambda: Message.objects.filter(**filters).order_by("timestamp").all()
+        )()
 
-        serializer = MessageSerializer(messages, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        data = await sync_to_async(
+            lambda messages: MessageSerializer(messages, many=True).data
+        )(messages)
+        return JsonResponse(data, safe=False)
     except UserPreference.DoesNotExist:
         return JsonResponse({"error": "用户不存在"}, status=404)
     except Session.DoesNotExist:
@@ -344,8 +346,17 @@ async def send_message(request, session_id):
         return JsonResponse(serializer.data, status=e.status)
 
 
+# 更新使用次数
+async def increase_usage(user):
+    try:
+        accounts = UserAccount.objects.filter(user=user)
+        await sync_to_async(accounts.update)(usage_count=F("usage_count") + 1)
+    except UserAccount.DoesNotExist:
+        raise ChatError("用户信息错误", status=404)
+
+
 # 检查使用次数
-# 返回: permission（是否达到上限）、isStu（是否为学生)
+# 返回: GPTPermission(student: 是否为学生, available: 是否有消息余量)
 
 
 async def check_usage(user) -> GPTPermission:
@@ -377,46 +388,6 @@ async def check_usage(user) -> GPTPermission:
 
     except Exception as e:
         raise ChatError(e.__str__(), status=500)
-
-
-# 更新使用次数
-
-
-async def increase_usage(user):
-    try:
-        accounts = UserAccount.objects.filter(user=user)
-        await sync_to_async(accounts.update)(usage_count=F("usage_count") + 1)
-    except UserAccount.DoesNotExist:
-        raise ChatError("用户信息错误", status=404)
-
-
-# 检查并更新使用次数
-# def check_and_update_usage(user):
-#     try:
-#         profile = UserProfile.objects.get(user=user)
-#         if profile.user_type != 'student':
-#             return True, None
-#     except UserProfile.DoesNotExist:
-#         return False, JsonResponse({'error': '用户信息错误'}, status=404)
-
-#     try:
-#         account= UserAccount.objects.get(user=user)
-#         today = timezone.localtime(timezone.now()).date()
-#         if account.last_used != today:
-#             account.usage_count = 1
-#             account.last_used = today
-#         else:
-#             account.usage_count += 1
-
-#         if account.usage_count > STUDENT_LIMIT:
-#             return False, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
-#         else:
-#             account.save()
-#             return True, None
-#     except UserAccount.DoesNotExist:
-#         return False, JsonResponse({'error': '用户信息错误'}, status=404)
-
-# 偏好设置
 
 
 @api_view(["GET", "PATCH"])
@@ -460,3 +431,67 @@ async def list_plugins(request):
         content_type="application/json",
         status=200,
     )
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def share_session(request, session_id):
+    try:
+        session = await Session.objects.aget(
+            id=session_id, user=request.user, deleted_time__isnull=True
+        )
+    except Session.DoesNotExist:
+        return JsonResponse({"error": "会话不存在"}, status=404)
+
+    deadline = timezone.datetime.fromisoformat(request.data.get("deadline"))
+    version = 0
+    while True:
+        try:
+            share_id = mmh3.hash64(
+                json.dumps(
+                    {
+                        "session": session_id,
+                        "deadline": deadline,
+                        "version": version,
+                    }
+                )
+            )
+            await SessionShared.objects.acreate(
+                session=session, deadline=deadline, share_id=share_id
+            )
+            break
+        except django.db.IntegrityError:
+            version += 1
+
+    share_id_b36 = int_to_base36(share_id)
+    return {"url": f"/shared?share_id={share_id_b36}&autologin=True"}
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def view_shared_session(request, shared_id):
+    try:
+        shared_id = base36_to_int(shared_id)
+    except ValueError:
+        return JsonResponse({"error": "分享连接不合法"}, status=400)
+    try:
+        shared = await SessionShared.objects.aget(
+            shared_id=shared_id, deadline__gt=timezone.now()
+        )
+    except SessionShared.DoesNotExist:
+        return JsonResponse({"error": "分享连接不存在或已经过期"}, status=404)
+
+    try:
+        messages = await sync_to_async(
+            lambda session: Message.objects.filter(session=session)
+            .order_by("timestamp")
+            .all()
+        )(shared.session)
+        data = await sync_to_async(
+            lambda messages: MessageSerializer(messages, many=True).data
+        )(messages)
+        return JsonResponse(data)
+    except Message.DoesNotExist:
+        return JsonResponse({"error": "会话不存在"}, status=404)

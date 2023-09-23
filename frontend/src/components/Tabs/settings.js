@@ -156,7 +156,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                     {themeList.map(item => (
                                             <div className="theme-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
                                                 <img className="theme-card-button"
-                                                    style={{width:'100%', outline: userTheme === item ? '2px solid #1677FF' : ''}}
+                                                    style={{width:'100%', outline: userTheme === item ? '2px solid' : ''}}
                                                     src={require(`../../assets/themes/${item}.svg`)} 
                                                     onClick={()=>changeTheme(item)}/>
                                                 {t(`Tabs_settings_Theme_Desc_${item}`)}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Layout, Button, Card, Divider, Col, Row, Typography, message, InputNumber, Select, Switch, Modal, Space} from 'antd';
 import { CloseOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useMediaQuery } from 'react-responsive'
 import './style.scss'
 import { request } from "../../services/request";
 import { updateSettings } from "../../services/user";
@@ -20,6 +21,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
     const [isRiskyModal1Open, setRiskyModal1Open] = useState(false);
     const [isRiskyModal2Open, setRiskyModal2Open] = useState(false);
     const { settings, setSettings, fetchSettings } = useContext(UserContext);
+    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
 
     useEffect(() => {
         setLoaded(true);
@@ -150,6 +152,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <div><span>{t('Tabs_settings_Basic_2_Head')}</span></div>
                             </Col>
                             <Col span={9} className="setting-item">
+                                {isDesktop &&
                                 <div className="theme-card-container">
                                     {themeList.map(item => (
                                             <div className="theme-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
@@ -160,7 +163,20 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                                 {t(`Tabs_settings_Theme_Desc_${item}`)}
                                             </div>
                                     ))}
-                                </div>
+                                </div>}
+                                {!isDesktop &&
+                                    <Select
+                                    defaultValue={userTheme}
+                                    style={{
+                                        width: 90,
+                                    }}
+                                    onChange={(theme) => {changeTheme(theme)}}
+                                    options={themeList.map(theme => ({
+                                        value: theme,
+                                        label: t(`Tabs_settings_Theme_Desc_${theme}`),
+                                      }))}
+                                    />
+                                }
                                 {/* <Switch checked={userTheme === 'light' ? false : true}
                                 onChange={() => { changeTheme(); }}/> */}
                             </Col>

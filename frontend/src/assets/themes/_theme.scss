@@ -1,6 +1,6 @@
 $light:(
-    // antd-color-primary: #8044AA,
-    // antd-color-bg-container: #ff0011,
+    // antd-color-primary
+    // antd-color-bg-container
     primary-color: white,
     button-bg-color: white,
     reversed-color: black,
@@ -37,12 +37,13 @@ $light:(
     user-icon-bg-color: #fde3cf,
     notice-icon-color: #7945af,
     notice-icon-bg-color: #e8d3ff,
-
     light-visibility: visible,
     dark-visibility: hidden,
 );
 
 $dark:(
+    // antd-color-primary
+    // antd-color-bg-container
     primary-color: black,
     button-bg-color: #181a1b,
     reversed-color: #cfcdca,
@@ -79,12 +80,55 @@ $dark:(
     user-icon-bg-color: #4e2403,
     notice-icon-color: #7945af,
     notice-icon-bg-color: #e8d3ff,
-
     light-visibility: hidden,
     dark-visibility: visible,
+);
+
+$spring:(
+    antd-color-primary: #00B96B,
+    antd-color-bg-container: #ffffff,
+    primary-color: white,
+    button-bg-color: white,
+    reversed-color: black,
+    outer-bg-color: #fafafa,
+    outer-bg-border-color: #ccc,
+    scrollbar-thumb-color: #ccc,
+    scrollbar-thumb-hover-color: #aaa,
+    prism-text-ordinary: black,
+    Sider-content-color: #e8f2ff,
+    Sider-border-right-color: #dddddd,
+    ant-menu-color: #e8f2ff,
+    ant-menu-item-color: white,
+    ant-menu-item-hover-color: #eaeaea,
+    ant-menu-item-selected-bg-color: #f8f8f8,
+    ant-menu-item-selected-box-shadow-color: #296cc4,
+    title-tag-color: #4287e1,
+    button-hover-color: #4287e1,
+    gradient-divider-tip-color: #a3c2eb,
+    gradient-divider-center-color: #4287e1,
+    Tabs-Header-bg-color: #ffffff,
+    Tabs-Header-border-bottom-color: #cccccc,
+    Tabs-Content-bg-color: #f8f8f8,
+    markdown-body-input-bg-color: #f8f8f8,
+    markdown-body-reply-bg-color: #ffffff,
+    sendbox-border-top-color: #cccccc,
+    sendbox-shadow-color: #dddddd,
+    sendbox-bg-color: #f8f8f8,
+    text-area-bg-color: #f8f8f8,
+    link-color: #2998ff,
+    link-hover-color: #69b1ff,
+    ai-icon-color: #62a645,
+    ai-icon-bg-color: #c7ffaf,
+    user-icon-color: #f56a00,
+    user-icon-bg-color: #fde3cf,
+    notice-icon-color: #7945af,
+    notice-icon-bg-color: #e8d3ff,
+    light-visibility: visible,
+    dark-visibility: hidden,
 );
 
 $themes:(
     light: $light,
     dark: $dark,
+    spring: $spring,
 )

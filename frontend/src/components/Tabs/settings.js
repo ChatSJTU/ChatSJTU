@@ -12,7 +12,6 @@ import i18n from '../../components/I18n/i18n'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
-const { confirm } = Modal;
 
 function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
 
@@ -21,7 +20,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
     const [isRiskyModal1Open, setRiskyModal1Open] = useState(false);
     const [isRiskyModal2Open, setRiskyModal2Open] = useState(false);
     const { settings, setSettings, fetchSettings } = useContext(UserContext);
-    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
+    const isFold = useMediaQuery({ query: '(min-width: 1280px)' })
 
     useEffect(() => {
         setLoaded(true);
@@ -30,7 +29,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
 
     let { t } = useTranslation('Tabs_settings');
 
-    const themeList = ['light', 'dark'];
+    const themeList = ['light', 'dark', 'spring'];
 
     //更改设置项
     const handleChangeSettings = async (updatedSettings) => {
@@ -148,11 +147,11 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                         </Row>
                         <Divider className="setting-divider" />
                         <Row>
-                            <Col span={15} className="setting-title">
+                            <Col span={12} className="setting-title">
                                 <div><span>{t('Tabs_settings_Basic_2_Head')}</span></div>
                             </Col>
-                            <Col span={9} className="setting-item">
-                                {isDesktop &&
+                            <Col span={12} className="setting-item">
+                                {isFold &&
                                 <div className="theme-card-container">
                                     {themeList.map(item => (
                                             <div className="theme-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
@@ -164,7 +163,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                             </div>
                                     ))}
                                 </div>}
-                                {!isDesktop &&
+                                {!isFold &&
                                     <Select
                                     defaultValue={userTheme}
                                     style={{

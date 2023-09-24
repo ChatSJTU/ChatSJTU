@@ -171,9 +171,6 @@ async def handle_message(
         plugins,
     )
 
-    response.session = session
-    response.generation = context.generation
-
     # 输出关键词检测
     if senword_detector_strict.find(context.msg):
         raise ChatError("复存在敏感词，已屏蔽")

@@ -262,6 +262,8 @@ def __save_new_request_rounds(
         interrupted=context.cont,
         flag_qcmd=ai_message_obj.flag_qcmd,
     )
+    ai_message_obj.session = session
+    ai_message_obj.generation = context.generation
     # 将返回消息加入数据库
     ai_message_obj.save()
     return user_message_obj, ai_message_obj

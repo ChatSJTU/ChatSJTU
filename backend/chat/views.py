@@ -31,6 +31,7 @@ from django.db.models import F
 import logging
 import dateutil.parser
 import django.db
+import random
 import base64
 import json
 import mmh3
@@ -457,8 +458,9 @@ async def share_session(request, session_id):
                         "deadline": deadline,
                         "version": version,
                     }
-                )
-            )
+                ),
+                signed=False,
+            )[random.randint(0, 1)]
             await SessionShared.objects.acreate(
                 session=session,
                 deadline=dateutil.parser.parse(deadline),

@@ -1,20 +1,28 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Typography, Button, Space } from 'antd';
-import { PictureOutlined, FileMarkdownOutlined } from '@ant-design/icons';
+import { Typography, Button, Space, Segmented, message, QRCode } from 'antd';
+import { PictureOutlined, FileMarkdownOutlined, SettingOutlined, LinkOutlined, CheckOutlined, CopyOutlined, QrcodeOutlined } from '@ant-design/icons';
+import copy from 'copy-to-clipboard';
 import { toPng } from 'html-to-image';
 import download from 'downloadjs';
 
+import { request } from "../../services/request";
 import { UserContext } from '../../contexts/UserContext';
 import { SessionContext } from '../../contexts/SessionContext';
+import './index.scss'
 
 const { Title, Text } = Typography;
 
 function ExportModalContent ({closeModal} ) {
  
-    const { messages } = useContext(SessionContext);
+    const { messages, selectedSession } = useContext(SessionContext);
     const { userProfile } = useContext(UserContext);
-
+    const [ isLinkGenerated, setIsLinkGenerated ] = useState(false);
+    const [ shareLink, setShareLink ] = useState(null);
+    const [ shareDeadline, setShareDeadline ] = useState(7);
+    const [ isLoading, setIsLoading ] = useState(false);
+    const [ isQrcodeShown, setIsQrcodeShown ] = useState(false);
+    
     const timeOptions = {
         year: 'numeric',
         month: '2-digit',
@@ -67,6 +75,32 @@ function ExportModalContent ({closeModal} ) {
         closeModal();
     }
 
+    const handleCopy = (content) => {
+        copy(content);
+        message.success('已复制到剪贴板', 2);
+    };
+
+    const GenerateShareLink = async () => {
+        setTimeout(() => {setIsLoading(true);}, 0);
+        try {
+            // setShareLink('https://chat.sjtu.edu.cn/?placeholder_for_share_link&autologin=True');
+            const deadlineTime = new Date();
+            deadlineTime.setDate(deadlineTime.getDate() + shareDeadline);
+            const params ={
+                deadline: deadlineTime.toISOString(),
+            };
+            console.log(params);
+            const response = await request.post(`/api/sessions/share/${selectedSession.id}/`, params);
+            setShareLink(response.url);
+            setIsLinkGenerated(true);
+        } catch (error) {
+            console.error('Failed to generate share link:', error);
+            message.error('分享链接生成失败，请重试', 2);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <Typography>
                 <Space style={{marginTop:'5px'}}>
@@ -84,7 +118,56 @@ function ExportModalContent ({closeModal} ) {
                     </Button>
                 </Space>
             <Title level={5}>{t('exportModal_Title2')}</Title>
-                <Text>链接分享暂未上线</Text>
+                <Space direction="vertical" style={{marginTop:'5px'}}>
+                    <Text>以链接形式分享当前会话的快照</Text>
+                    <Space size="middle">
+                        <Text>链接有效期：</Text>
+                        <Segmented 
+                            style={{marginLeft:'-15px'}} 
+                            options={[{value:1, label:'1天'}, {value:7, label:'7天'}, {value:30, label:'30天'}]} 
+                            value={shareDeadline}
+                            onChange={value => setShareDeadline(value)}
+                            disabled={isLinkGenerated || isLoading}/>
+                        {isLinkGenerated 
+                            ? <Space style={{color:'#389e0d'}}><CheckOutlined />已生成链接</Space>
+                            : <Button 
+                                icon={<LinkOutlined />} 
+                                onClick={GenerateShareLink}
+                                loading={isLoading}
+                                >
+                                生成链接
+                            </Button>
+                        }
+                    </Space>
+                    {isLinkGenerated && 
+                        <Space>
+                            <blockquote>{shareLink}</blockquote>
+                            <Button type="text"
+                                icon={<CopyOutlined />}
+                                onClick={() => handleCopy(shareLink)}
+                            />
+                            <Button type="text"
+                                icon={<QrcodeOutlined className={`export-modal-qrcode${isQrcodeShown ? '-clicked' : ''}`}/>}
+                                onClick={() => setIsQrcodeShown(!isQrcodeShown)}
+                            />
+                            {/* <Input style={{width: 300}} 
+                            readonly="true" 
+                            defaultValue={shareLink}
+                            addonAfter={
+                                <CopyOutlined
+                                    onClick={() => handleCopy(shareLink)}
+                                />
+                            }/> */}
+                        </Space>
+                    }
+                    {isLinkGenerated && isQrcodeShown &&
+                        <QRCode value={shareLink} />
+                    }
+                    <div>
+                        <Text>如需分享更新的对话内容，请重新生成分享链接；会话删除后相关的分享链接不会自动失效。</Text>
+                        <Button type="link" style={{marginLeft:'-15px'}} icon={<SettingOutlined />}>管理已有的分享</Button>
+                    </div>
+                </Space>
         </Typography>
     )
 }

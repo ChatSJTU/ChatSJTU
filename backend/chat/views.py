@@ -29,6 +29,7 @@ from django.utils import timezone
 from django.db.models import F
 
 import logging
+import dateutil.parser
 import django.db
 import base64
 import json
@@ -444,7 +445,8 @@ async def share_session(request, session_id):
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
 
-    deadline = timezone.datetime.fromisoformat(request.data.get("deadline"))
+    deadline = request.data.get("deadline")
+
     version = 0
     while True:
         try:
@@ -458,14 +460,16 @@ async def share_session(request, session_id):
                 )
             )
             await SessionShared.objects.acreate(
-                session=session, deadline=deadline, share_id=share_id
+                session=session,
+                deadline=dateutil.parser.parse(deadline),
+                share_id=share_id,
             )
             break
         except django.db.IntegrityError:
             version += 1
 
     share_id_b36 = int_to_base36(share_id)
-    return {"url": f"/shared?share_id={share_id_b36}&autologin=True"}
+    return JsonResponse({"url": f"/shared?share_id={share_id_b36}&autologin=True"})
 
 
 @api_view(["GET"])

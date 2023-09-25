@@ -57,7 +57,7 @@ const App = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const autologin = urlParams.get('autologin');
-        if (autologin === 'true') {
+        if (autologin === 'True') {
             jAccountLogin('/');
         }
     });

@@ -23,13 +23,13 @@ urlpatterns = [
     path(
         "sessions/rename/<int:session_id>/", views.rename_session, name="rename_session"
     ),
-    # 分享会话 POST
+    # 浏览分享会话 GET
     path(
         "shared/<str:share_id>",
         views.view_shared_session,
         name="view_shared_sessions",
     ),
-    # 浏览分享会话 GET
+    # 分享会话 POST
     path(
         "sessions/share/<int:session_id>/",
         views.share_session,

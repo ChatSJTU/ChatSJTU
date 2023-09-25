@@ -3,5 +3,17 @@
     "exportModal_ExportOpt2": "导出为Markdown",
     "exportModal_Title2": "分享",
     "exportModal_Msg_Head": "以下会话内容于",
-    "exportModal_Msg_Body": "导出自"
+    "exportModal_Msg_Body": "导出自",
+    "exportModal_copyLinkSuccess": "已复制到剪贴板",
+    "exportModal_generateShareLinkError": "分享链接生成失败，请重试",
+    "exportModal_generateShareLinkSuccess": "已生成链接",
+    "exportModal_Share_Subtitle": "以链接形式分享当前会话的快照",
+    "exportModal_Share_ValidDateText": "链接有效期：",
+    "exportModal_Share_ValidDateSegment_marginLeft": "-15px",
+    "exportModal_Share_ValidDateLabel_1": "1天",
+    "exportModal_Share_ValidDateLabel_2": "7天",
+    "exportModal_Share_ValidDateLabel_3": "30天",
+    "exportModal_Share_Btn": "生成链接",
+    "exportModal_Share_DescriptionText": "如需分享更新的对话内容，请重新生成分享链接；会话删除后相关的分享链接不会自动失效",
+    "exportModal_ManageShare_Btn": "管理已有的分享"
 }

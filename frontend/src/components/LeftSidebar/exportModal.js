@@ -77,7 +77,7 @@ function ExportModalContent ({closeModal} ) {
 
     const handleCopy = (content) => {
         copy(content);
-        message.success('已复制到剪贴板', 2);
+        message.success(t('exportModal_copyLinkSuccess'), 2);
     };
 
     const GenerateShareLink = async () => {
@@ -95,7 +95,7 @@ function ExportModalContent ({closeModal} ) {
             setIsLinkGenerated(true);
         } catch (error) {
             console.error('Failed to generate share link:', error);
-            message.error('分享链接生成失败，请重试', 2);
+            message.error(t('exportModal_generateShareLinkError'), 2);
         } finally {
             setIsLoading(false);
         }
@@ -119,23 +119,23 @@ function ExportModalContent ({closeModal} ) {
                 </Space>
             <Title level={5}>{t('exportModal_Title2')}</Title>
                 <Space direction="vertical" style={{marginTop:'5px'}}>
-                    <Text>以链接形式分享当前会话的快照</Text>
+                    <Text>{t('exportModal_Share_Subtitle')}</Text>
                     <Space size="middle">
-                        <Text>链接有效期：</Text>
+                        <Text>{t('exportModal_Share_ValidDateText')}</Text>
                         <Segmented 
-                            style={{marginLeft:'-15px'}} 
-                            options={[{value:1, label:'1天'}, {value:7, label:'7天'}, {value:30, label:'30天'}]} 
+                            style={{marginLeft: t('exportModal_Share_ValidDateSegment_marginLeft')}} 
+                            options={[{value:1, label:t('exportModal_Share_ValidDateLabel_1')}, {value:7, label:t('exportModal_Share_ValidDateLabel_2')}, {value:30, label:t('exportModal_Share_ValidDateLabel_3')}]} 
                             value={shareDeadline}
                             onChange={value => setShareDeadline(value)}
                             disabled={isLinkGenerated || isLoading}/>
                         {isLinkGenerated 
-                            ? <Space style={{color:'#389e0d'}}><CheckOutlined />已生成链接</Space>
+                            ? <Space style={{color:'#389e0d'}}><CheckOutlined />{t('exportModal_generateShareLinkSuccess')}</Space>
                             : <Button 
                                 icon={<LinkOutlined />} 
                                 onClick={GenerateShareLink}
                                 loading={isLoading}
                                 >
-                                生成链接
+                                {t('exportModal_Share_Btn')}
                             </Button>
                         }
                     </Space>
@@ -164,8 +164,8 @@ function ExportModalContent ({closeModal} ) {
                         <QRCode value={shareLink} />
                     }
                     <div>
-                        <Text>如需分享更新的对话内容，请重新生成分享链接；会话删除后相关的分享链接不会自动失效。</Text>
-                        <Button type="link" style={{marginLeft:'-15px'}} icon={<SettingOutlined />}>管理已有的分享</Button>
+                        <Text>{t('exportModal_Share_DescriptionText')}</Text>
+                        <Button type="link" style={{marginLeft:'-15px'}} icon={<SettingOutlined />}>{t('exportModal_ManageShare_Btn')}</Button>
                     </div>
                 </Space>
         </Typography>

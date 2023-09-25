@@ -3,5 +3,17 @@
     "exportModal_ExportOpt2": "Export as Markdown",
     "exportModal_Title2": "Share",
     "exportModal_Msg_Head": "The following talk is exported at",
-    "exportModal_Msg_Body": "from"
+    "exportModal_Msg_Body": "from",
+    "exportModal_copyLinkSuccess": "Copied to clipboard",
+    "exportModal_generateShareLinkError": "Failed to generate share link, please try again.",
+    "exportModal_generateShareLinkSuccess": "Success",
+    "exportModal_Share_Subtitle": "Share a snapshot of the current conversation as a link.",
+    "exportModal_Share_ValidDateText": "Expiration date:",
+    "exportModal_Share_ValidDateSegment_marginLeft": "-10px",
+    "exportModal_Share_ValidDateLabel_1": "1 day",
+    "exportModal_Share_ValidDateLabel_2": "7 days",
+    "exportModal_Share_ValidDateLabel_3": "30 days",
+    "exportModal_Share_Btn": "Generate link",
+    "exportModal_Share_DescriptionText": "If you need to share updated conversation, please generate a new link. Shared links remain valid even after deleting conversations.",
+    "exportModal_ManageShare_Btn": "Manage existing shares"
 }

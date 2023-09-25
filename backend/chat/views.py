@@ -476,7 +476,7 @@ async def share_session(request, session_id):
         except django.db.IntegrityError:
             version += 1
     share_id_b36 = int_to_base36(share_id)
-    return JsonResponse({"url": f"/shared?share_id={share_id_b36}&autologin=True"})
+    return JsonResponse({"url": f"shared?share_id={share_id_b36}&autologin=True"})
 
 
 @api_view(["GET"])

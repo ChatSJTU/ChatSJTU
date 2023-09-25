@@ -91,7 +91,7 @@ function ExportModalContent ({closeModal} ) {
             };
             console.log(params);
             const response = await request.post(`/api/sessions/share/${selectedSession.id}/`, params);
-            setShareLink(response.url);
+            setShareLink("http://chat.sjtu.edu.cn" + response.data.url);
             setIsLinkGenerated(true);
         } catch (error) {
             console.error('Failed to generate share link:', error);

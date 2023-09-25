@@ -54,7 +54,7 @@ class SessionShared(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, db_index=True)
     create_time = models.DateTimeField(default=timezone.now, editable=True)
     deadline = models.DateTimeField(editable=True)
-    share_id = models.PositiveBigIntegerField(
+    share_id = models.BigIntegerField(
         db_index=True,
         editable=True,
         unique=True,

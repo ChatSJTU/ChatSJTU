@@ -1,4 +1,5 @@
 from django.utils.http import base36_to_int, int_to_base36
+from django.views.decorators.csrf import csrf_exempt
 from chat.serializers import (
     UserPreferenceSerializer,
     SessionSerializer,
@@ -446,30 +447,34 @@ async def share_session(request, session_id):
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
 
-    deadline = request.data.get("deadline")
+    deadline_r = request.data.get("deadline")
+
+    try:
+        deadline = dateutil.parser.parse(deadline_r)
+    except Exception:
+        return JsonResponse({"error": "分享时间格式错误"}, status=400)
 
     version = 0
     while True:
         try:
-            share_id = mmh3.hash64(
+            share_id = mmh3.hash(
                 json.dumps(
                     {
                         "session": session_id,
-                        "deadline": deadline,
+                        "deadline": deadline_r,
                         "version": version,
-                    }
+                    },
                 ),
                 signed=False,
-            )[random.randint(0, 1)]
+            )
             await SessionShared.objects.acreate(
                 session=session,
-                deadline=dateutil.parser.parse(deadline),
+                deadline=deadline,
                 share_id=share_id,
             )
             break
         except django.db.IntegrityError:
             version += 1
-
     share_id_b36 = int_to_base36(share_id)
     return JsonResponse({"url": f"/shared?share_id={share_id_b36}&autologin=True"})
 
@@ -477,27 +482,29 @@ async def share_session(request, session_id):
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-async def view_shared_session(request, shared_id):
+async def view_shared_session(request):
     try:
-        shared_id = base36_to_int(shared_id)
+        share_id = base36_to_int(request.GET["share_id"])
     except ValueError:
         return JsonResponse({"error": "分享连接不合法"}, status=400)
+    except KeyError:
+        return JsonResponse({"error": "缺少分享ID"}, status=400)
     try:
         shared = await SessionShared.objects.aget(
-            shared_id=shared_id, deadline__gt=timezone.now()
+            share_id=share_id, deadline__gt=timezone.now()
         )
     except SessionShared.DoesNotExist:
         return JsonResponse({"error": "分享连接不存在或已经过期"}, status=404)
 
     try:
         messages = await sync_to_async(
-            lambda session: Message.objects.filter(session=session)
+            lambda shared: Message.objects.filter(session=shared.session)
             .order_by("timestamp")
             .all()
-        )(shared.session)
+        )(shared)
         data = await sync_to_async(
             lambda messages: MessageSerializer(messages, many=True).data
         )(messages)
-        return JsonResponse(data)
+        return JsonResponse(data, safe=False)
     except Message.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)

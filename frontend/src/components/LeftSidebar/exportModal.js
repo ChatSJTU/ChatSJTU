@@ -13,7 +13,7 @@ import './index.scss'
 
 const { Title, Text } = Typography;
 
-function ExportModalContent ({closeModal} ) {
+function ExportModalContent ( {closeModal} ) {
  
     const { messages, selectedSession } = useContext(SessionContext);
     const { userProfile } = useContext(UserContext);

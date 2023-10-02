@@ -58,7 +58,6 @@ const App = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const autologin = urlParams.get('autologin');
         urlParams.delete("autologin");
-        // console.log(urlParams.toString());
         if (autologin === 'True') {
             jAccountLogin('/', "", urlParams.toString());
         }
@@ -83,7 +82,6 @@ const App = () => {
 
     //jaccount登录之交换令牌
     const handleJacTokenExchange = async (code, state, params = "") => {
-        // console.log(params);
         try {
             const response = await jAccountAuth(code, state, "/", "", params);
             if (response.status === 200) {

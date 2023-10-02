@@ -20,12 +20,6 @@
     }
 }
 
-.user-text{
-    @include themify {
-        color: themed('reversed-color');
-    }
-}
-
 .sendbox-area {
     @include themify {
         border-top: 1px solid themed('sendbox-border-top-color'); /* 上边框样式 */

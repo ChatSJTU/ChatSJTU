@@ -472,7 +472,6 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             }
                         </div>
                     </div>
-                    <div/>
                 </List.Item>
                 }
             </div>)}

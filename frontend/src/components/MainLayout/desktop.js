@@ -28,7 +28,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
-    const [sharedSession, setSharedSession] = useState(null);
+    const [sharedSessionMsgs, setSharedSessionMsgs] = useState(null);
     const [messages, setMessages] = useState([]); 
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
@@ -65,7 +65,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
         try {
             const response = await request.get('/api/shared/?share_id=' + shareId);
             console.log(response.data);
-            setSharedSession(response.data);
+            setSharedSessionMsgs(response.data);
             setModalViewSharedOpen(true);
         } catch (error) {
             console.error('Failed to fetch shared session:', error);
@@ -175,7 +175,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                 setSessions,
                 selectedSession,
                 setSelectedSession,
-                sharedSession,
+                sharedSessionMsgs,
                 messages,
                 setMessages,
             }}>

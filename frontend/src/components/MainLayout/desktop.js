@@ -229,7 +229,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                     </div>
                 </Layout>
                 <Modal title='查看分享' open={isModalViewSharedOpen} footer={null} 
-                    onCancel={() => setModalViewSharedOpen(false)}
+                    onCancel={() => setModalViewSharedOpen(false)} width={800}
                     >
                     <ViewSharedModalContent closeModal={() => setModalViewSharedOpen(false)}/>
                 </Modal>

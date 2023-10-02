@@ -1,9 +1,9 @@
 import React, { useContext, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import ReactStringReplace from 'react-string-replace';
-import { Typography, List, Avatar } from 'antd';
+import { Typography, List, Avatar, Button, Space } from 'antd';
 import MarkdownRenderer from '../MarkdownRenderer';
-import { UserOutlined, RobotOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, InfoCircleOutlined, DeliveredProcedureOutlined } from '@ant-design/icons';
 
 import { SessionContext } from '../../contexts/SessionContext';
 import './index.scss'
@@ -29,8 +29,9 @@ function ViewSharedModalContent ( {closeModal} ) {
     
     return (
         <Typography>
+            <Space direction="vertical" style={{marginTop:'10px', width: '100%'}} size="middle">
             <List
-            style={{overflow: 'auto', height: '450px', marginTop:'15px', fontSize: '14px', border: '1px solid #888888', borderRadius: '6px'}}
+            style={{overflow: 'auto', maxHeight: '450px', fontSize: '14px', border: '1px solid #888888', borderRadius: '6px'}}
             dataSource={ sharedSessionMsgs }
             renderItem={(item, index) => (
             <div>
@@ -40,6 +41,7 @@ function ViewSharedModalContent ( {closeModal} ) {
                     <div style={{ width: '100%' }}>
                         <List.Item.Meta
                             avatar = {AvatarList[item.sender]}
+                            description = {item.time}
                         />
                         <div style={{ width: '100%', marginTop: 6}}>
                             {item.sender === 0 && 
@@ -59,8 +61,10 @@ function ViewSharedModalContent ( {closeModal} ) {
                         </div>
                     </div>
                 </List.Item>
-            </div>)}
+            </div>)} 
         />
+        <Button icon={<DeliveredProcedureOutlined />}>继续此会话</Button>
+        </Space>
         </Typography>
     )
     

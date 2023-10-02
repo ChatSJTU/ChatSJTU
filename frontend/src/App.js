@@ -57,8 +57,10 @@ const App = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const autologin = urlParams.get('autologin');
+        urlParams.delete("autologin");
+        // console.log(urlParams.toString());
         if (autologin === 'True') {
-            jAccountLogin('/');
+            jAccountLogin('/', "", urlParams.toString());
         }
     });
 
@@ -74,21 +76,22 @@ const App = () => {
             url.searchParams.delete('code');
             url.searchParams.delete('state');
             window.history.replaceState(null, null, url.toString());
-            handleJacTokenExchange(code, state);
+            const urlParams = new URLSearchParams(window.location.search);
+            handleJacTokenExchange(code, state, urlParams.toString());
         }
     });
 
     //jaccount登录之交换令牌
-    const handleJacTokenExchange = async (code, state) => {
+    const handleJacTokenExchange = async (code, state, params = "") => {
+        // console.log(params);
         try {
-            const response = await jAccountAuth(code, state, "/", "");
+            const response = await jAccountAuth(code, state, "/", "", params);
             if (response.status === 200) {
                 setIsLoggedIn(true);
             }
         } catch (error) {
             console.error('Failed to exchange token:', error);
             if (error.response && error.response.status === 403) {
-                //message.error('登陆失败，该账户类型暂时无法访问', 2);
                 message.error('开发中仅内测用户可登录', 2);
             } else {
                 message.error('登陆失败', 2);
@@ -168,7 +171,7 @@ const App = () => {
             >
                 <div className="layout-container" style={{ height: '100%' }}>
                     <LoginLayout 
-                        handleLogin={() => jAccountLogin('/')}
+                        handleLogin={() => jAccountLogin('/', "", new URLSearchParams(window.location.search).toString())}
                         changeLanguage={changeLanguage}
                     />
                 </div>

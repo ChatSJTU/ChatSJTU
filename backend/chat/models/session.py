@@ -52,8 +52,9 @@ class SessionShared(models.Model):
         verbose_name_plural = verbose_name
 
     session = models.ForeignKey(Session, on_delete=models.CASCADE, db_index=True)
-    create_time = models.DateTimeField(default=timezone.now, editable=True)
+    created_time = models.DateTimeField(default=timezone.now, editable=True)
     deadline = models.DateTimeField(editable=True)
+    snapshot = models.TextField(default="{}", editable=True)
     share_id = models.BigIntegerField(
         db_index=True,
         editable=True,

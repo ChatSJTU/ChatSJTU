@@ -1,5 +1,4 @@
 from django.utils.http import base36_to_int, int_to_base36
-from django.views.decorators.csrf import csrf_exempt
 from chat.serializers import (
     UserPreferenceSerializer,
     SessionSerializer,
@@ -29,10 +28,10 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import F
 
+from typing import Union
 import logging
 import dateutil.parser
 import django.db
-import random
 import base64
 import json
 import mmh3
@@ -448,11 +447,24 @@ async def share_session(request, session_id):
         return JsonResponse({"error": "会话不存在"}, status=404)
 
     deadline_r = request.data.get("deadline")
-
     try:
         deadline = dateutil.parser.parse(deadline_r)
     except Exception:
         return JsonResponse({"error": "分享时间格式错误"}, status=400)
+
+    messages = await sync_to_async(
+        lambda session: Message.objects.filter(session=session)
+        .order_by("timestamp")
+        .all()
+    )(session)
+
+    messages = await sync_to_async(
+        lambda messages: MessageSerializer(messages, many=True).data
+    )(messages)
+
+    snapshot = json.dumps(
+        {"username": request.user.username, "name": session.name, "messages": messages}
+    )
 
     version = 0
     while True:
@@ -468,23 +480,23 @@ async def share_session(request, session_id):
                 signed=False,
             )
             await SessionShared.objects.acreate(
-                session=session,
-                deadline=deadline,
-                share_id=share_id,
+                session=session, deadline=deadline, share_id=share_id, snapshot=snapshot
             )
             break
         except django.db.IntegrityError:
             version += 1
+
     share_id_b36 = int_to_base36(share_id)
     return JsonResponse({"url": f"?share_id={share_id_b36}&autologin=True"})
 
 
-@api_view(["GET"])
-@authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
-async def view_shared_session(request):
+async def get_shared_session(request) -> Union[SessionShared, JsonResponse]:
     try:
-        share_id = base36_to_int(request.GET["share_id"])
+        share_id = 0
+        if request.method == "GET":
+            share_id = base36_to_int(request.GET["share_id"])
+        elif request.method == "POST":
+            share_id = base36_to_int(request.POST["share_id"])
     except ValueError:
         return JsonResponse({"error": "分享连接不合法"}, status=400)
     except KeyError:
@@ -493,18 +505,51 @@ async def view_shared_session(request):
         shared = await SessionShared.objects.aget(
             share_id=share_id, deadline__gt=timezone.now()
         )
+        return shared
     except SessionShared.DoesNotExist:
         return JsonResponse({"error": "分享连接不存在或已经过期"}, status=404)
 
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def view_shared_session(request):
+    shared = await get_shared_session(request)
     try:
-        messages = await sync_to_async(
-            lambda shared: Message.objects.filter(session=shared.session)
-            .order_by("timestamp")
-            .all()
-        )(shared)
-        data = await sync_to_async(
-            lambda messages: MessageSerializer(messages, many=True).data
-        )(messages)
-        return JsonResponse(data, safe=False)
-    except Message.DoesNotExist:
-        return JsonResponse({"error": "会话不存在"}, status=404)
+        return HttpResponse(content=shared.snapshot, content_type="application/json")
+    except AttributeError:
+        return shared
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def save_shared_session(request):
+    shared = await get_shared_session(request)
+
+    try:
+        snapshot = json.loads(shared.snapshot)
+    except AttributeError:
+        return shared
+
+    @transaction.atomic
+    def create_fork(snapshot: dict):
+        def strip_time(message: dict):
+            message.pop("time")
+            return message
+
+        session = Session.objects.create(
+            user=request.user,
+            name="{0} (fork)".format(snapshot["name"]),
+        )
+        Message.objects.bulk_create(
+            [
+                Message(session=session, **strip_time(message))
+                for message in snapshot["messages"]
+            ]
+        )
+        return session
+
+    session = await sync_to_async(create_fork)(snapshot)
+    data = await sync_to_async(lambda session: SessionSerializer(session).data)(session)
+    return JsonResponse(data, safe=False)

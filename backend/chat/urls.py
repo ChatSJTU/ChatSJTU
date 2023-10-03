@@ -25,9 +25,14 @@ urlpatterns = [
     ),
     # 浏览分享会话 GET
     path(
-        "shared/",
+        "shared",
         views.view_shared_session,
         name="view_shared_session",
+    ),
+    path(
+        "save_shared",
+        views.save_shared_session,
+        name="save_session",
     ),
     # 分享会话 POST
     path(

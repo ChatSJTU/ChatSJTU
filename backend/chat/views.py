@@ -496,9 +496,9 @@ async def get_shared_session(request) -> Union[SessionShared, JsonResponse]:
         if request.method == "GET":
             share_id = base36_to_int(request.GET["share_id"])
         elif request.method == "POST":
-            share_id = base36_to_int(request.POST["share_id"])
+            share_id = base36_to_int(request.data.get("share_id"))
     except ValueError:
-        return JsonResponse({"error": "分享连接不合法"}, status=400)
+        return JsonResponse({"error": "分享链接不合法"}, status=400)
     except KeyError:
         return JsonResponse({"error": "缺少分享ID"}, status=400)
     try:
@@ -507,7 +507,7 @@ async def get_shared_session(request) -> Union[SessionShared, JsonResponse]:
         )
         return shared
     except SessionShared.DoesNotExist:
-        return JsonResponse({"error": "分享连接不存在或已经过期"}, status=404)
+        return JsonResponse({"error": "分享链接不存在或已经过期"}, status=404)
 
 
 @api_view(["GET"])

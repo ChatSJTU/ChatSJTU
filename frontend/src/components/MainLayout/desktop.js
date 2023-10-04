@@ -229,7 +229,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                         <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>{t('MainLayout_Footer_Copyright')}<br/>{t('MainLayout_Footer_TechSupport')} <a className='footer-link' href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">{t('MainLayout_Footer_ContactLinkText')}</a></p>
                     </div>
                 </Layout>
-                <Modal title={`来自 ${sharedSession?.username} 的分享 - ${sharedSession?.name}`} open={isModalViewSharedOpen} footer={null} 
+                <Modal title={`${t('MainLayout_ViewSharedModal_Title_Head')} ${sharedSession?.username} ${t('MainLayout_ViewSharedModal_Title_End')} - ${sharedSession?.name}`} open={isModalViewSharedOpen} footer={null} 
                     onCancel={() => setModalViewSharedOpen(false)} width={800}
                     >
                     <ViewSharedModalContent closeModal={() => setModalViewSharedOpen(false)}/>

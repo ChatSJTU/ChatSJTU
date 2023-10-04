@@ -13,6 +13,8 @@ function ViewSharedModalContent ( {closeModal} ) {
 
     const { sharedSession, sessions, setSessions, setSelectedSession } = useContext(SessionContext);
 
+    let { t } = useTranslation('ViewSharedModal')
+
     const forkShared = async () => {
         try {
             const response = await request.post('/api/save_shared', {share_id: sharedSession.shareId});
@@ -77,7 +79,7 @@ function ViewSharedModalContent ( {closeModal} ) {
         />
         <Button icon={<DeliveredProcedureOutlined />}
             onClick={forkShared}>
-            继续此会话
+            {t('ViewSharedModal_Btn')}
         </Button>
         </Space>
         </Typography>

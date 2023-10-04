@@ -365,7 +365,7 @@ async def check_usage(user) -> GPTPermission:
     try:
         profile = await UserProfile.objects.aget(user=user)
         if profile.user_type != "student":
-            return GPTPermission(student=False, available=False)
+            return GPTPermission(student=False, available=True)
 
     except UserProfile.DoesNotExist:
         raise ChatError("用户信息错误", status=404)

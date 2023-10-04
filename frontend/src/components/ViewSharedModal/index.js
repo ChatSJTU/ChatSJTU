@@ -44,8 +44,7 @@ function ViewSharedModalContent ( {closeModal} ) {
     return (
         <Typography>
             <Space direction="vertical" style={{marginTop:'10px', width: '100%'}} size="middle">
-            <List
-            style={{overflow: 'auto', maxHeight: '450px', fontSize: '14px', border: '1px solid #888888', borderRadius: '6px'}}
+            <List className="shared-modal"
             dataSource={ sharedSession.messages }
             renderItem={(item, index) => (
             <div>

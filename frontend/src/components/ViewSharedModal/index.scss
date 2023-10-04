@@ -1,5 +1,15 @@
 @import '../../assets//themes/_themify.scss';
 
+.shared-modal {
+    @include themify  {
+        border: 1px solid themed('outer-bg-border-color');
+    }
+    overflow: auto;
+    max-height: 450px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
 .shared-user-message {
     @include themify {
         background-color: themed('markdown-body-input-bg-color'); /* 用户输入的背景颜色 */

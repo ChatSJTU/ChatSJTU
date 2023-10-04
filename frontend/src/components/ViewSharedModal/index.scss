@@ -1,5 +1,9 @@
 @import '../../assets//themes/_themify.scss';
 
+.ant-typography pre {
+    border: none;
+}
+
 .shared-modal {
     @include themify  {
         border: 1px solid themed('outer-bg-border-color');

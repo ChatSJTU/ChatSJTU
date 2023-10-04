@@ -273,7 +273,7 @@ def __save_new_request_rounds(
     return user_message_obj, ai_message_obj
 
 
-async def __try_rename_session_name(
+async def __post_message(
     session_id: int, session: Session, gpt_request: GPTRequest, gpt_response: Message
 ) -> str:
     session_rename = ""
@@ -294,9 +294,10 @@ async def __try_rename_session_name(
                 session.is_renamed = True
                 await session.asave()
 
-    # 增加次数，返回服务端生成的回复消息
     if permission.student and not gpt_response.flag_qcmd:
         await increase_usage(user=gpt_request.user)
+
+    # 增加次数，返回服务端生成的回复消息
     return session_rename
 
 
@@ -327,7 +328,7 @@ async def send_message(request, session_id):
             __save_new_request_rounds
         )(session, gpt_request, gpt_response)
 
-        session_rename = await __try_rename_session_name(
+        session_rename = await __post_message(
             session_id, session, gpt_request, gpt_response
         )
 

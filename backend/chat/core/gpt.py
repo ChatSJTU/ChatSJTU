@@ -162,7 +162,7 @@ class MockGPTConnection(AbstractGPTConnection):
 
 
 class GPTConnection(AbstractGPTConnection):
-    def __init__(self, model_engine: str, mode: str = "oneshot"):
+    def __init__(self, model_engine: str = "Azure GPT3.5", mode: str = "oneshot"):
         self.displayed_model = model_engine
         self.__model_kwargs = {}
         if model_engine == "OpenAI GPT4":
@@ -216,7 +216,9 @@ class GPTConnection(AbstractGPTConnection):
         self.gpt = gpt
 
     def __setup_handlers(self):
-        self.__handler = FunctionRespHandler(self.displayed_model, self.fc_map, self.gpt)
+        self.__handler = FunctionRespHandler(
+            self.displayed_model, self.fc_map, self.gpt
+        )
         self.__handler.set_next(StopRespHandler(self.displayed_model)).set_next(
             LengthRespHandler(self.displayed_model)
         )
@@ -308,7 +310,7 @@ class GPTConnectionFactory:
         self.__model_engine: str = "nil"
         self.__mock: bool = False
 
-    def model_engine(self, model_engine: str):
+    def model_engine(self, model_engine: str = "Azure GPT3.5"):
         self.__model_engine = model_engine
         return self
 

@@ -186,7 +186,7 @@ async def summary_title(msg: str) -> tuple[bool, str]:
         {"role": "user", "content": msg + "\n用小于五个词概括上述文字"},
     ]
     try:
-        connection = GPTConnection(model_engine="gpt-35-turbo-16k")
+        connection = GPTConnectionFactory().model_engine().mock(OPENAI_MOCK).build()
         response = await connection.interact(
             msg=input_list,
             max_tokens=20,

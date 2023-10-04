@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Typography, Button, Space, Segmented, message, QRCode } from 'antd';
-import { PictureOutlined, FileMarkdownOutlined, SettingOutlined, LinkOutlined, CheckOutlined, CopyOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { PictureOutlined, FileMarkdownOutlined, SettingOutlined, LinkOutlined, CheckOutlined, CopyOutlined, QrcodeOutlined, ReloadOutlined } from '@ant-design/icons';
 import copy from 'copy-to-clipboard';
 import { toPng } from 'html-to-image';
 import download from 'downloadjs';
@@ -129,7 +129,17 @@ function ExportModalContent ( {closeModal} ) {
                             onChange={value => setShareDeadline(value)}
                             disabled={isLinkGenerated || isLoading}/>
                         {isLinkGenerated 
-                            ? <Space style={{color:'#389e0d'}}><CheckOutlined />{t('exportModal_generateShareLinkSuccess')}</Space>
+                            ? <Space style={{color:'#389e0d'}}>
+                                <CheckOutlined />
+                                {t('exportModal_generateShareLinkSuccess')}
+                                <Button 
+                                icon={<ReloadOutlined />} 
+                                onClick={GenerateShareLink}
+                                loading={isLoading}
+                                >
+                                重新生成
+                                </Button>
+                              </Space>
                             : <Button 
                                 icon={<LinkOutlined />} 
                                 onClick={GenerateShareLink}
@@ -150,14 +160,6 @@ function ExportModalContent ( {closeModal} ) {
                                 icon={<QrcodeOutlined className={`export-modal-qrcode${isQrcodeShown ? '-clicked' : ''}`}/>}
                                 onClick={() => setIsQrcodeShown(!isQrcodeShown)}
                             />
-                            {/* <Input style={{width: 300}} 
-                            readonly="true" 
-                            defaultValue={shareLink}
-                            addonAfter={
-                                <CopyOutlined
-                                    onClick={() => handleCopy(shareLink)}
-                                />
-                            }/> */}
                         </Space>
                     }
                     {isLinkGenerated && isQrcodeShown &&
@@ -165,7 +167,7 @@ function ExportModalContent ( {closeModal} ) {
                     }
                     <div>
                         <Text>{t('exportModal_Share_DescriptionText')}</Text>
-                        <Button type="link" style={{marginLeft:'-15px'}} icon={<SettingOutlined />}>{t('exportModal_ManageShare_Btn')}</Button>
+                        <Button type="link" style={{marginLeft:'-10px'}} icon={<SettingOutlined />}>{t('exportModal_ManageShare_Btn')}</Button>
                     </div>
                 </Space>
         </Typography>

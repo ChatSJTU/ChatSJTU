@@ -28,7 +28,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
-    const [sharedSessionMsgs, setSharedSessionMsgs] = useState(null);
+    const [sharedSession, setSharedSession] = useState(null);
     const [messages, setMessages] = useState([]); 
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
@@ -63,9 +63,10 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
     //获取分享会话内容
     const fetchSharedSession = async ( shareId ) => {
         try {
-            const response = await request.get('/api/shared/?share_id=' + shareId);
-            console.log(response.data);
-            setSharedSessionMsgs(response.data);
+            const response = await request.get('/api/shared?share_id=' + shareId);
+            const shared = {...response.data, shareId};
+            console.log(shared);
+            setSharedSession(shared);
             setModalViewSharedOpen(true);
         } catch (error) {
             console.error('Failed to fetch shared session:', error);
@@ -175,7 +176,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                 setSessions,
                 selectedSession,
                 setSelectedSession,
-                sharedSessionMsgs,
+                sharedSession,
                 messages,
                 setMessages,
             }}>
@@ -228,7 +229,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                         <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>{t('MainLayout_Footer_Copyright')}<br/>{t('MainLayout_Footer_TechSupport')} <a className='footer-link' href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">{t('MainLayout_Footer_ContactLinkText')}</a></p>
                     </div>
                 </Layout>
-                <Modal title='查看分享' open={isModalViewSharedOpen} footer={null} 
+                <Modal title={`来自 ${sharedSession?.username} 的分享 - ${sharedSession?.name}`} open={isModalViewSharedOpen} footer={null} 
                     onCancel={() => setModalViewSharedOpen(false)} width={800}
                     >
                     <ViewSharedModalContent closeModal={() => setModalViewSharedOpen(false)}/>

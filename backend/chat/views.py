@@ -540,7 +540,7 @@ async def save_shared_session(request):
 
         session = Session.objects.create(
             user=request.user,
-            name="{0} (fork)".format(snapshot["name"]),
+            name="{0} (forked)".format(snapshot["name"]),
         )
         Message.objects.bulk_create(
             [

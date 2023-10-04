@@ -1,18 +1,30 @@
 import React, { useContext, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import ReactStringReplace from 'react-string-replace';
-import { Typography, List, Avatar, Button, Space } from 'antd';
+import { Typography, List, Avatar, Button, Space, message } from 'antd';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { UserOutlined, RobotOutlined, InfoCircleOutlined, DeliveredProcedureOutlined } from '@ant-design/icons';
 
 import { SessionContext } from '../../contexts/SessionContext';
+import { request } from "../../services/request";
 import './index.scss'
-
-const { Title, Text } = Typography;
 
 function ViewSharedModalContent ( {closeModal} ) {
 
-    const { sharedSessionMsgs } = useContext(SessionContext);
+    const { sharedSession, sessions, setSessions, setSelectedSession } = useContext(SessionContext);
+
+    const forkShared = async () => {
+        try {
+            const response = await request.post('/api/save_shared', {share_id: sharedSession.shareId});
+            setSessions([response.data, ...sessions]);
+            setSelectedSession(response.data);
+        } catch (error) {
+            console.error('Failed to fork shared session:', error);
+            message.error(error.response.data.error, 2);
+        } finally {
+            closeModal();
+        }
+    }
 
     //头像图标
     const aiIcon = <Avatar size={24}
@@ -32,7 +44,7 @@ function ViewSharedModalContent ( {closeModal} ) {
             <Space direction="vertical" style={{marginTop:'10px', width: '100%'}} size="middle">
             <List
             style={{overflow: 'auto', maxHeight: '450px', fontSize: '14px', border: '1px solid #888888', borderRadius: '6px'}}
-            dataSource={ sharedSessionMsgs }
+            dataSource={ sharedSession.messages }
             renderItem={(item, index) => (
             <div>
                 <List.Item 
@@ -63,7 +75,10 @@ function ViewSharedModalContent ( {closeModal} ) {
                 </List.Item>
             </div>)} 
         />
-        <Button icon={<DeliveredProcedureOutlined />}>继续此会话</Button>
+        <Button icon={<DeliveredProcedureOutlined />}
+            onClick={forkShared}>
+            继续此会话
+        </Button>
         </Space>
         </Typography>
     )

@@ -89,3 +89,9 @@
     animation: fadeIn 0.7s;
     font-weight: bold;
 }
+
+.export-modal-qrcode-clicked {
+    @include themify {
+        color: themed('selected-outline-color');
+    }
+}

@@ -45,7 +45,18 @@ class Session(models.Model):
 
         return messages[::-1]
 
-    # def delete_last_message(self): # 删去最新一条
-    #     recent_message = self.message_set.order_by('-timestamp').first()
-    #     if recent_message:
-    #         recent_message.delete()
+
+class SessionShared(models.Model):
+    class Meta:
+        verbose_name = "共享会话"
+        verbose_name_plural = verbose_name
+
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, db_index=True)
+    created_time = models.DateTimeField(default=timezone.now, editable=True)
+    deadline = models.DateTimeField(editable=True)
+    snapshot = models.TextField(default="{}", editable=True)
+    share_id = models.BigIntegerField(
+        db_index=True,
+        editable=True,
+        unique=True,
+    )

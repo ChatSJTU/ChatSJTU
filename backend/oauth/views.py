@@ -31,7 +31,7 @@ from chat_sjtu.settings import CSRF_TRUSTED_ORIGINS
 
 def login_jaccount(request):
     redirect_uri = request.GET.get('redirect_uri', '')
-    assert redirect_uri.strip('/') in CSRF_TRUSTED_ORIGINS
+    assert redirect_uri[:redirect_uri.rfind("/")] in CSRF_TRUSTED_ORIGINS
     if redirect_uri == '':
         redirect_uri = request.build_absolute_uri(reverse('auth_jaccount'))
     response = jaccount.authorize_redirect(request, redirect_uri)

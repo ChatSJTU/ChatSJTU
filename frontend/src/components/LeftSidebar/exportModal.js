@@ -1,20 +1,28 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Typography, Button, Space } from 'antd';
-import { PictureOutlined, FileMarkdownOutlined } from '@ant-design/icons';
+import { Typography, Button, Space, Segmented, message, QRCode } from 'antd';
+import { PictureOutlined, FileMarkdownOutlined, SettingOutlined, LinkOutlined, CheckOutlined, CopyOutlined, QrcodeOutlined, ReloadOutlined } from '@ant-design/icons';
+import copy from 'copy-to-clipboard';
 import { toPng } from 'html-to-image';
 import download from 'downloadjs';
 
+import { request } from "../../services/request";
 import { UserContext } from '../../contexts/UserContext';
 import { SessionContext } from '../../contexts/SessionContext';
+import './index.scss'
 
 const { Title, Text } = Typography;
 
-function ExportModalContent ({closeModal} ) {
+function ExportModalContent ( {closeModal} ) {
  
-    const { messages } = useContext(SessionContext);
+    const { messages, selectedSession } = useContext(SessionContext);
     const { userProfile } = useContext(UserContext);
-
+    const [ isLinkGenerated, setIsLinkGenerated ] = useState(false);
+    const [ shareLink, setShareLink ] = useState(null);
+    const [ shareDeadline, setShareDeadline ] = useState(7);
+    const [ isLoading, setIsLoading ] = useState(false);
+    const [ isQrcodeShown, setIsQrcodeShown ] = useState(false);
+    
     const timeOptions = {
         year: 'numeric',
         month: '2-digit',
@@ -67,6 +75,32 @@ function ExportModalContent ({closeModal} ) {
         closeModal();
     }
 
+    const handleCopy = (content) => {
+        copy(content);
+        message.success(t('exportModal_copyLinkSuccess'), 2);
+    };
+
+    const GenerateShareLink = async () => {
+        setTimeout(() => {setIsLoading(true);}, 0);
+        try {
+            // setShareLink('https://chat.sjtu.edu.cn/?placeholder_for_share_link&autologin=True');
+            const deadlineTime = new Date();
+            deadlineTime.setDate(deadlineTime.getDate() + shareDeadline);
+            const params ={
+                deadline: deadlineTime.toISOString(),
+            };
+            console.log(params);
+            const response = await request.post(`/api/sessions/share/${selectedSession.id}/`, params);
+            setShareLink(document.baseURI + response.data.url);
+            setIsLinkGenerated(true);
+        } catch (error) {
+            console.error('Failed to generate share link:', error);
+            message.error(t('exportModal_generateShareLinkError'), 2);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <Typography>
                 <Space style={{marginTop:'5px'}}>
@@ -84,7 +118,58 @@ function ExportModalContent ({closeModal} ) {
                     </Button>
                 </Space>
             <Title level={5}>{t('exportModal_Title2')}</Title>
-                <Text>链接分享暂未上线</Text>
+                <Space direction="vertical" style={{marginTop:'5px'}}>
+                    <Text>{t('exportModal_Share_Subtitle')}</Text>
+                    <Space size="middle" style={{flexWrap: 'wrap'}}>
+                        <Text>{t('exportModal_Share_ValidDateText')}</Text>
+                        <Segmented 
+                            style={{marginLeft: t('exportModal_Share_ValidDateSegment_marginLeft')}} 
+                            options={[{value:1, label:t('exportModal_Share_ValidDateLabel_1')}, {value:7, label:t('exportModal_Share_ValidDateLabel_2')}, {value:30, label:t('exportModal_Share_ValidDateLabel_3')}]} 
+                            value={shareDeadline}
+                            onChange={value => setShareDeadline(value)}
+                            disabled={isLinkGenerated || isLoading}/>
+                        {isLinkGenerated 
+                            ? <Space style={{color:'#389e0d'}}>
+                                <CheckOutlined />
+                                {t('exportModal_generateShareLinkSuccess')}
+                                <Button 
+                                icon={<ReloadOutlined />} 
+                                onClick={GenerateShareLink}
+                                loading={isLoading}
+                                >
+                                {t('exportModal_Share_Btn_2')}
+                                </Button>
+                              </Space>
+                            : <Button 
+                                icon={<LinkOutlined />} 
+                                onClick={GenerateShareLink}
+                                loading={isLoading}
+                                >
+                                {t('exportModal_Share_Btn_1')}
+                            </Button>
+                        }
+                    </Space>
+                    {isLinkGenerated && 
+                        <Space>
+                            <blockquote>{shareLink}</blockquote>
+                            <Button type="text"
+                                icon={<CopyOutlined />}
+                                onClick={() => handleCopy(shareLink)}
+                            />
+                            <Button type="text"
+                                icon={<QrcodeOutlined className={`export-modal-qrcode${isQrcodeShown ? '-clicked' : ''}`}/>}
+                                onClick={() => setIsQrcodeShown(!isQrcodeShown)}
+                            />
+                        </Space>
+                    }
+                    {isLinkGenerated && isQrcodeShown &&
+                        <QRCode value={shareLink} />
+                    }
+                    <div>
+                        <Text>{t('exportModal_Share_DescriptionText')}</Text>
+                        <Button type="link" style={{marginLeft:'-10px'}} icon={<SettingOutlined />} disabled>{t('exportModal_ManageShare_Btn')}</Button>
+                    </div>
+                </Space>
         </Typography>
     )
 }

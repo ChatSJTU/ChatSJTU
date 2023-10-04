@@ -31,5 +31,6 @@
     "Tabs_settings_Risky_2_Desc": "重置账户的所有数据，所有会话与设置将被清除",
     "Tabs_settings_Risky_2_Btn": "立即重置",
     "Tabs_settings_Theme_Desc_light": "浅色",
-    "Tabs_settings_Theme_Desc_dark": "深色"
+    "Tabs_settings_Theme_Desc_dark": "深色",
+    "Tabs_settings_Theme_Desc_spring": "青葱"
 }

@@ -89,7 +89,7 @@ const MarkdownRenderer = ({content}) =>{
 
     return(
         <ReactMarkdown
-        className={'markdown-body-' + userTheme}
+        className={'markdown-body-' + (userTheme === 'dark' ? 'dark' : 'light')}
             children={content}
             remarkPlugins={[remarkGfm, remarkMath, remarkHtml]}
             rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSanitize]}

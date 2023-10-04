@@ -57,8 +57,9 @@ const App = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const autologin = urlParams.get('autologin');
-        if (autologin === 'true') {
-            jAccountLogin('/');
+        urlParams.delete("autologin");
+        if (autologin === 'True') {
+            jAccountLogin('/', "", urlParams.toString());
         }
     });
 
@@ -74,21 +75,21 @@ const App = () => {
             url.searchParams.delete('code');
             url.searchParams.delete('state');
             window.history.replaceState(null, null, url.toString());
-            handleJacTokenExchange(code, state);
+            const urlParams = new URLSearchParams(window.location.search);
+            handleJacTokenExchange(code, state, urlParams.toString());
         }
     });
 
     //jaccount登录之交换令牌
-    const handleJacTokenExchange = async (code, state) => {
+    const handleJacTokenExchange = async (code, state, params = "") => {
         try {
-            const response = await jAccountAuth(code, state, "/", "");
+            const response = await jAccountAuth(code, state, "/", "", params);
             if (response.status === 200) {
                 setIsLoggedIn(true);
             }
         } catch (error) {
             console.error('Failed to exchange token:', error);
             if (error.response && error.response.status === 403) {
-                //message.error('登陆失败，该账户类型暂时无法访问', 2);
                 message.error('开发中仅内测用户可登录', 2);
             } else {
                 message.error('登陆失败', 2);
@@ -145,7 +146,7 @@ const App = () => {
                     algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 }}
                 >
-                <div style={{ background: '#f0f2f5', height: '100%' }}>
+                <div className="layout-container" style={{ height: '100%' }}>
                 {isDesktop ? 
                 <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/> 
                 : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/>}
@@ -166,9 +167,9 @@ const App = () => {
                     algorithm: userTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 }}
             >
-                <div style={{ background: '#f0f2f5', height: '100%' }}>
+                <div className="layout-container" style={{ height: '100%' }}>
                     <LoginLayout 
-                        handleLogin={() => jAccountLogin('/')}
+                        handleLogin={() => jAccountLogin('/', "", new URLSearchParams(window.location.search).toString())}
                         changeLanguage={changeLanguage}
                     />
                 </div>

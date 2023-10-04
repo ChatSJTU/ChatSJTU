@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Layout, Button, message } from 'antd';
+import { Layout, Button, message, Modal } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 
 import ChatBox from '../ChatBox';
 import LeftSidebar from '../LeftSidebar';
+import ViewSharedModalContent from '../ViewSharedModal';
 import TabAbout from '../Tabs/about';
 import TabDisclaimers from '../Tabs/disclaimers';
 import TabHelp from '../Tabs/help';
@@ -16,6 +17,7 @@ import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
 import { fetchPluginList } from '../../services/plugins';
+import { request } from "../../services/request";
 
 import './index.scss'
 
@@ -27,12 +29,14 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
 
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
+    const [sharedSession, setSharedSession] = useState(null);
     const [messages, setMessages] = useState([]); 
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
     const [qcmdsList, setQcmdsList] = useState(null);
     const [pluginList, setPluginList] = useState(null);
     const [selectedPlugins, setSelectedPlugins] = useState([]);
+    const [isModalViewSharedOpen, setModalViewSharedOpen] = useState(false);
 
     // const [prevSelectedSession, setPrevSelectedSession] = useState(null);
     const [curRightComponent, setCurRightComponent] = useState(0);  //切换右侧部件
@@ -45,6 +49,33 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
         fetchSettings();
         fetchPluginAndQcmds();
     }, []);
+
+    //检测share_id
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('share_id');
+        let url = new URL(window.location);
+        url.searchParams.delete('share_id');
+        window.history.replaceState(null, null, url.toString());
+
+        if (shareId) {
+            fetchSharedSession(shareId);
+        }
+    });
+
+    //获取分享会话内容
+    const fetchSharedSession = async ( shareId ) => {
+        try {
+            const response = await request.get('/api/shared?share_id=' + shareId);
+            const shared = {...response.data, shareId};
+            console.log(shared);
+            setSharedSession(shared);
+            setModalViewSharedOpen(true);
+        } catch (error) {
+            console.error('Failed to fetch shared session:', error);
+            message.error(error.response.data.error, 2);
+        }
+    }
 
     // 获取登录用户信息
     const fetchUserInfo = async () => {
@@ -154,6 +185,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
                 setSessions,
                 selectedSession,
                 setSelectedSession,
+                sharedSession,
                 messages,
                 setMessages,
             }}>
@@ -205,6 +237,11 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
                             <p style={{fontSize: '12px', color: '#aaaaaa', letterSpacing: '0.3px'}}>{t('MainLayout_Footer_Copyright')}<br/>{t('MainLayout_Footer_TechSupport')} <a href="mailto:gpt@sjtu.edu.cn" title="gpt@sjtu.edu.cn">{t('MainLayout_Footer_ContactLinkText')}</a></p>
                     </Footer>
                 </Layout>
+                <Modal title={`${t('MainLayout_ViewSharedModal_Title_Head')} ${sharedSession?.username} ${t('MainLayout_ViewSharedModal_Title_End')} - ${sharedSession?.name}`} open={isModalViewSharedOpen} footer={null} 
+                    onCancel={() => setModalViewSharedOpen(false)} width={800}
+                    >
+                    <ViewSharedModalContent closeModal={() => setModalViewSharedOpen(false)}/>
+                </Modal>
             </UserContext.Provider>
         </SessionContext.Provider>
     );

@@ -4,5 +4,7 @@
     "MainLayout_Footer_ContactLinkText": "Contact Us",
     "MainLayout_FetchUserError": "User does not exist",
     "MainLayout_FetchSettingsError": "Failed to fetch settings",
-    "MainLayout_FetchPluginsError": "Failed to fetch plugins"
+    "MainLayout_FetchPluginsError": "Failed to fetch plugins",
+    "MainLayout_ViewSharedModal_Title_Head": "Shared talk from",
+    "MainLayout_ViewSharedModal_Title_End": ""
 }

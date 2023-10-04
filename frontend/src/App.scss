@@ -37,3 +37,14 @@
 .ant-tag {
     letter-spacing: 0.6px; /* 设置合适的letter-spacing值 */
 }
+
+.layout-container {
+    @include themify {
+        background-color: themed('primary-color');
+    }
+}
+
+.markdown-body-dark {
+    background-color: transparent;
+    color: #cfcdca;
+}

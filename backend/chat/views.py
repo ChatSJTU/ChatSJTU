@@ -1,23 +1,25 @@
+from django.utils.http import base36_to_int, int_to_base36
 from chat.serializers import (
     UserPreferenceSerializer,
     SessionSerializer,
     MessageSerializer,
     ChatErrorSerializer,
 )
-from chat.models import Session, Message, UserAccount, UserPreference
+from chat.models import Session, Message, SessionShared, UserAccount, UserPreference
 from chat.core import (
     STUDENT_LIMIT,
     handle_message,
     summary_title,
     senword_detector_strict,
 )
+from chat.core.base import GPTPermission, GPTRequest, GPTContext
 from chat.core.errors import ChatError
 from chat.core.plugin import plugins_list_serialized
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication, base64
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from asgiref.sync import sync_to_async
 from adrf.decorators import api_view
 from django.contrib.admin.options import transaction
@@ -26,7 +28,13 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import F
 
+from typing import Union
 import logging
+import dateutil.parser
+import django.db
+import base64
+import json
+import mmh3
 
 # def get_or_create_user(device_id):
 #     # 根据设备标识查找或创建对应的用户
@@ -44,13 +52,9 @@ logger = logging.getLogger(__name__)
 async def sessions(request):
     if request.method == "GET":
         user = request.user  # 从request.user获取当前用户
-        # sessions = await Session.objects.filter(user=user)  # 基于当前用户过滤会话
-        sessions = [
-            session
-            async for session in Session.objects.filter(
-                user=user, deleted_time__isnull=True
-            )
-        ]
+        sessions = await sync_to_async(
+            lambda: Session.objects.filter(user=user, deleted_time__isnull=True).all()
+        )()
         data = await sync_to_async(
             lambda sessions: SessionSerializer(sessions, many=True).data
         )(sessions)
@@ -136,16 +140,17 @@ async def session_messages(request, session_id):
         filters = {
             "session__id": session_id,
             "session__user": request.user,
-            "session__deleted_time__isnull": True
+            "session__deleted_time__isnull": True,
         }
 
-        messages = [
-            message
-            async for message in Message.objects.filter(**filters).order_by("timestamp")
-        ]
+        messages = await sync_to_async(
+            lambda: Message.objects.filter(**filters).order_by("timestamp").all()
+        )()
 
-        serializer = MessageSerializer(messages, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        data = await sync_to_async(
+            lambda messages: MessageSerializer(messages, many=True).data
+        )(messages)
+        return JsonResponse(data, safe=False)
     except UserPreference.DoesNotExist:
         return JsonResponse({"error": "用户不存在"}, status=404)
     except Session.DoesNotExist:
@@ -155,130 +160,177 @@ async def session_messages(request, session_id):
 # 发送消息
 
 
+@transaction.atomic()
+def __get_last_messages(session):
+    last_user_message_obj = (
+        Message.objects.filter(session=session, sender=1, regenerated=False)
+        .order_by("-timestamp")
+        .exclude(content="continue")
+        .first()
+    )
+    last_ai_message_obj = (
+        Message.objects.filter(session=session, sender=0, generation__gt=0)
+        .order_by("-timestamp")
+        .first()
+    )
+
+    return last_user_message_obj, last_ai_message_obj
+
+
+async def __build_gpt_request(
+    request,
+    last_user_message_obj: Message,
+    last_ai_message_obj: Message,
+) -> GPTRequest:
+    try:
+        preference = await UserPreference.objects.aget(user=request.user)
+    except UserPreference.DoesNotExist:
+        raise ChatError("用户信息错误", status=404)
+
+    context = GPTContext()
+
+    msg: str = base64.b64decode(request.data.get("message")).decode()
+    model_engine: str = request.data.get("model")
+    plugins = request.data.get("plugins")
+    plugins: list[str] = plugins if plugins is not None else []
+
+    cont: bool = msg == "continue"
+    regen: bool = msg == "%regenerate%"
+    permission = await check_usage(request.user)
+
+    if regen:
+        try:
+            context.deadline = last_user_message_obj.timestamp
+            msg = last_user_message_obj.content
+            context.generation = last_ai_message_obj.generation + 1
+        except AttributeError:
+            raise ChatError("缺少上一条消息，无法重复生成。", status=404)
+
+    elif cont:
+        try:
+            context.generation = 0
+            context.deadline = timezone.now()
+            if not last_ai_message_obj.interrupted:
+                raise ChatError("上一条信息并非中断，无法继续", status=400)
+        except AttributeError:
+            raise ChatError("缺少上一条信息，无法继续", status=404)
+
+    else:
+        context.generation = 1
+        context.deadline = timezone.now()
+
+    context.msg = msg
+    context.request_time = timezone.now()
+    context.regen = regen
+    context.cont = cont
+
+    gpt_request = GPTRequest(
+        user=request.user,
+        model_engine=model_engine,
+        permission=permission,
+        context=context,
+        preference=preference,
+        plugins=plugins,
+    )
+
+    return gpt_request
+
+
+@transaction.atomic()
+def __save_new_request_rounds(
+    session: Session,
+    gpt_request: GPTRequest,
+    gpt_response: Message,
+) -> tuple[Message, Message]:
+    context = gpt_request.context
+    ai_message_obj = gpt_response
+
+    if context.regen:
+        for last_ai_message_obj in Message.objects.filter(
+            session=session,
+            sender=0,
+            regenerated=False,
+            timestamp__gt=context.deadline,
+        ):
+            last_ai_message_obj.regenerated = True
+            last_ai_message_obj.save()
+
+    # 将发送消息加入数据库
+    user_message_obj = Message.objects.create(
+        sender=1,
+        session=session,
+        content=context.msg,
+        timestamp=context.request_time,
+        generation=context.generation,
+        regenerated=context.regen,
+        interrupted=context.cont,
+        flag_qcmd=ai_message_obj.flag_qcmd,
+    )
+    ai_message_obj.session = session
+    ai_message_obj.generation = context.generation
+    # 将返回消息加入数据库
+    ai_message_obj.save()
+    return user_message_obj, ai_message_obj
+
+
+async def __post_message(
+    session_id: int, session: Session, gpt_request: GPTRequest, gpt_response: Message
+) -> str:
+    session_rename = ""
+    context = gpt_request.context
+    permission = gpt_request.permission
+
+    # 查看session是否进行过改名（再次filter防止同步问题）
+    if not gpt_response.flag_qcmd:
+        if (
+            not await Session.objects.filter(id=session_id)
+            .values_list("is_renamed", flat=True)
+            .afirst()
+        ):
+            re_success, re_resp = await summary_title(msg=context.msg)
+            if re_success:
+                session.name = re_resp
+                session_rename = re_resp
+                session.is_renamed = True
+                await session.asave()
+
+    if permission.student and not gpt_response.flag_qcmd:
+        await increase_usage(user=gpt_request.user)
+
+    # 增加次数，返回服务端生成的回复消息
+    return session_rename
+
+
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 async def send_message(request, session_id):
-    user_message: str = base64.b64decode(request.data.get("message")).decode()
-    selected_model: str = request.data.get("model")
-
-    plugins = request.data.get("plugins")
-    plugins: list[str] = plugins if plugins is not None else []
-
-    regenerate: bool = user_message == "%regenerate%"
-    cont: bool = user_message == "continue"
-    permission, isStu = await check_usage(request.user)
-
-    # if not permission and user_message[0] != '/':  # 若字符串以/开头，还是进入下方流程判断是否为快捷命令
-    #     time.sleep(1)   # 避免处理太快前端显示闪烁
-    #     return errorresp
     try:
         session = await Session.objects.aget(
             id=session_id, user=request.user, deleted_time__isnull=True
         )
+
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
 
-    last_user_message_obj = await (
-        Message.objects.filter(session=session, sender=1, regenerated=False)
-        .order_by("-timestamp")
-        .exclude(content="continue")
-        .afirst()
+    last_user_message_obj, last_ai_message_obj = await sync_to_async(
+        __get_last_messages
+    )(session)
+
+    gpt_request = await __build_gpt_request(
+        request, last_user_message_obj, last_ai_message_obj
     )
-    last_ai_message_obj = await (
-        Message.objects.filter(session=session, sender=0, generation__gt=0)
-        .order_by("-timestamp")
-        .afirst()
-    )
-
-    if regenerate:
-        try:
-            before = last_user_message_obj.timestamp
-            user_message = last_user_message_obj.content
-            generation = last_ai_message_obj.generation + 1
-        except AttributeError:
-            return JsonResponse({"error": "缺少上一条消息，无法重复生成。"}, status=404)
-
-    elif cont:
-        try:
-            generation = 0
-            before = timezone.now()
-            if not last_ai_message_obj.interrupted:
-                return JsonResponse({"error": "上一条信息已全部生成完毕，无法继续"}, status=400)
-        except AttributeError:
-            return JsonResponse({"error": "缺少上一条信息，无法继续生成"}, status=404)
-
-    else:
-        generation = 1
-        before = timezone.now()
 
     try:
-        sendTimestamp = timezone.now()
+        gpt_response = await handle_message(session=session, request=gpt_request)
 
-        # 处理信息
-        ai_message_obj = await handle_message(
-            user=request.user,
-            msg=user_message,
-            selected_model=selected_model,
-            session=session,
-            permission=permission,
-            before=before,
-            plugins=plugins,
+        user_message_obj, ai_message_obj = await sync_to_async(
+            __save_new_request_rounds
+        )(session, gpt_request, gpt_response)
+
+        session_rename = await __post_message(
+            session_id, session, gpt_request, gpt_response
         )
-
-        # 这里需要原子性 如果在传输途中session被删除仍然可以进行rollback
-        @transaction.atomic()
-        def save_message() -> tuple[Message, Message]:
-            # 修改上一条ai信息的regenerated为True
-            if regenerate:
-                for last_ai_message_obj in Message.objects.filter(
-                    session=session,
-                    sender=0,
-                    regenerated=False,
-                    timestamp__gt=before,
-                ):
-                    last_ai_message_obj.regenerated = True
-                    last_ai_message_obj.save()
-
-            # 将发送消息加入数据库
-            user_message_obj = Message.objects.create(
-                sender=1,
-                session=session,
-                content=user_message,
-                timestamp=sendTimestamp,
-                generation=generation,
-                regenerated=regenerate,
-                interrupted=cont,
-                flag_qcmd=ai_message_obj.flag_qcmd,
-            )
-            # 将返回消息加入数据库
-            ai_message_obj.session = session
-            ai_message_obj.generation = generation
-            ai_message_obj.save()
-            return user_message_obj, ai_message_obj
-
-        user_message_obj, ai_message_obj = await sync_to_async(save_message)()
-
-        # 查看session是否进行过改名（再次filter防止同步问题）
-
-        session_rename = ""
-
-        if not ai_message_obj.flag_qcmd:
-            if (
-                not await Session.objects.filter(id=session_id)
-                .values_list("is_renamed", flat=True)
-                .afirst()
-            ):
-                rename_flag, rename_resp = await summary_title(msg=user_message)
-                if rename_flag:
-                    session.name = rename_resp
-                    session_rename = rename_resp
-                    session.is_renamed = True
-                    await session.asave()
-
-        # 增加次数，返回服务端生成的回复消息
-        if isStu and not ai_message_obj.flag_qcmd:
-            await increase_usage(user=request.user)
 
         return JsonResponse(
             {
@@ -297,15 +349,24 @@ async def send_message(request, session_id):
         return JsonResponse(serializer.data, status=e.status)
 
 
+# 更新使用次数
+async def increase_usage(user):
+    try:
+        accounts = UserAccount.objects.filter(user=user)
+        await sync_to_async(accounts.update)(usage_count=F("usage_count") + 1)
+    except UserAccount.DoesNotExist:
+        raise ChatError("用户信息错误", status=404)
+
+
 # 检查使用次数
-# 返回: permission（是否达到上限）、isStu（是否为学生)
+# 返回: GPTPermission(student: 是否为学生, available: 是否有消息余量)
 
 
-async def check_usage(user) -> tuple[bool, bool]:
+async def check_usage(user) -> GPTPermission:
     try:
         profile = await UserProfile.objects.aget(user=user)
         if profile.user_type != "student":
-            return True, False
+            return GPTPermission(student=False, available=True)
 
     except UserProfile.DoesNotExist:
         raise ChatError("用户信息错误", status=404)
@@ -318,58 +379,18 @@ async def check_usage(user) -> tuple[bool, bool]:
             account.usage_count = 0
             account.last_used = today
             await account.asave()
-            return True, True
+            return GPTPermission(student=True, available=True)
 
         if account.usage_count >= STUDENT_LIMIT:
-            return False, True
+            return GPTPermission(student=True, available=False)
         else:
-            return True, True
+            return GPTPermission(student=True, available=True)
 
     except UserAccount.DoesNotExist:
         raise ChatError("用户信息错误", status=404)
 
     except Exception as e:
         raise ChatError(e.__str__(), status=500)
-
-
-# 更新使用次数
-
-
-async def increase_usage(user):
-    try:
-        accounts = UserAccount.objects.filter(user=user)
-        await sync_to_async(accounts.update)(usage_count=F("usage_count") + 1)
-    except UserAccount.DoesNotExist:
-        raise ChatError("用户信息错误", status=404)
-
-
-# 检查并更新使用次数
-# def check_and_update_usage(user):
-#     try:
-#         profile = UserProfile.objects.get(user=user)
-#         if profile.user_type != 'student':
-#             return True, None
-#     except UserProfile.DoesNotExist:
-#         return False, JsonResponse({'error': '用户信息错误'}, status=404)
-
-#     try:
-#         account= UserAccount.objects.get(user=user)
-#         today = timezone.localtime(timezone.now()).date()
-#         if account.last_used != today:
-#             account.usage_count = 1
-#             account.last_used = today
-#         else:
-#             account.usage_count += 1
-
-#         if account.usage_count > STUDENT_LIMIT:
-#             return False, JsonResponse({'error': '您已到达今日使用上限'}, status=429)
-#         else:
-#             account.save()
-#             return True, None
-#     except UserAccount.DoesNotExist:
-#         return False, JsonResponse({'error': '用户信息错误'}, status=404)
-
-# 偏好设置
 
 
 @api_view(["GET", "PATCH"])
@@ -413,3 +434,123 @@ async def list_plugins(request):
         content_type="application/json",
         status=200,
     )
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def share_session(request, session_id):
+    try:
+        session = await Session.objects.aget(
+            id=session_id, user=request.user, deleted_time__isnull=True
+        )
+    except Session.DoesNotExist:
+        return JsonResponse({"error": "会话不存在"}, status=404)
+
+    deadline_r = request.data.get("deadline")
+    try:
+        deadline = dateutil.parser.parse(deadline_r)
+    except Exception:
+        return JsonResponse({"error": "分享时间格式错误"}, status=400)
+
+    messages = await sync_to_async(
+        lambda session: Message.objects.filter(session=session)
+        .order_by("timestamp")
+        .all()
+    )(session)
+
+    messages = await sync_to_async(
+        lambda messages: MessageSerializer(messages, many=True).data
+    )(messages)
+
+    snapshot = json.dumps(
+        {"username": request.user.username, "name": session.name, "messages": messages}
+    )
+
+    version = 0
+    while True:
+        try:
+            share_id = mmh3.hash(
+                json.dumps(
+                    {
+                        "session": session_id,
+                        "deadline": deadline_r,
+                        "version": version,
+                    },
+                ),
+                signed=False,
+            )
+            await SessionShared.objects.acreate(
+                session=session, deadline=deadline, share_id=share_id, snapshot=snapshot
+            )
+            break
+        except django.db.IntegrityError:
+            version += 1
+
+    share_id_b36 = int_to_base36(share_id)
+    return JsonResponse({"url": f"?share_id={share_id_b36}&autologin=True"})
+
+
+async def get_shared_session(request) -> Union[SessionShared, JsonResponse]:
+    try:
+        share_id = 0
+        if request.method == "GET":
+            share_id = base36_to_int(request.GET["share_id"])
+        elif request.method == "POST":
+            share_id = base36_to_int(request.data.get("share_id"))
+    except ValueError:
+        return JsonResponse({"error": "分享链接不合法"}, status=400)
+    except KeyError:
+        return JsonResponse({"error": "缺少分享ID"}, status=400)
+    try:
+        shared = await SessionShared.objects.aget(
+            share_id=share_id, deadline__gt=timezone.now()
+        )
+        return shared
+    except SessionShared.DoesNotExist:
+        return JsonResponse({"error": "分享链接不存在或已经过期"}, status=404)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def view_shared_session(request):
+    shared = await get_shared_session(request)
+    try:
+        return HttpResponse(content=shared.snapshot, content_type="application/json")
+    except AttributeError:
+        return shared
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def save_shared_session(request):
+    shared = await get_shared_session(request)
+
+    try:
+        snapshot = json.loads(shared.snapshot)
+    except AttributeError:
+        return shared
+
+    @transaction.atomic
+    def create_fork(snapshot: dict):
+        def strip_time(message: dict):
+            message.pop("time")
+            return message
+
+        session = Session.objects.create(
+            user=request.user,
+            name="{0} (forked)".format(snapshot["name"]),
+        )
+        Message.objects.bulk_create(
+            [
+                Message(session=session, **strip_time(message))
+                for message in snapshot["messages"]
+            ]
+        )
+        return session
+
+    session = await sync_to_async(create_fork)(snapshot)
+    data = await sync_to_async(lambda session: SessionSerializer(session).data)(session)
+    return JsonResponse(data, safe=False)

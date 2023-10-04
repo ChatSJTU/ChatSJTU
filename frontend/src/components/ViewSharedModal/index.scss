@@ -1,0 +1,60 @@
+@import '../../assets//themes/_themify.scss';
+
+.ant-typography pre {
+    border: none;
+}
+
+.shared-modal {
+    @include themify  {
+        border: 1px solid themed('outer-bg-border-color');
+    }
+    overflow: auto;
+    max-height: 450px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+.shared-user-message {
+    @include themify {
+        background-color: themed('markdown-body-input-bg-color'); /* 用户输入的背景颜色 */
+    }
+    font-size: 14px;
+    padding: 15px 10px 15px 10px !important;
+    margin: 0px 0px 0px 0px !important;
+}
+  
+.shared-bot-message {
+    @include themify {
+        background-color: themed('markdown-body-reply-bg-color'); /* 机器人回复的背景颜色 */
+    }
+    font-size: 14px;
+    padding: 15px 10px 15px 10px !important;
+    margin: 0px 0px 0px 0px !important;
+}
+
+.user-text{
+    @include themify {
+        color: themed('reversed-color');
+    }
+}
+
+.ai-icon{
+    @include themify {
+        color: themed('ai-icon-color');
+        background-color: themed('ai-icon-bg-color');
+    }
+}
+
+.user-icon{
+    @include themify {
+        color: themed('user-icon-color');
+        background-color: themed('user-icon-bg-color');
+    }
+}
+
+.notice-icon{
+    @include themify {
+        color: themed('notice-icon-color');
+        background-color: themed('notice-icon-bg-color');
+    }
+}

@@ -73,6 +73,9 @@
 .plugin-card{
     width: 320px; 
     margin: 12px; 
+    @include themify {
+        outline-color: themed('selected-outline-color') !important;
+    }
 }
 
 .plugin-card .ant-card-meta-avatar {
@@ -132,6 +135,9 @@
     border-radius: 6px;
     margin-bottom: 6px;
     transition: box-shadow 0.2s ease-in-out;
+    @include themify {
+        outline-color: themed('selected-outline-color') !important;
+    }
 }
 
 .theme-card-button:hover {

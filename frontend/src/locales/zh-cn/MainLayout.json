@@ -4,5 +4,7 @@
     "MainLayout_Footer_ContactLinkText": "联系我们",
     "MainLayout_FetchUserError": "用户不存在",
     "MainLayout_FetchSettingsError": "获取设置项失败",
-    "MainLayout_FetchPluginsError": "获取插件列表失败"
+    "MainLayout_FetchPluginsError": "获取插件列表失败",
+    "MainLayout_ViewSharedModal_Title_Head": "来自",
+    "MainLayout_ViewSharedModal_Title_End": "的分享"
 }

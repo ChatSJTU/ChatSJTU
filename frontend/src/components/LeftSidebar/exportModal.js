@@ -120,7 +120,7 @@ function ExportModalContent ( {closeModal} ) {
             <Title level={5}>{t('exportModal_Title2')}</Title>
                 <Space direction="vertical" style={{marginTop:'5px'}}>
                     <Text>{t('exportModal_Share_Subtitle')}</Text>
-                    <Space size="middle">
+                    <Space size="middle" style={{flexWrap: 'wrap'}}>
                         <Text>{t('exportModal_Share_ValidDateText')}</Text>
                         <Segmented 
                             style={{marginLeft: t('exportModal_Share_ValidDateSegment_marginLeft')}} 
@@ -137,7 +137,7 @@ function ExportModalContent ( {closeModal} ) {
                                 onClick={GenerateShareLink}
                                 loading={isLoading}
                                 >
-                                重新生成
+                                {t('exportModal_Share_Btn_2')}
                                 </Button>
                               </Space>
                             : <Button 
@@ -145,7 +145,7 @@ function ExportModalContent ( {closeModal} ) {
                                 onClick={GenerateShareLink}
                                 loading={isLoading}
                                 >
-                                {t('exportModal_Share_Btn')}
+                                {t('exportModal_Share_Btn_1')}
                             </Button>
                         }
                     </Space>
@@ -167,7 +167,7 @@ function ExportModalContent ( {closeModal} ) {
                     }
                     <div>
                         <Text>{t('exportModal_Share_DescriptionText')}</Text>
-                        <Button type="link" style={{marginLeft:'-10px'}} icon={<SettingOutlined />}>{t('exportModal_ManageShare_Btn')}</Button>
+                        <Button type="link" style={{marginLeft:'-10px'}} icon={<SettingOutlined />} disabled>{t('exportModal_ManageShare_Btn')}</Button>
                     </div>
                 </Space>
         </Typography>

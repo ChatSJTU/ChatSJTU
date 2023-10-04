@@ -13,7 +13,8 @@
     "exportModal_Share_ValidDateLabel_1": "1 day",
     "exportModal_Share_ValidDateLabel_2": "7 days",
     "exportModal_Share_ValidDateLabel_3": "30 days",
-    "exportModal_Share_Btn": "Generate link",
+    "exportModal_Share_Btn_1": "Generate link",
+    "exportModal_Share_Btn_2": "Regenerate link",
     "exportModal_Share_DescriptionText": "If you need to share updated conversation, please generate a new link. Shared links remain valid even after deleting conversations.",
     "exportModal_ManageShare_Btn": "Manage existing shares"
 }

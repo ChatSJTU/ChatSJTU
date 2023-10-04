@@ -30,8 +30,8 @@ class AbstractRespHandler(ABC):
 class RespHandler(AbstractRespHandler):
     __next: Union[Self, None] = None
 
-    def __init__(self, model_engine: str):
-        self.model_engine = model_engine
+    def __init__(self, model: str):
+        self.model = model
 
     def get_finish_reason(self, response: dict) -> str:
         return response["choices"][0].get("finish_reason", "")
@@ -54,8 +54,8 @@ class RespHandler(AbstractRespHandler):
 
 
 class LengthRespHandler(RespHandler):
-    def __init__(self, model_engine: str):
-        return super().__init__(model_engine)
+    def __init__(self, model: str):
+        return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
         if self.get_finish_reason(response) == "length":
@@ -65,7 +65,7 @@ class LengthRespHandler(RespHandler):
                 content=self.get_content(response),
                 interrupted=1,
                 plugin_group=response.get("plugin_group", ""),
-                use_model=self.model_engine,
+                use_model=self.model,
             )
 
         else:
@@ -74,11 +74,11 @@ class LengthRespHandler(RespHandler):
 
 class FunctionRespHandler(RespHandler):
     def __init__(
-        self, model_engine: str, fc_map: dict, gpt: Callable[[list], Awaitable[dict]]
+        self, model: str, fc_map: dict, gpt: Callable[[list], Awaitable[dict]]
     ):
         self.gpt = gpt
         self.fc_map = fc_map
-        return super().__init__(model_engine)
+        return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
         if self.get_finish_reason(response) == "function_call":
@@ -111,8 +111,8 @@ class FunctionRespHandler(RespHandler):
 
 
 class StopRespHandler(RespHandler):
-    def __init__(self, model_engine: str):
-        return super().__init__(model_engine)
+    def __init__(self, model: str):
+        return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
         if self.get_finish_reason(response) == "stop":
@@ -122,7 +122,7 @@ class StopRespHandler(RespHandler):
                 content=self.get_content(response),
                 interrupted=0,
                 plugin_group=response.get("plugin_group", ""),
-                use_model=self.model_engine,
+                use_model=self.model,
             )
         else:
             return await super().handle(msg, response)
@@ -141,8 +141,8 @@ class AbstractGPTConnection(ABC):
 
 
 class MockGPTConnection(AbstractGPTConnection):
-    def __init__(self, model_engine: str, mode: str = "oneshot"):
-        self.model_engine = model_engine
+    def __init__(self, model: str, mode: str = "oneshot"):
+        self.model = model
 
     async def interact(
         self,
@@ -157,22 +157,22 @@ class MockGPTConnection(AbstractGPTConnection):
             content=LIPSUM,
             interrupted=0,
             plugin_group="",
-            use_model=self.model_engine,
+            use_model=self.model,
         )
 
 
 class GPTConnection(AbstractGPTConnection):
     def __init__(self, model_engine: str, mode: str = "oneshot"):
-        self.model_engine = model_engine
-        self.model_kwargs = {}
-        if model_engine == "OPENAI GPT4":
-            self.model_engine = "gpt-4"
+        self.displayed_model = model_engine
+        self.__model_kwargs = {}
+        if model_engine == "OpenAI GPT4":
+            self.__model_called = "gpt-4"
             self.__setup_gpt_environment = self.__setup_openai
         elif model_engine == "Azure GPT3.5":
-            self.model_engine = "gpt-35-turbo-16k"
+            self.__model_called = "gpt-35-turbo-16k"
             self.__setup_gpt_environment = self.__setup_azure
         elif model_engine == "LLAMA 2":
-            self.model_engine = "llama2"
+            self.__model_called = "llama2"
             self.__setup_gpt_environment = self.__setup_llama2
         else:
             raise ChatError("模型不存在")
@@ -183,7 +183,7 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_key = AZURE_OPENAI_KEY
         openai.api_base = AZURE_OPENAI_ENDPOINT
         openai.api_version = "2023-07-01-preview"
-        self.model_kwargs["engine"] = self.model_engine
+        self.__model_kwargs["engine"] = self.__model_called
 
     def __setup_openai(self):
         openai.api_type = "open_ai"
@@ -191,18 +191,18 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_key = OPENAI_KEY
         openai.api_base = "https://api.openai.com/v1"
         openai.api_version = None
-        self.model_kwargs["model"] = self.model_engine
+        self.__model_kwargs["model"] = self.__model_called
 
     def __setup_llama2(self):
         openai.api_type = "open_ai"
         openai.organization = None
         openai.api_key = "llama2"
         openai.api_base = LLAMA2_ENDPOINT
-        self.model_kwargs["model"] = self.model_engine
+        self.__model_kwargs["model"] = self.__model_called
 
     def __setup_plugins(self, selected_plugins: list[FCSpec]):
         if selected_plugins:
-            self.model_kwargs["functions"] = [
+            self.__model_kwargs["functions"] = [
                 asdict(fc_spec.definition) for fc_spec in selected_plugins
             ]
         self.fc_map = {fc_spec.definition.name: fc_spec for fc_spec in selected_plugins}
@@ -216,9 +216,9 @@ class GPTConnection(AbstractGPTConnection):
         self.gpt = gpt
 
     def __setup_handlers(self):
-        self.__handler = FunctionRespHandler(self.model_engine, self.fc_map, self.gpt)
-        self.__handler.set_next(StopRespHandler(self.model_engine)).set_next(
-            LengthRespHandler(self.model_engine)
+        self.__handler = FunctionRespHandler(self.displayed_model, self.fc_map, self.gpt)
+        self.__handler.set_next(StopRespHandler(self.displayed_model)).set_next(
+            LengthRespHandler(self.displayed_model)
         )
 
     def __pre_interact(
@@ -250,7 +250,7 @@ class GPTConnection(AbstractGPTConnection):
                 messages=msg,
                 temperature=temperature,
                 max_tokens=max_tokens,
-                **self.model_kwargs,
+                **self.__model_kwargs,
             )
             assert isinstance(response, dict)
             return response

@@ -8,6 +8,7 @@ from typing_extensions import Self
 from typing import Awaitable, Callable, Union
 from dataclasses import asdict
 from abc import ABC, abstractmethod
+import functools
 import tenacity
 import logging
 import openai
@@ -34,11 +35,11 @@ class RespHandler(AbstractRespHandler):
         self.model = model
 
     def get_finish_reason(self, response: dict) -> str:
-        return response["choices"][0].get("finish_reason", "")
+        return response["choices"][-1].get("finish_reason", "stop")
 
     def get_content(self, response: dict) -> str:
         try:
-            content: str = response["choices"][0]["message"]["content"]
+            content: str = response["choices"][-1]["message"]["content"]
             return content
         except KeyError:
             raise ChatError("服务器网络错误，请稍候重试")
@@ -208,12 +209,9 @@ class GPTConnection(AbstractGPTConnection):
         self.fc_map = {fc_spec.definition.name: fc_spec for fc_spec in selected_plugins}
 
     def __setup_gpt(self, temperature: float, max_tokens: int):
-        async def gpt(msg: list) -> dict:
-            response = await self.__interact_with_gpt(msg, temperature, max_tokens)
-            assert isinstance(response, dict)
-            return response
-
-        self.gpt = gpt
+        self.gpt = functools.partial(
+            self.__interact_with_gpt, temperature=temperature, max_tokens=max_tokens
+        )
 
     def __setup_handlers(self):
         self.__handler = FunctionRespHandler(

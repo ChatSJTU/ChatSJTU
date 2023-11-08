@@ -165,13 +165,18 @@ class MockGPTConnection(AbstractGPTConnection):
 class GPTConnection(AbstractGPTConnection):
     def __init__(self, model_engine: str = "Azure GPT3.5", mode: str = "oneshot"):
         self.displayed_model = model_engine
-        self.__model_kwargs = {}
+        self.completion_method = "ChatCompletion"
+        self.__model_kwargs = dict()
         if model_engine == "OpenAI GPT4":
             self.__model_called = "gpt-4"
             self.__setup_gpt_environment = self.__setup_openai
         elif model_engine == "Azure GPT3.5":
             self.__model_called = "gpt-35-turbo-16k"
             self.__setup_gpt_environment = self.__setup_azure
+        elif model_engine == "Azure GPT4":
+            self.__model_called = "gpt-4"
+            self.completion_method = "Completion"
+            self.__setup_gpt_environment = self.__setup_microblade
         elif model_engine == "LLAMA 2":
             self.__model_called = "llama2"
             self.__setup_gpt_environment = self.__setup_llama2
@@ -185,6 +190,15 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_base = AZURE_OPENAI_ENDPOINT
         openai.api_version = "2023-07-01-preview"
         self.__model_kwargs["engine"] = self.__model_called
+
+    def __setup_microblade(self):
+        openai.api_type = "open_ai"
+        openai.organization = None
+        openai.api_key = MICROBLADE_OPENAI_KEY
+        openai.api_base = MICROBLADE_OPENAI_ENDPOINT
+        openai.api_version = None
+        self.__model_kwargs["model"] = self.__model_called
+        self.__model_kwargs["headers"] = {"API-KEY": MICROBLADE_OPENAI_KEY}
 
     def __setup_openai(self):
         openai.api_type = "open_ai"
@@ -246,7 +260,8 @@ class GPTConnection(AbstractGPTConnection):
         max_tokens: int,
     ):
         try:
-            response = await openai.ChatCompletion.acreate(
+            completion_api = getattr(openai, self.completion_method)
+            response = await completion_api.acreate(
                 messages=msg,
                 temperature=temperature,
                 max_tokens=max_tokens,

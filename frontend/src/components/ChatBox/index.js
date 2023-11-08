@@ -350,11 +350,16 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
             plugin_support: true
         },
-        "OpenAI GPT4": {
+        "Azure GPT4": {
             label: 'GPT 4', 
             icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
             plugin_support: true
         },
+        // "OpenAI GPT4": {
+        //     label: 'GPT 4', 
+        //     icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
+        //     plugin_support: true
+        // },
         "LLAMA 2": {
             label: '教我算', 
             icon: <FireOutlined style={{color:'#f5c004'}}/>,

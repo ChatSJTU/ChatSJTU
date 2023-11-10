@@ -24,6 +24,8 @@
     "Tabs_settings_Model_4_Desc": "Whether the request include quick command messages for campus services.",
     "Tabs_settings_Model_5_Head": "Attaching Multiple Generated Results",
     "Tabs_settings_Model_5_Desc": "Whether the request include multiple generated results for the same prompt. If disabled, only the last generated result for the same prompt will be included in the request.",
+    "Tabs_settings_Model_6_Head": "More Enthusiastic System Prompt 🥰",
+    "Tabs_settings_Model_6_Desc": "Whether request the model to return a more enthusiastic response in the system prompt. If enabled, more tokens will be consumed.",
     "Tabs_settings_Risky_1_Head": "Clear Conversations",
     "Tabs_settings_Risky_1_Desc": "Clear all conversations and message data.",
     "Tabs_settings_Risky_1_Btn": "Clear",

@@ -244,6 +244,17 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 onChange={(checked) => { handleChangeSettings({ attach_with_regenerated: checked }); }}/>
                             </Col>
                         </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Model_6_Head')}</span></div>
+                                <div>{t('Tabs_settings_Model_6_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.use_friendly_sysprompt}
+                                onChange={(checked) => { handleChangeSettings({ use_friendly_sysprompt: checked }); }}/>
+                            </Col>
+                        </Row>
                     </Card>
                     <Title level={4} style={{ marginTop: '25px' }}>{t('Tabs_settings_Subtitle_3')}</Title>
                     <Card style={{ marginTop: '25px' , borderColor: 'rgba(255, 129, 130, 0.4)'}} >

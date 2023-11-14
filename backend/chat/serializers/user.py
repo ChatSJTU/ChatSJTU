@@ -13,5 +13,7 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
             'frequency_penalty',
             'attach_with_qcmd',
             'attach_with_regenerated',
-            'use_friendly_sysprompt'
+            'use_friendly_sysprompt',
+            'auto_generate_title',
+            'render_markdown'
             ]

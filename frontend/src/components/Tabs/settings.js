@@ -180,6 +180,28 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 onChange={() => { changeTheme(); }}/> */}
                             </Col>
                         </Row>
+                        {/* <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_3_Head')}</span></div>
+                                <div>{t('Tabs_settings_Basic_3_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.auto_generate_title}
+                                    onChange={(checked) => { handleChangeSettings({ auto_generate_title: checked }); }}/>
+                            </Col>
+                        </Row> */}
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_4_Head')}</span></div>
+                                <div>{t('Tabs_settings_Basic_4_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.render_markdown}
+                                    onChange={(checked) => { handleChangeSettings({ render_markdown: checked }); }}/>
+                            </Col>
+                        </Row>
                     </Card>
 
                     <Title level={4} style={{ marginTop: '25px' }}>{t('Tabs_settings_Subtitle_2')}</Title>

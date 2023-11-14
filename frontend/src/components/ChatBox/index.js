@@ -23,7 +23,7 @@ const { Text } = Typography;
 function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const {selectedSession, messages, setMessages} = useContext(SessionContext);
-    const {pluginList, qcmdsList, selectedPlugins} = useContext(UserContext);
+    const {pluginList, qcmdsList, selectedPlugins, settings} = useContext(UserContext);
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
     const [textareaWidth, setTextareaWidth] = useState(0);
@@ -426,7 +426,14 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                         <div style={{ width: '100%', marginTop: 10}}>
                             {item.sender === 0 && 
                                 <>
-                                    <MarkdownRenderer content={item.content}/>
+                                    {settings?.render_markdown 
+                                        ? <MarkdownRenderer content={item.content}/>
+                                        : ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                            <span key={i} style={{ whiteSpace: 'pre-wrap' }}>
+                                                {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                            </span>
+                                        ))
+                                    }
                                     {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
                                         <Space style={{marginTop: 10}} size="middle">
                                             {item.interrupted &&

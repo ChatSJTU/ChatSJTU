@@ -15,7 +15,7 @@
     "Tabs_settings_Subtitle_3": "高风险",
     "Tabs_settings_Basic_2_Head": "颜色主题",
     "Tabs_settings_Basic_3_Head": "自动生成标题",
-    "Tabs_settings_Basic_3_Desc": "根据首次请求生成合适的会话标题",
+    "Tabs_settings_Basic_3_Desc": "根据会话内容生成合适的会话标题",
     "Tabs_settings_Basic_4_Head": "预览回复",
     "Tabs_settings_Basic_4_Desc": "预览回复中的 Markdown 内容",
     "Tabs_settings_Model_1_Head": "随机性 (Temperature)",

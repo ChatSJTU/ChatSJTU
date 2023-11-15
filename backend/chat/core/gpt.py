@@ -1,3 +1,4 @@
+import dacite
 from chat.core.errors import ChatError
 from chat.models.message import Message
 from .testdata.lipsum import LIPSUM
@@ -6,8 +7,9 @@ from .plugins.fc import FCSpec
 
 from typing_extensions import Self
 from typing import Awaitable, Callable, Union
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from abc import ABC, abstractmethod
+import functools
 import tenacity
 import logging
 import openai
@@ -15,6 +17,51 @@ import openai
 logger = logging.getLogger(__name__)
 
 openai.proxy = os.getenv("OPENAI_PROXY", None)
+
+
+@dataclass
+class GPTUsage:
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+class FunctionCallAdapter:
+    def __init__(
+        self, model_engine: str, fc_map: dict, gpt: Callable[[list], Awaitable[dict]]
+    ):
+        self.model_engine = model_engine
+        self.fc_map = fc_map
+        self.gpt = gpt
+
+    async def __call__(self, msg: list, fc_response: dict) -> dict:
+        fc_completion: dict[str, str] = fc_response["choices"][0]["message"][
+            "tool_calls"
+        ][0]["function"]
+
+        fc = self.fc_map[fc_completion["name"]]
+        fc_plugin_group = fc.group_id
+        arguments = fc_completion["arguments"]
+        try:
+            fc_success, fc_content = await fc.exec(arguments)
+        except Exception:
+            raise ChatError("服务器网络错误，请稍候重试")
+
+        if not fc_success:
+            raise ChatError(fc_content)
+
+        else:
+            msg.append(
+                {
+                    "role": "function",
+                    "name": fc.definition.name,
+                    "content": fc_content,
+                }
+            )
+
+        plugin_response = await self.gpt(msg)
+        plugin_response["plugin_group"] = fc_plugin_group
+        return plugin_response
 
 
 class AbstractRespHandler(ABC):
@@ -33,15 +80,35 @@ class RespHandler(AbstractRespHandler):
     def __init__(self, model: str):
         self.model = model
 
-    def get_finish_reason(self, response: dict) -> str:
-        return response["choices"][0].get("finish_reason", "")
+    def extract_finish_reason(self, response: dict) -> str:
+        return response["choices"][-1].get("finish_reason", "stop")
 
-    def get_content(self, response: dict) -> str:
+    def extract_content(self, response: dict) -> str:
         try:
-            content: str = response["choices"][0]["message"]["content"]
+            content: str = response["choices"][-1]["message"]["content"]
             return content
         except KeyError:
             raise ChatError("服务器网络错误，请稍候重试")
+
+    def extract_usage(self, response: dict) -> GPTUsage:
+        try:
+            return dacite.from_dict(GPTUsage, response["usage"])
+
+        except KeyError:
+            return GPTUsage(0, 0, 0)
+
+    def construct_message(self, response: dict) -> Message:
+        usage = self.extract_usage(response)
+        return Message(
+            sender=0,
+            flag_qcmd=False,
+            content=self.extract_content(response),
+            interrupted=0,
+            plugin_group=response.get("plugin_group", ""),
+            use_model=self.model,
+            completion_tokens=usage.completion_tokens,
+            prompt_tokens=usage.prompt_tokens,
+        )
 
     def set_next(self, handler: Self) -> Self:
         self.__next = handler
@@ -58,16 +125,10 @@ class LengthRespHandler(RespHandler):
         return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
-        if self.get_finish_reason(response) == "length":
-            return Message(
-                sender=0,
-                flag_qcmd=False,
-                content=self.get_content(response),
-                interrupted=1,
-                plugin_group=response.get("plugin_group", ""),
-                use_model=self.model,
-            )
-
+        if self.extract_finish_reason(response) == "length":
+            message = self.construct_message(response)
+            message.interrupted = 1
+            return message
         else:
             return await super().handle(msg, response)
 
@@ -76,37 +137,19 @@ class FunctionRespHandler(RespHandler):
     def __init__(
         self, model: str, fc_map: dict, gpt: Callable[[list], Awaitable[dict]]
     ):
-        self.gpt = gpt
-        self.fc_map = fc_map
+        self.adapter = FunctionCallAdapter(model, fc_map, gpt)
         return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
-        if self.get_finish_reason(response) == "function_call":
-            fc_gpt_resp: dict[str, str] = response["choices"][0]["message"][
-                "function_call"
-            ]
-            fc = self.fc_map[fc_gpt_resp["name"]]
-            fc_plugin_group = fc.group_id
-            arguments = fc_gpt_resp["arguments"]
-            try:
-                fc_success, fc_content = await fc.exec(arguments)
-            except Exception:
-                raise ChatError("服务器网络错误，请稍候重试")
+        finish_reason = self.extract_finish_reason(response)
 
-            if not fc_success:
-                raise ChatError(fc_content)
-
-            else:
-                msg.append(
-                    {
-                        "role": "function",
-                        "name": fc.definition.name,
-                        "content": fc_content,
-                    }
-                )
-
-            response = await self.gpt(msg)
-            response["plugin_group"] = fc_plugin_group
+        if finish_reason == "function_call" or finish_reason == "tool_calls":
+            fc_gpt_usage = self.extract_usage(response)
+            plugin_resp = await self.adapter(msg, response)
+            message = await super().handle(msg, plugin_resp)
+            message.prompt_tokens += fc_gpt_usage.prompt_tokens
+            message.completion_tokens += fc_gpt_usage.completion_tokens
+            return message
         return await super().handle(msg, response)
 
 
@@ -115,15 +158,8 @@ class StopRespHandler(RespHandler):
         return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
-        if self.get_finish_reason(response) == "stop":
-            return Message(
-                sender=0,
-                flag_qcmd=False,
-                content=self.get_content(response),
-                interrupted=0,
-                plugin_group=response.get("plugin_group", ""),
-                use_model=self.model,
-            )
+        if self.extract_finish_reason(response) == "stop":
+            return self.construct_message(response)
         else:
             return await super().handle(msg, response)
 
@@ -202,18 +238,16 @@ class GPTConnection(AbstractGPTConnection):
 
     def __setup_plugins(self, selected_plugins: list[FCSpec]):
         if selected_plugins:
-            self.__model_kwargs["functions"] = [
-                asdict(fc_spec.definition) for fc_spec in selected_plugins
+            self.__model_kwargs["tools"] = [
+                {"type": "function", "function": asdict(fc_spec.definition)}
+                for fc_spec in selected_plugins
             ]
         self.fc_map = {fc_spec.definition.name: fc_spec for fc_spec in selected_plugins}
 
     def __setup_gpt(self, temperature: float, max_tokens: int):
-        async def gpt(msg: list) -> dict:
-            response = await self.__interact_with_gpt(msg, temperature, max_tokens)
-            assert isinstance(response, dict)
-            return response
-
-        self.gpt = gpt
+        self.gpt = functools.partial(
+            self.__interact_with_gpt, temperature=temperature, max_tokens=max_tokens
+        )
 
     def __setup_handlers(self):
         self.__handler = FunctionRespHandler(
@@ -291,6 +325,7 @@ class GPTConnection(AbstractGPTConnection):
             ChatError: 若出错则抛出以及对应的status code
         """
         self.__pre_interact(temperature, max_tokens, selected_plugins)
+
         try:
             response = await self.gpt(msg)
             assert isinstance(response, dict)

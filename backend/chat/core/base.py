@@ -3,13 +3,18 @@ from chat.core.errors import ChatError
 
 from .gpt import GPTConnection, GPTConnectionFactory
 from .utils import senword_detector, senword_detector_strict
-from .configs import OPENAI_MOCK, SYSTEM_ROLE, SYSTEM_ROLE_STRICT
+from .configs import (
+    OPENAI_MOCK,
+    SYSTEM_ROLE,
+    SYSTEM_ROLE_STRICT,
+    SYSTEM_ROLE_FRIENDLY_TL,
+)
 from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
 from .plugins.fc import FCSpec
 
 from django.utils.timezone import datetime
 from django.contrib.auth.models import User
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Union
 
 import logging
@@ -64,6 +69,7 @@ class GPTRequest:
     context: GPTContext
     plugins: list[str]
     preference: UserPreference
+    images: list = field(default_factory=lambda: [])
 
 
 def build_fcspec(id: str):
@@ -94,10 +100,15 @@ async def __build_input_list(request: GPTRequest, session: Session):
 
     # 构造输入
     role = ["assistant", "user"]
+    SYSTEM_PREAMBLE = SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE
+
+    if preference.use_friendly_sysprompt:
+        SYSTEM_PREAMBLE += SYSTEM_ROLE_FRIENDLY_TL.format(str(request.user.username))
+
     input_list = [
         {
             "role": "system",
-            "content": SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE,
+            "content": SYSTEM_PREAMBLE,
         },
     ]
     input_list.extend(

@@ -8,7 +8,7 @@ class SjmcPlugin(BasePlugin):
     """
 
     def qcmd_description(self) -> dict[str, str]:
-        return {"name": "SJMC", "description": "⛏️获获取 SJMC 服务器信息", "command": "/sjmc"}
+        return {"name": "SJMC", "description": "⛏️获取 SJMC 服务器信息", "command": "/sjmc"}
 
     def qcmd_trigger(self, msg: str) -> bool:
         return msg == "/sjmc"

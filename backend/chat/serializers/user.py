@@ -12,5 +12,8 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
             'presence_penalty',
             'frequency_penalty',
             'attach_with_qcmd',
-            'attach_with_regenerated'
+            'attach_with_regenerated',
+            'use_friendly_sysprompt',
+            'auto_generate_title',
+            'render_markdown'
             ]

@@ -155,7 +155,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <div className="theme-card-container">
                                     {themeList.map(item => (
                                             <div className="theme-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
-                                                <img className="theme-card-button"
+                                                <img className="theme-card-button" alt={item}
                                                     style={{width:'100%', outline: userTheme === item ? '2px solid' : ''}}
                                                     src={require(`../../assets/themes/${item}.svg`)} 
                                                     onClick={()=>changeTheme(item)}/>
@@ -178,6 +178,28 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 }
                                 {/* <Switch checked={userTheme === 'light' ? false : true}
                                 onChange={() => { changeTheme(); }}/> */}
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_3_Head')}</span></div>
+                                <div>{t('Tabs_settings_Basic_3_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.auto_generate_title}
+                                    onChange={(checked) => { handleChangeSettings({ auto_generate_title: checked }); }}/>
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_4_Head')}</span></div>
+                                <div>{t('Tabs_settings_Basic_4_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.render_markdown}
+                                    onChange={(checked) => { handleChangeSettings({ render_markdown: checked }); }}/>
                             </Col>
                         </Row>
                     </Card>
@@ -216,9 +238,9 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <div>{t('Tabs_settings_Model_3_Desc')}</div>
                             </Col>
                             <Col span={9} className="setting-item">
-                                <InputNumber min={0} max={8}
-                                    value={settings?.attached_message_count}
-                                    onChange={(value) => { handleChangeSettings({ attached_message_count: value }); }}
+                                <InputNumber min={-2} max={2} precision={1} step={0.1}
+                                    value={settings?.presence_penalty}
+                                    onChange={(value) => { handleChangeSettings({ presence_penalty: value }); }}
                                 />
                             </Col>
                         </Row>
@@ -229,8 +251,10 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <div>{t('Tabs_settings_Model_4_Desc')}</div>
                             </Col>
                             <Col span={9} className="setting-item">
-                                <Switch checked={settings?.attach_with_qcmd}
-                                onChange={(checked) => { handleChangeSettings({ attach_with_qcmd: checked }); }}/>
+                                <InputNumber min={-2} max={2} precision={1} step={0.1}
+                                    value={settings?.frequency_penalty}
+                                    onChange={(value) => { handleChangeSettings({ frequency_penalty: value }); }}
+                                />
                             </Col>
                         </Row>
                         <Divider className="setting-divider" />
@@ -240,8 +264,43 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <div>{t('Tabs_settings_Model_5_Desc')}</div>
                             </Col>
                             <Col span={9} className="setting-item">
+                                <InputNumber min={0} max={8}
+                                    value={settings?.attached_message_count}
+                                    onChange={(value) => { handleChangeSettings({ attached_message_count: value }); }}
+                                />
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Model_6_Head')}</span></div>
+                                <div>{t('Tabs_settings_Model_6_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.attach_with_qcmd}
+                                onChange={(checked) => { handleChangeSettings({ attach_with_qcmd: checked }); }}/>
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Model_7_Head')}</span></div>
+                                <div>{t('Tabs_settings_Model_7_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
                                 <Switch checked={settings?.attach_with_regenerated}
                                 onChange={(checked) => { handleChangeSettings({ attach_with_regenerated: checked }); }}/>
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Model_8_Head')}</span></div>
+                                <div>{t('Tabs_settings_Model_8_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={settings?.use_friendly_sysprompt}
+                                onChange={(checked) => { handleChangeSettings({ use_friendly_sysprompt: checked }); }}/>
                             </Col>
                         </Row>
                     </Card>

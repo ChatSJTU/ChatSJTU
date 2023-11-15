@@ -274,7 +274,11 @@ def __save_new_request_rounds(
 
 
 async def __post_message(
-    session_id: int, session: Session, gpt_request: GPTRequest, gpt_response: Message
+    session_id: int,
+    session: Session,
+    preference: UserPreference,
+    gpt_request: GPTRequest,
+    gpt_response: Message,
 ) -> str:
     session_rename = ""
     context = gpt_request.context
@@ -286,7 +290,7 @@ async def __post_message(
             not await Session.objects.filter(id=session_id)
             .values_list("is_renamed", flat=True)
             .afirst()
-        ):
+        ) and preference.auto_generate_title:
             re_success, re_resp = await summary_title(msg=context.msg)
             if re_success:
                 session.name = re_resp
@@ -313,6 +317,11 @@ async def send_message(request, session_id):
     except Session.DoesNotExist:
         return JsonResponse({"error": "会话不存在"}, status=404)
 
+    try:
+        preference = await UserPreference.objects.aget(user=request.user)
+    except UserPreference.DoesNotExist:
+        raise ChatError("用户信息错误", status=404)
+
     last_user_message_obj, last_ai_message_obj = await sync_to_async(
         __get_last_messages
     )(session)
@@ -329,7 +338,7 @@ async def send_message(request, session_id):
         )(session, gpt_request, gpt_response)
 
         session_rename = await __post_message(
-            session_id, session, gpt_request, gpt_response
+            session_id, session, preference, gpt_request, gpt_response
         )
 
         return JsonResponse(

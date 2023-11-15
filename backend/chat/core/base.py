@@ -14,7 +14,7 @@ from .plugins.fc import FCSpec
 
 from django.utils.timezone import datetime
 from django.contrib.auth.models import User
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Union
 
 import logging
@@ -69,6 +69,7 @@ class GPTRequest:
     context: GPTContext
     plugins: list[str]
     preference: UserPreference
+    images: list = field(default_factory=lambda: [])
 
 
 def build_fcspec(id: str):

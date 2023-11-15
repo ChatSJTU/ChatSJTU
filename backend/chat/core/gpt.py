@@ -288,7 +288,6 @@ class GPTConnection(AbstractGPTConnection):
                 max_tokens=max_tokens,
                 **self.__model_kwargs,
             )
-            print(response)
             assert isinstance(response, dict)
             return response
         except openai.error.InvalidRequestError as e:

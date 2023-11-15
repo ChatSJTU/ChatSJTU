@@ -1,3 +1,4 @@
+import dacite
 from chat.core.errors import ChatError
 from chat.models.message import Message
 from .testdata.lipsum import LIPSUM
@@ -6,7 +7,7 @@ from .plugins.fc import FCSpec
 
 from typing_extensions import Self
 from typing import Awaitable, Callable, Union
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from abc import ABC, abstractmethod
 import functools
 import tenacity
@@ -16,6 +17,13 @@ import openai
 logger = logging.getLogger(__name__)
 
 openai.proxy = os.getenv("OPENAI_PROXY", None)
+
+
+@dataclass
+class GPTUsage:
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
 
 
 class AbstractRespHandler(ABC):
@@ -34,15 +42,35 @@ class RespHandler(AbstractRespHandler):
     def __init__(self, model: str):
         self.model = model
 
-    def get_finish_reason(self, response: dict) -> str:
+    def extract_finish_reason(self, response: dict) -> str:
         return response["choices"][-1].get("finish_reason", "stop")
 
-    def get_content(self, response: dict) -> str:
+    def extract_content(self, response: dict) -> str:
         try:
             content: str = response["choices"][-1]["message"]["content"]
             return content
         except KeyError:
             raise ChatError("服务器网络错误，请稍候重试")
+
+    def extract_usage(self, response: dict) -> GPTUsage:
+        try:
+            return dacite.from_dict(GPTUsage, response["usage"])
+
+        except KeyError:
+            return GPTUsage(0, 0, 0)
+
+    def construct_message(self, response: dict) -> Message:
+        usage = self.extract_usage(response)
+        return Message(
+            sender=0,
+            flag_qcmd=False,
+            content=self.extract_content(response),
+            interrupted=0,
+            plugin_group=response.get("plugin_group", ""),
+            use_model=self.model,
+            completion_tokens=usage.completion_tokens,
+            prompt_tokens=usage.prompt_tokens,
+        )
 
     def set_next(self, handler: Self) -> Self:
         self.__next = handler
@@ -59,16 +87,10 @@ class LengthRespHandler(RespHandler):
         return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
-        if self.get_finish_reason(response) == "length":
-            return Message(
-                sender=0,
-                flag_qcmd=False,
-                content=self.get_content(response),
-                interrupted=1,
-                plugin_group=response.get("plugin_group", ""),
-                use_model=self.model,
-            )
-
+        if self.extract_finish_reason(response) == "length":
+            message = self.construct_message(response)
+            message.interrupted = 1
+            return message
         else:
             return await super().handle(msg, response)
 
@@ -82,7 +104,8 @@ class FunctionRespHandler(RespHandler):
         return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
-        if self.get_finish_reason(response) == "function_call":
+        if self.extract_finish_reason(response) == "function_call":
+            fc_gpt_usage = self.extract_usage(response)
             fc_gpt_resp: dict[str, str] = response["choices"][0]["message"][
                 "function_call"
             ]
@@ -108,6 +131,11 @@ class FunctionRespHandler(RespHandler):
 
             response = await self.gpt(msg)
             response["plugin_group"] = fc_plugin_group
+
+            message = await super().handle(msg, response)
+            message.prompt_tokens += fc_gpt_usage.prompt_tokens
+            message.completion_tokens += fc_gpt_usage.completion_tokens
+            return message
         return await super().handle(msg, response)
 
 
@@ -116,15 +144,8 @@ class StopRespHandler(RespHandler):
         return super().__init__(model)
 
     async def handle(self, msg: list, response: dict) -> Message:
-        if self.get_finish_reason(response) == "stop":
-            return Message(
-                sender=0,
-                flag_qcmd=False,
-                content=self.get_content(response),
-                interrupted=0,
-                plugin_group=response.get("plugin_group", ""),
-                use_model=self.model,
-            )
+        if self.extract_finish_reason(response) == "stop":
+            return self.construct_message(response)
         else:
             return await super().handle(msg, response)
 
@@ -252,6 +273,7 @@ class GPTConnection(AbstractGPTConnection):
                 max_tokens=max_tokens,
                 **self.__model_kwargs,
             )
+            print(response)
             assert isinstance(response, dict)
             return response
         except openai.error.InvalidRequestError as e:
@@ -289,6 +311,7 @@ class GPTConnection(AbstractGPTConnection):
             ChatError: 若出错则抛出以及对应的status code
         """
         self.__pre_interact(temperature, max_tokens, selected_plugins)
+
         try:
             response = await self.gpt(msg)
             assert isinstance(response, dict)

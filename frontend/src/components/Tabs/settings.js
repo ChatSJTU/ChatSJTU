@@ -155,7 +155,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <div className="theme-card-container">
                                     {themeList.map(item => (
                                             <div className="theme-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
-                                                <img className="theme-card-button"
+                                                <img className="theme-card-button" alt={item}
                                                     style={{width:'100%', outline: userTheme === item ? '2px solid' : ''}}
                                                     src={require(`../../assets/themes/${item}.svg`)} 
                                                     onClick={()=>changeTheme(item)}/>
@@ -180,7 +180,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 onChange={() => { changeTheme(); }}/> */}
                             </Col>
                         </Row>
-                        {/* <Divider className="setting-divider" />
+                        <Divider className="setting-divider" />
                         <Row>
                             <Col span={15} className="setting-title">
                                 <div><span>{t('Tabs_settings_Basic_3_Head')}</span></div>
@@ -190,7 +190,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 <Switch checked={settings?.auto_generate_title}
                                     onChange={(checked) => { handleChangeSettings({ auto_generate_title: checked }); }}/>
                             </Col>
-                        </Row> */}
+                        </Row>
                         <Divider className="setting-divider" />
                         <Row>
                             <Col span={15} className="setting-title">

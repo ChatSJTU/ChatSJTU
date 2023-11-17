@@ -43,19 +43,77 @@
 	letter-spacing: 0.75px;
 }
 
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+  
+@keyframes fadeOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+}
+
+.left-fadeIn {
+    animation: fadeInLeft 0.5s ease forwards;
+}
+  
+.left-fadeOut {
+    animation: fadeOutLeft 0.5s ease forwards;
+}
+  
+.ant-upload.ant-upload-select{
+    margin-inline-end: 0px !important;
+}
+
+.ant-upload-list-item-container{
+    margin-right: 12px !important;
+}
+
 .text-area{
     @include themify {
         background-color: themed('text-area-bg-color');
     }
 }
 
-.model-popup{
+.popup{
     @include themify {
         background-color: themed('button-bg-color');
     }
 }
 
-.clear-button{
+.btn-upload-image{
+    @include themify {
+        background-color: themed('button-bg-color');
+    }
+}
+
+.btn-upload-image-uploaded{
+    @include themify {
+        background-color: themed('button-bg-color');
+        color: themed('selected-outline-color');
+        border-color: themed('selected-outline-color');
+    }
+}
+
+.badge-uploaded-image-count{
+    @include themify {
+        background-color: themed('selected-outline-color');
+    }
+}
+
+.btn-clear{
     @include themify {
         background-color: themed('button-bg-color');
     }

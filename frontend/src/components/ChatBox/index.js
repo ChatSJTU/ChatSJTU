@@ -86,7 +86,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             .catch(error => {
                 console.error('Error fetching messages:', error);
                 if (error.response.data) {
-                    message.error(t('ChatBox_FetchMessageError') + ': ' + `${error.response.data.error}`, 2);
+                    message.error(t('ChatBox_FetchMessageError') + `: ${error.response.data.error}`, 2);
                 } else {
                     message.error(t('ChatBox_FetchMessageError'), 2);
                 }
@@ -107,11 +107,11 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
     }, []);
 
     //回到List底部
-    const scrollToBottom = () => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
-        }
-    };
+    // const scrollToBottom = () => {
+    //     if (messagesEndRef.current) {
+    //         messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
+    //     }
+    // };
 
     const WaitingText = '回复生成中（若结果较长或遇用量高峰期，请耐心等待~）';
     const ErrorText = '回复生成失败'
@@ -184,7 +184,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         } catch (error) {
             console.error('Failed to send message:', error);
             if (error.response.data && error.response.status === 404) {
-                message.error(t('ChatBox_ReplyError') + ':' + `${error.response.data.error}`, 2);
+                message.error(t('ChatBox_ReplyError') + `: ${error.response.data.error}`, 2);
             } else if (error.response.data.error) {
                 showWarning(error.response.data.error);
                 setRetryMessage(userMessage);
@@ -612,7 +612,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                 opacity: modelInfo[selectedModel].image_support ? 1 : 0,
                                 visibility: modelInfo[selectedModel].image_support ? 'visible' : 'hidden'
                             }}>
-                                {uploadImgList.length != 0 ? `${uploadImgList.length}` : ''}
+                                {uploadImgList.length !== 0 ? `${uploadImgList.length}` : ''}
                         </Button>
                     </Popover>
                 </Space>

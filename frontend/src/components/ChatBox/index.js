@@ -1,8 +1,8 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload, Card } from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -132,6 +132,15 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             };  // 存储请求数据到变量
             setInput('');
             handleCalcRows('');
+
+            // 若模型支持，增加图片url列表
+            let imageUrls = [];
+            if (modelInfo[selectedModel].image_support && uploadImgList.length!==0) {
+                imageUrls = uploadImgList.map(item => (item.url));
+                setUploadImgList([]);
+            }
+            messageData.image_urls = imageUrls;
+
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
                 ...prevMessages.filter((message) => message.time !== ErrorText && message.sender !== 2),
@@ -139,6 +148,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                     sender: 1,
                     content: userMessage,
                     time: WaitingText,
+                    image_urls: imageUrls
                 },
             ]);
 
@@ -157,6 +167,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                         sender: 1,
                         content: userMessage,
                         time: sendTime.toLocaleString('default', timeOptions),
+                        image_urls: imageUrls
                     },
                     {
                         sender: 0,
@@ -449,7 +460,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                         ))
                                     }
                                     {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
-                                        <Space style={{marginTop: 10}} size="middle">
+                                        <Space size="middle" style={{marginTop:'10px'}}>
                                             {item.interrupted &&
                                                 <Button icon={<DoubleRightOutlined />}
                                                     onClick={() => sendUserMessage(ContinuePrompt)}>{t('ChatBox_Continue_Btn')}</Button>
@@ -462,26 +473,46 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             }
                             {item.sender === 1 &&
                                 <div className='user-text' style={{ whiteSpace: 'pre-wrap' }}>
-                                {item.content === ContinuePrompt && 
-                                    <span style={{color:'#0086D1'}}>
-                                        <DoubleRightOutlined style={{marginRight:'10px'}}/>
-                                        {t('ChatBox_Continue_Prompt')}
-                                    </span>
-                                }
-                                {item.content === RegeneratePrompt && 
-                                    <span style={{color:'#0086D1'}}>
-                                        <ReloadOutlined style={{marginRight:'10px'}}/>
-                                        {t('ChatBox_Regenerate_Prompt')}
-                                    </span>
-                                }
-                                {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
-                                    ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
-                                        <span key={i}>
-                                            {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                    {item.image_urls && item.image_urls.length && 
+                                        <List
+                                            grid={{ gutter: 16 }}
+                                            dataSource={item.image_urls}
+                                            renderItem={img => (
+                                            <List.Item>
+                                                <Card
+                                                    hoverable
+                                                    style={{width: 100, height:100 }}
+                                                    bodyStyle={{ padding: 0 }}
+                                                    onClick={() => window.open(img, '_blank')}
+                                                >
+                                                    <div className="card-preview-img-wrapper">
+                                                        <img alt="" src={img}/>
+                                                    </div>
+                                                </Card>
+                                            </List.Item>
+                                            )}
+                                        />
+                                    }
+                                    {item.content === ContinuePrompt && 
+                                        <span style={{color:'#0086D1'}}>
+                                            <DoubleRightOutlined style={{marginRight:'10px'}}/>
+                                            {t('ChatBox_Continue_Prompt')}
                                         </span>
-                                    ))
-                                }
-                            </div>
+                                    }
+                                    {item.content === RegeneratePrompt && 
+                                        <span style={{color:'#0086D1'}}>
+                                            <ReloadOutlined style={{marginRight:'10px'}}/>
+                                            {t('ChatBox_Regenerate_Prompt')}
+                                        </span>
+                                    }
+                                    {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
+                                        ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                            <span key={i}>
+                                                {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                            </span>
+                                        ))
+                                    }
+                                </div>
                             }
                             {item.sender === 2 && 
                             <Alert type="error" style={{fontSize:'16px'}} message={

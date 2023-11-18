@@ -633,7 +633,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                     onChange={({fileList: newFileList}) => {setUploadImgList(newFileList)}}
                                 >
                                     {uploadImgList.length >= 3 ? null
-                                        : <Space><PlusOutlined />上传</Space>} 
+                                        : <Space><PlusOutlined />{t('ChatBox_UploadPicture')}</Space>} 
                                 </Upload>
                             </Space>
                         }>

@@ -475,7 +475,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                 <div className='user-text' style={{ whiteSpace: 'pre-wrap' }}>
                                     {item.image_urls && item.image_urls.length && 
                                         <List
-                                            grid={{ gutter: 16 }}
+                                            grid={{ gutter: 12 }}
                                             dataSource={item.image_urls}
                                             renderItem={img => (
                                             <List.Item>

@@ -21,16 +21,13 @@ def files_upload(request):
         # 限制文件类型
         if not uploaded_file.content_type.startswith('image/'):
             return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
-        else:
-            try:
-                img = Image.open(BytesIO(uploaded_file.read()))
-                img.verify()  # 验证文件是否损坏
-            except (IOError, SyntaxError) as e:
-                return JsonResponse({'status': 'error', 'message': '不支持的文件格式或图像文件损坏'}, status=400)
 
         # 限制文件大小或自动压缩压缩 TODO
 
         file_ext = uploaded_file.name.split('.')[-1]
+        if not file_ext.lower() in ['png', 'jpg', 'jpeg', 'bmp']:
+            return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
+
         md5_filename = hashlib.md5((uploaded_file.name + str(time.time())).encode()).hexdigest()
         encrypted_file_name = f"{md5_filename}.{file_ext}"
 

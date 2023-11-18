@@ -10,7 +10,8 @@ import { useTranslation } from 'react-i18next';
 
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
-import { qcmdPromptsList } from '../../services/plugins'
+import { qcmdPromptsList } from '../../services/plugins';
+import { uploadFile } from '../../services/upload';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
 import { Base64 } from 'js-base64';
@@ -593,13 +594,12 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                         onOpenChange={(newOpen) => setPopoverOpen(1, newOpen)}
                         content={
                             <Space direction="vertical">
-                                {/* <div className='card_label'>图片</div> */}
                                 <Upload
                                     className="img-upload-list"
-                                    // action=TODO
+                                    customRequest={uploadFile}
                                     listType="picture-card"
                                     fileList={uploadImgList}
-                                    onChange={({fileList: newFileList}) => setUploadImgList(newFileList)}
+                                    onChange={({fileList: newFileList}) => {setUploadImgList(newFileList)}}
                                 >
                                     {uploadImgList.length >= 3 ? null
                                         : <Space><PlusOutlined />上传</Space>} 

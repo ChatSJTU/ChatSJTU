@@ -15,6 +15,9 @@ db.sqlite3
 /oauth/migrations/**
 !/oauth/migrations/__init__.py
 
+/files/migrations/**
+!/files/migrations/__init__.py
+
 ## build
 
 build

@@ -3,6 +3,9 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+
+from PIL import Image
+from io import BytesIO
 import hashlib
 import time
 
@@ -18,6 +21,12 @@ def files_upload(request):
         # 限制文件类型
         if not uploaded_file.content_type.startswith('image/'):
             return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
+        else:
+            try:
+                img = Image.open(BytesIO(uploaded_file.read()))
+                img.verify()  # 验证文件是否损坏
+            except (IOError, SyntaxError) as e:
+                return JsonResponse({'status': 'error', 'message': '不支持的文件格式或图像文件损坏'}, status=400)
 
         # 限制文件大小或自动压缩压缩 TODO
 

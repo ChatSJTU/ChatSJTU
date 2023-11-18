@@ -188,6 +188,10 @@ AUTHLIB_OAUTH_CLIENTS = {
     }
 }
 
+# Media files (Uploaded User Content)
+
+MEDIA_ROOT = 'user_content/'
+
 # CORS_ORIGIN_WHITELIST = [
 #     'http://localhost:3000',
 # ]

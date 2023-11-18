@@ -1,7 +1,7 @@
-from django.urls import path, include
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    # path('deviceid/login/', views.login_deviceID, name='login_deviceID'),
+    path('upload/', views.files_upload, name='files_upload'),
 ]

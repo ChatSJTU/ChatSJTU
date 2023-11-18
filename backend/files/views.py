@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.core.files.storage import FileSystemStorage
+from django.core.files.base import ContentFile
 from django.http import JsonResponse
 
 from PIL import Image
@@ -21,12 +22,24 @@ def files_upload(request):
         # 限制文件类型
         if not uploaded_file.content_type.startswith('image/'):
             return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
-
-        # 限制文件大小或自动压缩压缩 TODO
-
         file_ext = uploaded_file.name.split('.')[-1]
-        if not file_ext.lower() in ['png', 'jpg', 'jpeg', 'bmp']:
+        if not file_ext.lower() in ['bmp', 'jpg', 'jpeg', 'png']:
             return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
+
+        try:
+            img = Image.open(uploaded_file)
+            # 压缩图像
+            longer_edge = max(img.width, img.height)
+            if longer_edge > 1280:
+                img.thumbnail((1280, 1280))
+                original_format = img.format
+
+                output = BytesIO()
+                img.save(output, format=original_format, quality=85)
+                output.seek(0)
+                uploaded_file = ContentFile(output.read(), name=uploaded_file.name)
+        except IOError:
+            return JsonResponse({'status': 'error', 'message': '图像文件可能损坏'}, status=400)
 
         md5_filename = hashlib.md5((uploaded_file.name + str(time.time())).encode()).hexdigest()
         encrypted_file_name = f"{md5_filename}.{file_ext}"

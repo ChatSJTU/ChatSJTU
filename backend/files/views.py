@@ -16,7 +16,7 @@ from .models import UserFile
 @permission_classes([IsAuthenticated]) 
 def files_upload(request):
     if request.method == 'POST':
-        uploaded_file = request.FILES['file']
+        uploaded_file = request.FILES.get('file', False)
 
         # 限制文件类型
         if not uploaded_file.content_type.startswith('image/'):

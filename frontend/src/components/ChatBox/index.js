@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload, Card } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -473,7 +473,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                             }
                             {item.sender === 1 &&
                                 <div className='user-text' style={{ whiteSpace: 'pre-wrap' }}>
-                                    {item.image_urls && item.image_urls.length && 
+                                    {item.image_urls && item.image_urls.length!==0 && 
                                         <List
                                             grid={{ gutter: 12 }}
                                             dataSource={item.image_urls}

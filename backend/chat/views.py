@@ -5,14 +5,21 @@ from chat.serializers import (
     MessageSerializer,
     ChatErrorSerializer,
 )
-from chat.models import Session, Message, SessionShared, UserAccount, UserPreference
+from chat.models import (
+    Session,
+    Message,
+    SessionShared,
+    UserAccount,
+    UserPreference,
+    Blob,
+)
 from chat.core import (
     STUDENT_LIMIT,
     handle_message,
     summary_title,
     senword_detector_strict,
 )
-from chat.core.base import GPTPermission, GPTRequest, GPTContext
+from chat.core.base import GPTPermission, GPTContext, GPTRequest
 from chat.core.errors import ChatError
 from chat.core.plugin import plugins_list_serialized
 from oauth.models import UserProfile
@@ -191,6 +198,7 @@ async def __build_gpt_request(
 
     msg: str = base64.b64decode(request.data.get("message")).decode()
     model_engine: str = request.data.get("model")
+    images = request.data.get("image_urls", []) if model_engine == "OpenAI GPT4" else []
     plugins = request.data.get("plugins")
     plugins: list[str] = plugins if plugins is not None else []
 
@@ -223,6 +231,7 @@ async def __build_gpt_request(
     context.request_time = timezone.now()
     context.regen = regen
     context.cont = cont
+    context.image_urls = images
 
     gpt_request = GPTRequest(
         user=request.user,
@@ -264,12 +273,21 @@ def __save_new_request_rounds(
         generation=context.generation,
         regenerated=context.regen,
         interrupted=context.cont,
+        has_blob=len(context.image_urls) != 0,
         flag_qcmd=ai_message_obj.flag_qcmd,
     )
+
     ai_message_obj.session = session
     ai_message_obj.generation = context.generation
     # 将返回消息加入数据库
     ai_message_obj.save()
+
+    if gpt_request.model_engine == "OpenAI GPT4" and len(context.image_urls) != 0:
+        for image_url in context.image_urls:
+            Blob.objects.create(
+                message=user_message_obj,
+                location=image_url,
+            )
     return user_message_obj, ai_message_obj
 
 

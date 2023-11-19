@@ -135,7 +135,8 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
             // 若模型支持，增加图片url列表
             let imageUrls = [];
-            if (modelInfo[selectedModel].image_support && uploadImgList.length!==0) {
+            let notQcmd = qcmdsList.every(item => item.command !== userMessage) // 使用快捷指令时不上传图片
+            if (notQcmd && modelInfo[selectedModel].image_support && uploadImgList.length!==0) {
                 imageUrls = uploadImgList.map(item => (item.url));
                 setUploadImgList([]);
             }

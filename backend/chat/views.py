@@ -285,7 +285,7 @@ def __save_new_request_rounds(
     if gpt_request.model_engine == "OpenAI GPT4" and len(context.image_urls) != 0:
         Blob.objects.bulk_create(
             [
-                Blob(message=message, location=image_url)
+                Blob(message=user_message_obj, location=image_url)
                 for image_url in context.image_urls
             ]
         )

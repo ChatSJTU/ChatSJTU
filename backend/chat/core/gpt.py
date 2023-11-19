@@ -202,10 +202,10 @@ class GPTConnection(AbstractGPTConnection):
         self.displayed_model = model_engine
         self.__model_kwargs = {}
         if model_engine == "OpenAI GPT4":
-            self.__model_called = "gpt-4"
+            self.__model_called = "gpt-4-vision-preview"
             self.__setup_gpt_environment = self.__setup_openai
         elif model_engine == "Azure GPT3.5":
-            self.__model_called = "gpt-35-turbo-16k"
+            self.__model_called = "gpt-35-turbo"
             self.__setup_gpt_environment = self.__setup_azure
         elif model_engine == "LLAMA 2":
             self.__model_called = "llama2"

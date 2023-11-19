@@ -17,7 +17,9 @@ from .models import UserFile
 @permission_classes([IsAuthenticated]) 
 def files_upload(request):
     if request.method == 'POST':
-        uploaded_file = request.FILES.get('file', False)
+        uploaded_file = request.FILES.get('file', None)
+        if uploaded_file is None:
+            return JsonResponse({'status': 'error', 'message': '传输异常'}, status=400)
 
         # 限制文件类型
         if not uploaded_file.content_type.startswith('image/'):

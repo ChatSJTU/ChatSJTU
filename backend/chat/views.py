@@ -283,11 +283,12 @@ def __save_new_request_rounds(
     ai_message_obj.save()
 
     if gpt_request.model_engine == "OpenAI GPT4" and len(context.image_urls) != 0:
-        for image_url in context.image_urls:
-            Blob.objects.create(
-                message=user_message_obj,
-                location=image_url,
-            )
+        Blob.objects.bulk_create(
+            [
+                Blob(message=message, location=image_url)
+                for image_url in context.image_urls
+            ]
+        )
     return user_message_obj, ai_message_obj
 
 
@@ -563,9 +564,9 @@ async def save_shared_session(request):
     except AttributeError:
         return shared
 
-    @transaction.atomic
+    @transaction.atomic()
     def create_fork(snapshot: dict):
-        def strip_time(message: dict):
+        def strip(message: dict):
             message.pop("time")
             return message
 
@@ -573,12 +574,17 @@ async def save_shared_session(request):
             user=request.user,
             name="{0} (forked)".format(snapshot["name"]),
         )
-        Message.objects.bulk_create(
-            [
-                Message(session=session, **strip_time(message))
-                for message in snapshot["messages"]
-            ]
-        )
+
+        for msg in snapshot["messages"]:
+            image_urls = msg.pop("image_urls")
+            has_blob = len(image_urls) != 0
+            message = Message.objects.create(
+                session=session, **strip(msg), has_blob=has_blob
+            )
+            if has_blob:
+                Blob.objects.bulk_create(
+                    [Blob(message=message, location=url) for url in image_urls]
+                )
         return session
 
     session = await sync_to_async(create_fork)(snapshot)

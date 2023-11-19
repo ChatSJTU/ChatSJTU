@@ -12,9 +12,13 @@ class MessageSerializer(serializers.ModelSerializer):
             "content",
             "flag_qcmd",
             "use_model",
+            "image_urls",
             "plugin_group",
             "time",
             "interrupted",
             "generation",
             "regenerated",
         ]
+
+    def image_urls(self, obj):
+        return list(map(lambda x: x.location, obj.blob_set.all()))

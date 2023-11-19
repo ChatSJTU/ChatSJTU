@@ -368,6 +368,9 @@ async def send_message(request, session_id):
                 "response_timestamp": ai_message_obj.timestamp.isoformat(),
                 "session_rename": session_rename,
                 "plugin_group": ai_message_obj.plugin_group,
+                "image_urls": list(
+                    map(lambda x: x.location, gpt_request.context.image_urls)
+                ),
             }
         )
 

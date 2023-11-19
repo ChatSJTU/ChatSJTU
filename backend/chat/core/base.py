@@ -72,8 +72,8 @@ class GPTRequest:
 
 
 class InputListContentFactory:
-    __message: Message | None
-    __context: GPTContext | None
+    __message: Union[Message, None]
+    __context: Union[GPTContext, None]
     __model_engine: str
 
     def __init__(self, model_engine: str):

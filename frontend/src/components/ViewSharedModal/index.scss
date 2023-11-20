@@ -90,15 +90,15 @@
     z-index: 1;
 }
 
-.card-preview-img-wrapper {
+.card-preview .card-preview-img-wrapper {
     padding: 8px;
-    height: 100px;
+    height: 84px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.card-preview-img-wrapper img {
+.card-preview .card-preview-img-wrapper img{
     max-width: 100%;
     max-height: 100%;
     display: block;

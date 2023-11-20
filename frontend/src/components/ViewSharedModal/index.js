@@ -1,9 +1,9 @@
 import React, { useContext, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import ReactStringReplace from 'react-string-replace';
-import { Typography, List, Avatar, Button, Space, message } from 'antd';
+import { Typography, List, Avatar, Button, Space, message, Card } from 'antd';
 import MarkdownRenderer from '../MarkdownRenderer';
-import { UserOutlined, RobotOutlined, InfoCircleOutlined, DeliveredProcedureOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, InfoCircleOutlined, DeliveredProcedureOutlined, EyeOutlined } from '@ant-design/icons';
 
 import { SessionContext } from '../../contexts/SessionContext';
 import { request } from "../../services/request";
@@ -62,6 +62,29 @@ function ViewSharedModalContent ( {closeModal} ) {
                             }
                             {item.sender === 1 &&
                                 <div className='user-text' style={{ whiteSpace: 'pre-wrap' }}>
+                                    {item.image_urls && item.image_urls.length!==0 && 
+                                        <List
+                                            grid={{ gutter: 12 }}
+                                            dataSource={item.image_urls}
+                                            renderItem={img => (
+                                            <List.Item>
+                                                <Card className='card-preview'
+                                                    hoverable
+                                                    style={{width: 100, height:100 }}
+                                                    bodyStyle={{ padding: 0 }}
+                                                    onClick={() => window.open(img, '_blank')}
+                                                >
+                                                    <div className="card-preview-img-wrapper">
+                                                        <img alt="" src={img}/>
+                                                    </div>
+                                                    <div className="card-preview-icon-wrapper">
+                                                        <EyeOutlined style={{ color: 'white', fontSize: '16px' }} />
+                                                    </div>
+                                                </Card>
+                                            </List.Item>
+                                            )}
+                                        />
+                                    }
                                     {
                                         ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
                                             <span key={i}>
@@ -69,7 +92,7 @@ function ViewSharedModalContent ( {closeModal} ) {
                                             </span>
                                         ))
                                     }
-                            </div>
+                                </div>
                             }
                         </div>
                     </div>

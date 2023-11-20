@@ -81,12 +81,12 @@
     margin-right: 12px !important;
 }
 
-.upload-picture-card {
+.card-preview {
     position: relative;
     overflow: hidden;
 }
 
-.upload-picture-card .card-preview-icon-wrapper {
+.card-preview .card-preview-icon-wrapper {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -96,11 +96,11 @@
     transition: opacity 0.3s;
 }
 
-.upload-picture-card:hover .card-preview-icon-wrapper {
+.card-preview:hover .card-preview-icon-wrapper {
     opacity: 0.8;
 }
 
-.upload-picture-card:hover::after {
+.card-preview:hover::after {
     content: '';
     position: absolute;
     top: 8%;

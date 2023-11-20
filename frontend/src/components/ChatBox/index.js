@@ -489,7 +489,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                             dataSource={item.image_urls}
                                             renderItem={img => (
                                             <List.Item>
-                                                <Card className='upload-picture-card'
+                                                <Card className='card-preview'
                                                     hoverable
                                                     style={{width: 100, height:100 }}
                                                     bodyStyle={{ padding: 0 }}

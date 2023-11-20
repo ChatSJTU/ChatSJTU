@@ -25,7 +25,7 @@ def files_upload(request):
         if not uploaded_file.content_type.startswith('image/'):
             return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
         file_ext = uploaded_file.name.split('.')[-1]
-        if not file_ext.lower() in ['bmp', 'jpeg', 'jpg', 'png']:
+        if not file_ext.lower() in ['gif', 'jpeg', 'jpg', 'png', 'webp']:
             return JsonResponse({'status': 'error', 'message': '不支持的文件格式'}, status=400)
 
         try:

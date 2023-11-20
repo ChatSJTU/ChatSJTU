@@ -90,7 +90,7 @@
     z-index: 1;
 }
 
-.card-preview .card-preview-img-wrapper {
+.card-preview .card-preview-img-wrapper-sharedmodal {
     padding: 8px;
     height: 84px;
     display: flex;
@@ -98,7 +98,7 @@
     align-items: center;
 }
 
-.card-preview .card-preview-img-wrapper img{
+.card-preview .card-preview-img-wrapper-sharedmodal img{
     max-width: 100%;
     max-height: 100%;
     display: block;

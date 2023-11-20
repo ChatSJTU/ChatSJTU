@@ -74,7 +74,7 @@ function ViewSharedModalContent ( {closeModal} ) {
                                                     bodyStyle={{ padding: 0 }}
                                                     onClick={() => window.open(img, '_blank')}
                                                 >
-                                                    <div className="card-preview-img-wrapper">
+                                                    <div className="card-preview-img-wrapper-sharedmodal">
                                                         <img alt="" src={img}/>
                                                     </div>
                                                     <div className="card-preview-icon-wrapper">

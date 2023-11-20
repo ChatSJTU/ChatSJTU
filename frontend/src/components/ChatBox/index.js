@@ -143,7 +143,8 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                 } else {
                     let notQcmd = qcmdsList.every(item => item.command !== userMessage) // 检查是否使用快捷指令
                     if (notQcmd && uploadImgList.length!==0) {
-                        imageUrls = uploadImgList.map(item => (item.url));
+                        imageUrls = uploadImgList.filter(item => item && item.url)
+                                                .map(item => item.url);
                         setUploadImgList([]);
                     }
                 }
@@ -650,13 +651,17 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                 </Upload>
                             </Space>
                         }>
-                        <Button size="large" icon={<PictureOutlined />}
-                            className={`btn-upload-image${!uploadImgList.length ? '' : '-uploaded'} left-${modelInfo[selectedModel].image_support ? 'fadeIn' : 'fadeOut'}`}
+                        <Button 
+                            size="large" 
+                            icon={<PictureOutlined />}
+                            className={`btn-upload-image${uploadImgList.some(item => item && item.url) && !uploadImgList.some(item => item.status === "error") ? '-uploaded' : ''} left-${modelInfo[selectedModel].image_support ? 'fadeIn' : 'fadeOut'}`}
                             style={{
                                 opacity: modelInfo[selectedModel].image_support ? 1 : 0,
                                 visibility: modelInfo[selectedModel].image_support ? 'visible' : 'hidden'
-                            }}>
-                                {uploadImgList.length !== 0 ? `${uploadImgList.length}` : ''}
+                            }}
+                            danger={uploadImgList.some(item => item.status === "error")}
+                        >
+                            {uploadImgList.filter(item => item && item.url).length !== 0 ? `${uploadImgList.filter(item => item && item.url).length}` : ''}
                         </Button>
                     </Popover>
                 </Space>

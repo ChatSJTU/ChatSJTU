@@ -66,7 +66,7 @@ function ExportModalContent ( {closeModal} ) {
         inputStr += messages.map(message => {
             return message.sender === 2 ?
                 `**${message.time}**\n\n${message.content}` : //系统提示消息，time字段即为“系统提示”
-                `**${roleDesc[message.sender]}**  ${message.time}\n\n${message.image_urls.map(item => `![](${item})`).join('\n')}\n${message.content}`;
+                `**${roleDesc[message.sender]}**  ${message.time}\n\n${message.image_urls.map(item => `![](${item})`).join('\n\n')}\n\n${message.content}`;
 
         }).join('\n\n---\n\n');
         

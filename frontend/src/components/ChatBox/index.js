@@ -119,11 +119,13 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
     const ContinuePrompt = 'continue'
     const RegeneratePrompt = '%regenerate%'
 
-    // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
-    const sendUserMessage = async (retryMsg) => {
+    // 用户发送消息(可选参数content，若有则发送之，若无则发送全局state input)
+    // content可能是重试或快捷指令，要求格式 {text, image_urls(可选)}
+    const sendUserMessage = async (content) => {
         setIsWaiting(true);
         setShowQcmdTips(false);
-        const userMessage = retryMsg || input;
+        const userMessage = content?.text || input;
+        let imageUrls = [];
         try {
             const messageData = { 
                 message: Base64.encode(userMessage),
@@ -133,12 +135,18 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             setInput('');
             handleCalcRows('');
 
-            // 若模型支持，增加图片url列表
-            let imageUrls = [];
-            let notQcmd = qcmdsList.every(item => item.command !== userMessage) // 使用快捷指令时不上传图片
-            if (notQcmd && modelInfo[selectedModel].image_support && uploadImgList.length!==0) {
-                imageUrls = uploadImgList.map(item => (item.url));
-                setUploadImgList([]);
+            // 若模型支持，append图片url列表  
+            if (modelInfo[selectedModel].image_support) {
+                if (content) {      
+                    if (content?.image_urls && content?.image_urls.length !== 0)
+                    imageUrls = content.image_urls;
+                } else {
+                    let notQcmd = qcmdsList.every(item => item.command !== userMessage) // 检查是否使用快捷指令
+                    if (notQcmd && uploadImgList.length!==0) {
+                        imageUrls = uploadImgList.map(item => (item.url));
+                        setUploadImgList([]);
+                    }
+                }
             }
             messageData.image_urls = imageUrls;
 
@@ -200,7 +208,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                 message.error(t('ChatBox_ReplyError') + `: ${error.response.data.error}`, 2);
             } else if (error.response.data.error) {
                 showWarning(error.response.data.error);
-                setRetryMessage(userMessage);
+                setRetryMessage({text: userMessage, image_urls: imageUrls});
             } else {
                 message.error(t('ChatBox_ReplyError'), 2);
             }
@@ -216,9 +224,9 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
     //重试发送
     const handleRetry = async () => {
         if (retryMessage) {
-          await sendUserMessage(retryMessage);
+            await sendUserMessage(retryMessage);
         } else {
-          message.error(t('ChatBox_RetryError'), 2);
+            message.error(t('ChatBox_RetryError'), 2);
         }
     };    
 
@@ -324,11 +332,12 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             setShowQcmdTips(false);
         } 
     };
+
     // 用户选择命令时
     const handleSelectQcmds = (value, label) => {
         // setInput(value);
         if (value[0] === '/') { //快捷命令，发送并关闭菜单
-            sendUserMessage(value);
+            sendUserMessage({text: value});
             setShowQcmdTips(false);
         }
         else {
@@ -464,10 +473,10 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                         <Space size="middle" style={{marginTop:'10px'}}>
                                             {item.interrupted &&
                                                 <Button icon={<DoubleRightOutlined />}
-                                                    onClick={() => sendUserMessage(ContinuePrompt)}>{t('ChatBox_Continue_Btn')}</Button>
+                                                    onClick={() => sendUserMessage({text:ContinuePrompt})}>{t('ChatBox_Continue_Btn')}</Button>
                                             }
                                             <Button icon={<ReloadOutlined />}
-                                                onClick={() => sendUserMessage(RegeneratePrompt)}>{t('ChatBox_Regenerate_Btn')}</Button>
+                                                onClick={() => sendUserMessage({text:RegeneratePrompt})}>{t('ChatBox_Regenerate_Btn')}</Button>
                                         </Space>
                                     }
                                 </>

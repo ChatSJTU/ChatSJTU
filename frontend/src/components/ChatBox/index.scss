@@ -81,6 +81,37 @@
     margin-right: 12px !important;
 }
 
+.upload-picture-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-picture-card .card-preview-icon-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.upload-picture-card:hover .card-preview-icon-wrapper {
+    opacity: 0.8;
+}
+
+.upload-picture-card:hover::after {
+    content: '';
+    position: absolute;
+    top: 8%;
+    left: 8%;
+    bottom: 8%;
+    right: 8%;
+    background: rgba(0, 0, 0, 0.4); /* 灰色遮罩的颜色和透明度 */
+    pointer-events: none;
+    z-index: 1;
+}
+
 .card-preview-img-wrapper {
     padding: 8px;
     height: 100px;

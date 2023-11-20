@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload, Card } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, SendOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -489,7 +489,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                             dataSource={item.image_urls}
                                             renderItem={img => (
                                             <List.Item>
-                                                <Card
+                                                <Card className='upload-picture-card'
                                                     hoverable
                                                     style={{width: 100, height:100 }}
                                                     bodyStyle={{ padding: 0 }}
@@ -497,6 +497,9 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                                 >
                                                     <div className="card-preview-img-wrapper">
                                                         <img alt="" src={img}/>
+                                                    </div>
+                                                    <div className="card-preview-icon-wrapper">
+                                                        <EyeOutlined style={{ color: 'white', fontSize: '16px' }} />
                                                     </div>
                                                 </Card>
                                             </List.Item>

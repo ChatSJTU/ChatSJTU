@@ -9,6 +9,7 @@ import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
 import { jAccountAuth, jAccountLogin} from "./services/user";
 import { ThemeContext } from './contexts/ThemeContext';
+import { DisplayContext } from './contexts/DisplayContext';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
 import i18n from './components/I18n/i18n';
@@ -20,9 +21,11 @@ const { Title } = Typography;
 
 const App = () => {
     const loadedTheme = localStorage.getItem('themeContextValue');
+    const loadedDisplayMode = localStorage.getItem('displayMode');
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userTheme, setUserTheme] = useState(loadedTheme);
+    const [displayMode,setDisplayMode] = useState(loadedDisplayMode);
     const [locale, setLocal] = useState(zhCN);
 
     const changeLanguage = (e) => {
@@ -39,6 +42,12 @@ const App = () => {
         setUserTheme(themeName);
         document.documentElement.setAttribute('data-theme', themeName);
         localStorage.setItem('themeContextValue', themeName); //保存到缓存
+    }
+
+    const changeDisplayMode = (displayModeName) => {
+        console.log(displayModeName)
+        setDisplayMode(displayModeName);
+        localStorage.setItem('displayMode', displayModeName);
     }
 
     //移动端检测
@@ -136,6 +145,7 @@ const App = () => {
     if (isLoggedIn) {
         return (
             <ThemeContext.Provider value={ userTheme }>
+            <DisplayContext.Provider value={ displayMode }>
             <ConfigProvider
                 locale={locale}
                 theme={{ 
@@ -148,10 +158,11 @@ const App = () => {
                 >
                 <div className="layout-container" style={{ height: '100%' }}>
                 {isDesktop ? 
-                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/> 
+                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme} changeDisplayMode={changeDisplayMode}/> 
                 : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/>}
                 </div>
             </ConfigProvider>
+            </DisplayContext.Provider>
             </ThemeContext.Provider>
         );
     } else {

@@ -40,7 +40,7 @@
     z-index: 1;
 }
 
-.center-box-container {
+.center-box-container-default {
     @include themify {
         background: themed('outer-bg-color');
         border-color: themed('outer-bg-border-color');
@@ -52,6 +52,18 @@
     border: 1px solid;
     box-shadow: 30px 30px 60px 10px rgba(0, 0, 0, 0.1);
     margin-top: -14px;
+}
+
+.center-box-container-fullscreen {
+    @include themify {
+        background: themed('outer-bg-color');
+        border-color: themed('outer-bg-border-color');
+    }
+    width: 100%;
+    height: 95%;
+    overflow: hidden;
+    border: 1px solid;
+    margin-top: -50px;
 }
 
 .mobile-header {

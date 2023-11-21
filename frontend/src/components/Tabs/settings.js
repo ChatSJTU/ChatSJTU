@@ -8,14 +8,16 @@ import { request } from "../../services/request";
 import { updateSettings } from "../../services/user";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { UserContext } from '../../contexts/UserContext';
+import { DisplayContext } from "../../contexts/DisplayContext";
 import i18n from '../../components/I18n/i18n'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
+function TabSettings({ onCloseTab, changeLanguage, changeTheme, changeDisplayMode }) {
 
     const userTheme = useContext(ThemeContext);
+    const displayMode = useContext(DisplayContext);
     const [loaded, setLoaded] = useState(true);
     const [isRiskyModal1Open, setRiskyModal1Open] = useState(false);
     const [isRiskyModal2Open, setRiskyModal2Open] = useState(false);
@@ -74,6 +76,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
         }
         return 'zh-CN';
     }
+
 {/* obsolete code 
     // 通用Modal 生成函数
     const showConfirmModal = ({ title, content, onOk }) => {
@@ -200,6 +203,16 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                             <Col span={9} className="setting-item">
                                 <Switch checked={settings?.render_markdown}
                                     onChange={(checked) => { handleChangeSettings({ render_markdown: checked }); }}/>
+                            </Col>
+                        </Row>
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_5_Head')}</span></div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={displayMode === 'fullscreen'} 
+                                    onChange={() => {changeDisplayMode(displayMode=='fullscreen' ? 'default' : 'fullscreen');}}/>
                             </Col>
                         </Row>
                     </Card>

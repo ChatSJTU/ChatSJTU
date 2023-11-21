@@ -14,6 +14,7 @@ import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from "../../contexts/ThemeContext";
+import { DisplayContext } from "../../contexts/DisplayContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
 import { fetchPluginList } from '../../services/plugins';
 import { request } from "../../services/request";
@@ -22,10 +23,9 @@ import './index.scss'
 
 const { Content, Sider } = Layout;
 
-const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
+const MainLayout = ({handleLogout, changeLanguage, changeTheme, changeDisplayMode}) => {
 
-    const userTheme = useContext(ThemeContext);
-
+    const displayMode = useContext(DisplayContext);
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     const [sharedSession, setSharedSession] = useState(null);
@@ -148,7 +148,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme} changeDisplayMode={changeDisplayMode}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 
@@ -193,7 +193,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                     handleSelectPlugin,
                 }}>
                 <Layout className="background fade-in">
-                    <div className="center-box-container">
+                    <div className={`center-box-container-${displayMode}`}>
                         <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                             <Sider className='Sider' width={300}>
                                 <LeftSidebar 

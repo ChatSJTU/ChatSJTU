@@ -18,6 +18,7 @@
     "Tabs_settings_Basic_3_Desc": "Generate a suitable conversation title based on first request.",
     "Tabs_settings_Basic_4_Head": "Preview Reply",
     "Tabs_settings_Basic_4_Desc": "Preview markdown in reply.",
+    "Tabs_settings_Basic_5_Head": "Fullscreen Mode",
     "Tabs_settings_Model_1_Head": "Temperature",
     "Tabs_settings_Model_1_Desc": "A larger value makes the more random output.",
     "Tabs_settings_Model_2_Head": "Max Tokens",

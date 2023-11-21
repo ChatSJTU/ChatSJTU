@@ -25,8 +25,6 @@ const { Content, Sider, Footer, Header } = Layout;
 
 const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
 
-    const userTheme = useContext(ThemeContext);
-
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     const [sharedSession, setSharedSession] = useState(null);

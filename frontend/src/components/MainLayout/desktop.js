@@ -23,9 +23,9 @@ import './index.scss'
 
 const { Content, Sider } = Layout;
 
-const MainLayout = ({handleLogout, changeLanguage, changeTheme, changeDisplayMode}) => {
+const MainLayout = ({handleLogout, changeLanguage}) => {
 
-    const displayMode = useContext(DisplayContext);
+    const {displayMode} = useContext(DisplayContext);
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     const [sharedSession, setSharedSession] = useState(null);
@@ -148,7 +148,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme, changeDisplayMod
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme} changeDisplayMode={changeDisplayMode}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 

@@ -144,8 +144,8 @@ const App = () => {
 
     if (isLoggedIn) {
         return (
-            <ThemeContext.Provider value={ userTheme }>
-            <DisplayContext.Provider value={ displayMode }>
+            <ThemeContext.Provider value={{ userTheme, changeTheme }}>
+            <DisplayContext.Provider value={{ displayMode, changeDisplayMode }}>
             <ConfigProvider
                 locale={locale}
                 theme={{ 
@@ -158,8 +158,8 @@ const App = () => {
                 >
                 <div className="layout-container" style={{ height: '100%' }}>
                 {isDesktop ? 
-                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme} changeDisplayMode={changeDisplayMode}/> 
-                : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage} changeTheme={changeTheme}/>}
+                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeDisplayMode={changeDisplayMode}/> 
+                : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage}/>}
                 </div>
             </ConfigProvider>
             </DisplayContext.Provider>
@@ -167,7 +167,7 @@ const App = () => {
         );
     } else {
         return (
-            <ThemeContext.Provider value={ userTheme }>
+            <ThemeContext.Provider value={{ userTheme, changeTheme }}>
             <ConfigProvider
                 locale={locale}
                 theme={{ 

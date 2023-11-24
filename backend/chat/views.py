@@ -19,22 +19,24 @@ from chat.core import (
     summary_title,
     senword_detector_strict,
 )
-from chat.core.base import GPTPermission, GPTContext, GPTRequest
-from chat.core.errors import ChatError
-from chat.core.plugin import plugins_list_serialized
+from .core.base import GPTPermission, GPTContext, GPTRequest
+from .core.errors import ChatError
+from .core.plugin import plugins_list_serialized
+from .core.configs import CHAT_MODELS, ModelCap
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from asgiref.sync import sync_to_async
-from adrf.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.admin.options import transaction
 from django.forms.utils import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import F
+from asgiref.sync import sync_to_async
+from adrf.decorators import api_view
 
+from dataclasses import asdict
 from typing import Union
 import logging
 import dateutil.parser
@@ -210,6 +212,14 @@ async def __build_gpt_request(
         try:
             context.deadline = last_user_message_obj.timestamp
             msg = last_user_message_obj.content
+            images = await sync_to_async(
+                lambda msg: list(
+                    map(
+                        lambda blob: blob.location,
+                        msg.blob_set.order_by("-timestamp").all(),
+                    )
+                )
+            )(last_user_message_obj)
             context.generation = last_ai_message_obj.generation + 1
         except AttributeError:
             raise ChatError("缺少上一条消息，无法重复生成。", status=404)

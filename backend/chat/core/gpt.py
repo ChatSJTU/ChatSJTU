@@ -4,6 +4,7 @@ from .plugins.fc import FCSpec
 from .configs import CHAT_MODELS
 from .errors import ChatError
 
+from typing_extensions import Self
 from typing import Awaitable, Callable, Union
 from dataclasses import asdict, dataclass
 from abc import ABC, abstractmethod

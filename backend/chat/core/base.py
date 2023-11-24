@@ -7,6 +7,8 @@ from .configs import (
     SYSTEM_ROLE,
     SYSTEM_ROLE_STRICT,
     SYSTEM_ROLE_FRIENDLY_TL,
+    CHAT_MODELS,
+    ModelCap,
 )
 from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
 from .plugins.fc import FCSpec
@@ -14,7 +16,7 @@ from .plugins.fc import FCSpec
 from django.contrib.auth.models import User
 from django.utils.timezone import datetime
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Optional
 
 import logging
 import functools
@@ -72,12 +74,11 @@ class GPTRequest:
 
 
 class InputListContentFactory:
-    __message: Union[Message, None]
-    __context: Union[GPTContext, None]
-    __model_engine: str
+    __message: Optional[Message]
+    __context: Optional[GPTContext]
 
-    def __init__(self, model_engine: str):
-        self.__model_engine = model_engine
+    def __init__(self, model_cap: ModelCap):
+        self.__model_cap = model_cap
 
     def set_message(self, message: Message):
         self.__context = None
@@ -90,14 +91,16 @@ class InputListContentFactory:
         return self
 
     def build(self):
-        try:
+        if self.__message:
             text = self.__message.content
             image_urls = self.__message.blobs
-        except AttributeError:
+        elif self.__context:
             text = self.__context.msg
             image_urls = self.__context.image_urls
+        else:
+            raise RuntimeError(f"Source not defined for {self.__class__.__name__}")
 
-        if self.__model_engine == "OpenAI GPT4" and len(image_urls) != 0:
+        if self.__model_cap.image_support and len(image_urls) != 0:
             content = [{"type": "text", "text": text}]
             content.extend(
                 [
@@ -146,7 +149,10 @@ async def __build_input_list(request: GPTRequest, session: Session):
     if preference.use_friendly_sysprompt:
         SYSTEM_PREAMBLE += SYSTEM_ROLE_FRIENDLY_TL.format(str(request.user.username))
 
-    builder = InputListContentFactory(request.model_engine)
+    try:
+        builder = InputListContentFactory(CHAT_MODELS[request.model_engine])
+    except KeyError:
+        raise ChatError("无模型匹配")
 
     input_list = [
         {

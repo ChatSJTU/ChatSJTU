@@ -598,3 +598,16 @@ async def save_shared_session(request):
     session = await sync_to_async(create_fork)(snapshot)
     data = await sync_to_async(lambda session: SessionSerializer(session).data)(session)
     return JsonResponse(data, safe=False)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def list_models(request):
+    return JsonResponse(
+        {
+            name: asdict(cap, dict_factory=ModelCap.dict_factory)
+            for name, cap in CHAT_MODELS.items()
+        },
+        status=200,
+    )

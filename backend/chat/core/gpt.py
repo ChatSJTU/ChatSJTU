@@ -1,17 +1,16 @@
-import dacite
-from chat.core.errors import ChatError
-from chat.models.message import Message
+from ..models.message import Message
 from .testdata.lipsum import LIPSUM
-from .configs import *
 from .plugins.fc import FCSpec
+from .configs import CHAT_MODELS
+from .errors import ChatError
 
-from typing_extensions import Self
-from typing import Awaitable, Callable, Union
+from typing import Awaitable, Callable, Union, Self
 from dataclasses import asdict, dataclass
 from abc import ABC, abstractmethod
 import functools
 import tenacity
 import logging
+import dacite
 import openai
 
 logger = logging.getLogger(__name__)
@@ -198,20 +197,13 @@ class MockGPTConnection(AbstractGPTConnection):
 
 
 class GPTConnection(AbstractGPTConnection):
-    def __init__(self, model_engine: str = "Azure GPT3.5", mode: str = "oneshot"):
+    def __init__(self, model_engine: str = "GPT 3.5", mode: str = "oneshot"):
         self.displayed_model = model_engine
         self.__model_kwargs = {}
-        if model_engine == "OpenAI GPT4":
-            self.__model_called = "gpt-4-vision-preview"
-            self.__setup_gpt_environment = self.__setup_openai
-        elif model_engine == "Azure GPT3.5":
-            self.__model_called = "gpt-35-turbo"
-            self.__setup_gpt_environment = self.__setup_azure
-        elif model_engine == "LLAMA 2":
-            self.__model_called = "llama2"
-            self.__setup_gpt_environment = self.__setup_llama2
-        else:
-            raise ChatError("模型不存在")
+        self.__model_called = CHAT_MODELS[model_engine].model_called
+        self.__setup_gpt_environment = getattr(
+            self, "__setup_" + CHAT_MODELS[model_engine].provider
+        )
 
     def __setup_azure(self):
         openai.api_type = "azure"

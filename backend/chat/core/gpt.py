@@ -4,7 +4,7 @@ from .plugins.fc import FCSpec
 from .configs import CHAT_MODELS
 from .errors import ChatError
 
-from typing import Awaitable, Callable, Union, Self
+from typing import Awaitable, Callable, Union
 from dataclasses import asdict, dataclass
 from abc import ABC, abstractmethod
 import functools
@@ -12,6 +12,7 @@ import tenacity
 import logging
 import dacite
 import openai
+import os
 
 logger = logging.getLogger(__name__)
 

@@ -145,7 +145,7 @@ class FunctionRespHandler(RespHandler):
         if finish_reason == "function_call" or finish_reason == "tool_calls":
             fc_gpt_usage = self.extract_usage(response)
             plugin_resp = await self.adapter(msg, response)
-            message = await super().handle(msg, plugin_resp)
+            message = await self.handle(msg, plugin_resp)
             message.prompt_tokens += fc_gpt_usage.prompt_tokens
             message.completion_tokens += fc_gpt_usage.completion_tokens
             return message

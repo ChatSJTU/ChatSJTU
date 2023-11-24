@@ -292,7 +292,10 @@ def __save_new_request_rounds(
     # 将返回消息加入数据库
     ai_message_obj.save()
 
-    if gpt_request.model_engine == "OpenAI GPT4" and len(context.image_urls) != 0:
+    if (
+        CHAT_MODELS[gpt_request.model_engine].image_support
+        and len(context.image_urls) != 0
+    ):
         Blob.objects.bulk_create(
             [
                 Blob(message=user_message_obj, location=image_url)

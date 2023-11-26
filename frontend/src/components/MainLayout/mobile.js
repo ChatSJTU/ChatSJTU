@@ -14,8 +14,8 @@ import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
-import { ThemeContext } from "../../contexts/ThemeContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
+import { fetchModelList } from '../../services/models';
 import { fetchPluginList } from '../../services/plugins';
 import { request } from "../../services/request";
 
@@ -31,6 +31,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
     const [messages, setMessages] = useState([]); 
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
+    const [modelInfo, setModelInfoDict] = useState(null);
     const [qcmdsList, setQcmdsList] = useState(null);
     const [pluginList, setPluginList] = useState(null);
     const [selectedPlugins, setSelectedPlugins] = useState([]);
@@ -45,6 +46,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
     useEffect(() => {
         fetchUserInfo();
         fetchSettings();
+        fetchAvailableModels();
         fetchPluginAndQcmds();
     }, []);
 
@@ -97,6 +99,17 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
             message.error(t('MainLayout_FetchSettingsError'), 2);
         }
     };
+
+    //获取可用模型列表
+    const fetchAvailableModels = async () => {
+        try {
+            const data = await fetchModelList();
+            setModelInfoDict(data);
+        } catch (error) {
+            console.error('Failed to fetch models:', error);
+            message.error("获取模型列表失败", 2);
+        }
+    }
 
     //获取插件列表、快捷指令列表
     const fetchPluginAndQcmds = async () => {
@@ -194,6 +207,7 @@ const MainLayoutMobile = ({handleLogout, changeLanguage, changeTheme}) => {
                     settings,
                     setSettings,
                     fetchSettings,
+                    modelInfo,
                     qcmdsList,
                     pluginList,
                     selectedPlugins,

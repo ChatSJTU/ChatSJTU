@@ -1,8 +1,8 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload, Card } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined, PictureOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload, Card, Spin } from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, PictureOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -24,11 +24,11 @@ const { Text } = Typography;
 function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const {selectedSession, messages, setMessages} = useContext(SessionContext);
-    const {pluginList, qcmdsList, selectedPlugins, settings} = useContext(UserContext);
+    const {modelInfo, pluginList, qcmdsList, selectedPlugins, settings} = useContext(UserContext);
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
     const [textareaWidth, setTextareaWidth] = useState(0);
-    const [selectedModel, setSelectedModel] = useState('Azure GPT3.5');  //选中模型
+    const [selectedModel, setSelectedModel] = useState("GPT 3.5");  //选中模型
     const [isWaiting, setIsWaiting] = useState(false);      //是否正在加载
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
@@ -95,7 +95,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         }
       }, [selectedSession]);
 
-    useEffect(() => {
+    useEffect(() => {   
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
@@ -106,6 +106,18 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const checkModelInfoLoaded = () => {
+        if (modelInfo && modelInfo[selectedModel]) {
+          return (
+            modelInfo[selectedModel].hasOwnProperty('label') &&
+            modelInfo[selectedModel].hasOwnProperty('icon') &&
+            modelInfo[selectedModel].hasOwnProperty('plugin_support') &&
+            modelInfo[selectedModel].hasOwnProperty('image_support')
+          );
+        }
+        return false;
+      };
 
     //回到List底部
     // const scrollToBottom = () => {
@@ -377,26 +389,26 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
 
-    const modelInfo = {
-        "Azure GPT3.5": {
-            label: 'GPT 3.5', 
-            icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
-            plugin_support: true,
-            image_support: false
-        },
-        "OpenAI GPT4": {
-            label: 'GPT 4', 
-            icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
-            plugin_support: true,
-            image_support: true
-        },
-        "LLAMA 2": {
-            label: '教我算', 
-            icon: <FireOutlined style={{color:'#f5c004'}}/>,
-            plugin_support: false,
-            image_support: false
-        }
-    }
+    // const modelInfo = {
+    //     "Azure GPT3.5": {
+    //         label: 'GPT 3.5', 
+    //         icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
+    //         plugin_support: true,
+    //         image_support: false
+    //     },
+    //     "OpenAI GPT4": {
+    //         label: 'GPT 4', 
+    //         icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
+    //         plugin_support: true,
+    //         image_support: true
+    //     },
+    //     "LLAMA 2": {
+    //         label: '教我算', 
+    //         icon: <FireOutlined style={{color:'#f5c004'}}/>,
+    //         plugin_support: false,
+    //         image_support: false
+    //     }
+    // }
     
     // sender标识：AI-0，用户-1，错误提示信息-2（仅留在前端）
 
@@ -580,90 +592,94 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             </Dropdown>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                 <Space>
-                    <Popover className='popup' trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen[0]}
-                        onOpenChange={(newOpen) => setPopoverOpen(0, newOpen)}
-                        content={
-                            <> 
-                            <Space direction='vertical'>
-                                <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
-                                <Segmented value={selectedModel}
-                                    onChange={value => setSelectedModel(value)}
-                                    options={Object.keys(modelInfo).map(key => ({
-                                        value: key,
-                                        label: modelInfo[key].label,
-                                        icon: modelInfo[key].icon,
-                                    }))
-                                    }/>
-                                <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
-                                {modelInfo[selectedModel].plugin_support
-                                    ? <>
-                                        {selectedPlugins.length <= 0 
-                                            ? t('ChatBox_PluginList_NoActivated')
-                                            : <Space direction='vertical'>
-                                                {t('ChatBox_PluginList_Title')}
-                                                {pluginList.map(item => (
-                                                    selectedPlugins.includes(item.id) && 
-                                                    <Space>
-                                                        <Avatar shape="square" size={24} src={item.icon}/>
-                                                        {item.name}
-                                                    </Space>
-                                                ))}
-                                            </Space>
-                                        }
-                                        <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
-                                            onClick={() => {onChangeComponent(5); setPopoverOpen(0, false)}}>
-                                            {t('ChatBox_PluginStore_Btn')}
-                                        </Button>
-                                    </>
-                                    : t('ChatBox_Plugin_NotSupported')
-                                }
-                            </Space>
-                            </>
-                        }>
-                        <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
-                            {modelInfo[selectedModel].icon}
-                            {modelInfo[selectedModel].label}
-                            {modelInfo[selectedModel].plugin_support && selectedPlugins.length > 0 && 
-                                <>
-                                    <Divider type='vertical'/>
-                                    {pluginList.map(item => (
-                                        selectedPlugins.includes(item.id) && 
-                                        <Avatar shape="square" size={20} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
-                                    ))}
+                    {checkModelInfoLoaded() 
+                    ? <>
+                        <Popover className='popup' trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen[0]}
+                            onOpenChange={(newOpen) => setPopoverOpen(0, newOpen)}
+                            content={
+                                <> 
+                                <Space direction='vertical'>
+                                    <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
+                                    <Segmented value={selectedModel}
+                                        onChange={value => setSelectedModel(value)}
+                                        options={modelInfo && Object.keys(modelInfo).map(key => ({
+                                            value: key,
+                                            label: modelInfo[key].label,
+                                            icon: modelInfo[key].icon,
+                                        }))
+                                        }/>
+                                    <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
+                                    {modelInfo[selectedModel]?.plugin_support
+                                        ? <>
+                                            {selectedPlugins.length <= 0 
+                                                ? t('ChatBox_PluginList_NoActivated')
+                                                : <Space direction='vertical'>
+                                                    {t('ChatBox_PluginList_Title')}
+                                                    {pluginList.map(item => (
+                                                        selectedPlugins.includes(item.id) && 
+                                                        <Space>
+                                                            <Avatar shape="square" size={24} src={item.icon}/>
+                                                            {item.name}
+                                                        </Space>
+                                                    ))}
+                                                </Space>
+                                            }
+                                            <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
+                                                onClick={() => {onChangeComponent(5); setPopoverOpen(0, false)}}>
+                                                {t('ChatBox_PluginStore_Btn')}
+                                            </Button>
+                                        </>
+                                        : t('ChatBox_Plugin_NotSupported')
+                                    }
+                                </Space>
                                 </>
-                            }
-                            <EllipsisOutlined style={{marginLeft: '7px'}}/>
-                        </Button>
-                    </Popover>
-                    <Popover className="popup" trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen[1]} 
-                        onOpenChange={(newOpen) => setPopoverOpen(1, newOpen)}
-                        content={
-                            <Space direction="vertical">
-                                <Upload
-                                    className="img-upload-list"
-                                    customRequest={uploadFile}
-                                    listType="picture-card"
-                                    fileList={uploadImgList}
-                                    onChange={({fileList: newFileList}) => {setUploadImgList(newFileList)}}
-                                >
-                                    {uploadImgList.length >= 3 ? null
-                                        : <Space><PlusOutlined />{t('ChatBox_UploadPicture')}</Space>} 
-                                </Upload>
-                            </Space>
-                        }>
-                        <Button 
-                            size="large" 
-                            icon={<PictureOutlined />}
-                            className={`btn-upload-image${uploadImgList.some(item => item && item.url) && !uploadImgList.some(item => item.status === "error") ? '-uploaded' : ''} left-${modelInfo[selectedModel].image_support ? 'fadeIn' : 'fadeOut'}`}
-                            style={{
-                                opacity: modelInfo[selectedModel].image_support ? 1 : 0,
-                                visibility: modelInfo[selectedModel].image_support ? 'visible' : 'hidden'
-                            }}
-                            danger={uploadImgList.some(item => item.status === "error")}
-                        >
-                            {uploadImgList.filter(item => item && item.url).length !== 0 ? `${uploadImgList.filter(item => item && item.url).length}` : ''}
-                        </Button>
-                    </Popover>
+                            }>
+                            <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
+                                {modelInfo[selectedModel].icon}
+                                {modelInfo[selectedModel].label}
+                                {modelInfo[selectedModel].plugin_support && selectedPlugins.length > 0 && 
+                                    <>
+                                        <Divider type='vertical'/>
+                                        {pluginList.map(item => (
+                                            selectedPlugins.includes(item.id) && 
+                                            <Avatar shape="square" size={20} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
+                                        ))}
+                                    </>
+                                }
+                                <EllipsisOutlined style={{marginLeft: '7px'}}/>
+                            </Button>
+                        </Popover>
+                        <Popover className="popup" trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen[1]} 
+                            onOpenChange={(newOpen) => setPopoverOpen(1, newOpen)}
+                            content={
+                                <Space direction="vertical">
+                                    <Upload
+                                        className="img-upload-list"
+                                        customRequest={uploadFile}
+                                        listType="picture-card"
+                                        fileList={uploadImgList}
+                                        onChange={({fileList: newFileList}) => {setUploadImgList(newFileList)}}
+                                    >
+                                        {uploadImgList.length >= 3 ? null
+                                            : <Space><PlusOutlined />{t('ChatBox_UploadPicture')}</Space>} 
+                                    </Upload>
+                                </Space>
+                            }>
+                            <Button 
+                                size="large" 
+                                icon={<PictureOutlined />}
+                                className={`btn-upload-image${uploadImgList.some(item => item && item.url) && !uploadImgList.some(item => item.status === "error") ? '-uploaded' : ''} left-${modelInfo[selectedModel].image_support ? 'fadeIn' : 'fadeOut'}`}
+                                style={{
+                                    opacity: modelInfo[selectedModel].image_support ? 1 : 0,
+                                    visibility: modelInfo[selectedModel].image_support ? 'visible' : 'hidden'
+                                }}
+                                danger={uploadImgList.some(item => item.status === "error")}
+                            >
+                                {uploadImgList.filter(item => item && item.url).length !== 0 ? `${uploadImgList.filter(item => item && item.url).length}` : ''}
+                            </Button>
+                        </Popover></> 
+                    : <Spin />
+                    }
                 </Space>
                 <Space>
                     <Button className="btn-clear" size="large" onClick={() => {setInput(''); handleCalcRows('');}}>

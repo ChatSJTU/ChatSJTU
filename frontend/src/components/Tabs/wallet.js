@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useTranslation } from 'react-i18next';
-import { Layout, Typography, Button, Card, message, Tag, Space, Progress } from 'antd';
+import { Layout, Typography, Button, Card, Tag, Space, Progress } from 'antd';
 import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
-import { fetchUserProfile } from '../../services/user';
 import { UserContext } from '../../contexts/UserContext';
 
 import './style.scss'

@@ -678,7 +678,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                 {uploadImgList.filter(item => item && item.url).length !== 0 ? `${uploadImgList.filter(item => item && item.url).length}` : ''}
                             </Button>
                         </Popover></> 
-                    : <Spin />
+                    : <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
                     }
                 </Space>
                 <Space>

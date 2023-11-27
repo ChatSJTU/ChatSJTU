@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useTranslation } from 'react-i18next';
-import { Layout, Typography, Button, Card, Checkbox, Avatar, Tag, Space } from 'antd';
+import { Layout, Typography, Button, Card, Checkbox, Avatar, Space } from 'antd';
 import { CloseOutlined, ExperimentTwoTone } from '@ant-design/icons';
 import { UserContext } from "../../contexts/UserContext";
 

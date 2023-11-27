@@ -158,7 +158,7 @@ const App = () => {
                 >
                 <div className="layout-container" style={{ height: '100%' }}>
                 {isDesktop ? 
-                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage} changeDisplayMode={changeDisplayMode}/> 
+                <MainLayout handleLogout={handleLogout} changeLanguage={changeLanguage}/> 
                 : <MainLayoutMobile handleLogout={handleLogout} changeLanguage={changeLanguage}/>}
                 </div>
             </ConfigProvider>

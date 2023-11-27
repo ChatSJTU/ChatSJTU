@@ -1,8 +1,8 @@
 from ..models.message import Message
 from .testdata.lipsum import LIPSUM
 from .plugins.fc import FCSpec
-from .configs import CHAT_MODELS
 from .errors import ChatError
+from .configs import *
 
 from typing_extensions import Self
 from typing import Awaitable, Callable, Union
@@ -204,10 +204,10 @@ class GPTConnection(AbstractGPTConnection):
         self.__model_kwargs = {}
         self.__model_called = CHAT_MODELS[model_engine].model_called
         self.__setup_gpt_environment = getattr(
-            self, "__setup_" + CHAT_MODELS[model_engine].provider
+            self, "_setup_" + CHAT_MODELS[model_engine].provider
         )
 
-    def __setup_azure(self):
+    def _setup_azure(self):
         openai.api_type = "azure"
         openai.organization = None
         openai.api_key = AZURE_OPENAI_KEY
@@ -215,7 +215,7 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_version = "2023-07-01-preview"
         self.__model_kwargs["engine"] = self.__model_called
 
-    def __setup_openai(self):
+    def _setup_openai(self):
         openai.api_type = "open_ai"
         openai.organization = OPENAI_ORGANIZATION
         openai.api_key = OPENAI_KEY
@@ -223,7 +223,7 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_version = None
         self.__model_kwargs["model"] = self.__model_called
 
-    def __setup_llama2(self):
+    def _setup_llama2(self):
         openai.api_type = "open_ai"
         openai.organization = None
         openai.api_key = "llama2"

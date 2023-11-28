@@ -13,8 +13,9 @@ import TabSettings from '../Tabs/settings';
 import TabWallet from '../Tabs/wallet';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
-import { ThemeContext } from "../../contexts/ThemeContext";
+import { DisplayContext } from "../../contexts/DisplayContext";
 import { fetchUserProfile, getSettings } from '../../services/user';
+import { fetchModelList } from '../../services/models';
 import { fetchPluginList } from '../../services/plugins';
 import { request } from "../../services/request";
 
@@ -22,16 +23,16 @@ import './index.scss'
 
 const { Content, Sider } = Layout;
 
-const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
+const MainLayout = ({handleLogout, changeLanguage}) => {
 
-    const userTheme = useContext(ThemeContext);
-
+    const {displayMode} = useContext(DisplayContext);
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     const [sharedSession, setSharedSession] = useState(null);
     const [messages, setMessages] = useState([]); 
     const [userProfile, setUserProfile] = useState(null); 
     const [settings, setSettings] = useState(null);
+    const [modelInfo, setModelInfoDict] = useState(null);
     const [qcmdsList, setQcmdsList] = useState(null);
     const [pluginList, setPluginList] = useState(null);
     const [selectedPlugins, setSelectedPlugins] = useState([]);
@@ -45,6 +46,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
     useEffect(() => {
         fetchUserInfo();
         fetchSettings();
+        fetchAvailableModels();
         fetchPluginAndQcmds();
     }, []);
 
@@ -97,6 +99,17 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
         }
     };
 
+    //获取可用模型列表
+    const fetchAvailableModels = async () => {
+        try {
+            const data = await fetchModelList();
+            setModelInfoDict(data);
+        } catch (error) {
+            console.error('Failed to fetch models:', error);
+            message.error("获取模型列表失败", 2);
+        }
+    }
+
     //获取插件列表、快捷指令列表
     const fetchPluginAndQcmds = async () => {
         try {
@@ -148,7 +161,7 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
         <TabDisclaimers onCloseTab={() => handleChangeComponent(1)}/>,
         <TabHelp onCloseTab={() => handleChangeComponent(1)}/>,
         <TabPlugins onCloseTab={() => handleChangeComponent(1)}/>,
-        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage} changeTheme={changeTheme}/>,
+        <TabSettings onCloseTab={() => handleChangeComponent(1)} changeLanguage={changeLanguage}/>,
         <TabWallet onCloseTab={() => handleChangeComponent(1)}/>,
     ];
 
@@ -187,13 +200,14 @@ const MainLayout = ({handleLogout, changeLanguage, changeTheme}) => {
                     settings,
                     setSettings,
                     fetchSettings,
+                    modelInfo,
                     qcmdsList,
                     pluginList,
                     selectedPlugins,
                     handleSelectPlugin,
                 }}>
                 <Layout className="background fade-in">
-                    <div className="center-box-container">
+                    <div className={`center-box-container-${displayMode}`}>
                         <Layout className="center-box" style={{ width: '100%', height: '100%', display: 'flex'}}>
                             <Sider className='Sider' width={300}>
                                 <LeftSidebar 

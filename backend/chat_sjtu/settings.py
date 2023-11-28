@@ -87,11 +87,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'chat',
-    'oauth',
     'corsheaders',
     'rest_framework',
-    'adrf'
+    'adrf',
+    'chat',
+    'oauth',
+    'files'
 ]
 
 MIDDLEWARE = [
@@ -186,6 +187,10 @@ AUTHLIB_OAUTH_CLIENTS = {
         'client_secret': os.environ.get('JACCOUNT_CLIENT_SECRET', ''),
     }
 }
+
+# Media files (Uploaded User Content)
+
+MEDIA_ROOT = 'user_content/'
 
 # CORS_ORIGIN_WHITELIST = [
 #     'http://localhost:3000',

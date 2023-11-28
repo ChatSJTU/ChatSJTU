@@ -1,8 +1,8 @@
 //主要组件，聊天列表和发送文本框
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider } from 'antd';
-import { UserOutlined, RobotOutlined, SendOutlined, ArrowDownOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, ThunderboltOutlined, StarOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, FireOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, message, Space, Tag, Dropdown, Menu, Typography, Segmented, Alert, Popover, Divider, Upload, Card, Spin } from 'antd';
+import { UserOutlined, RobotOutlined, SendOutlined, CopyOutlined, InfoCircleOutlined, ReloadOutlined, LoadingOutlined, DoubleRightOutlined, EllipsisOutlined, AppstoreOutlined, PictureOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import ReactStringReplace from 'react-string-replace';
 import copy from 'copy-to-clipboard';
 import { useMediaQuery } from 'react-responsive'
@@ -10,7 +10,8 @@ import { useTranslation } from 'react-i18next';
 
 import MarkdownRenderer from '../MarkdownRenderer';
 import { request } from '../../services/request';
-import { qcmdPromptsList } from '../../services/plugins'
+import { qcmdPromptsList } from '../../services/plugins';
+import { uploadFile } from '../../services/upload';
 import { SessionContext } from '../../contexts/SessionContext';
 import { UserContext } from '../../contexts/UserContext';
 import { Base64 } from 'js-base64';
@@ -23,16 +24,17 @@ const { Text } = Typography;
 function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const {selectedSession, messages, setMessages} = useContext(SessionContext);
-    const {pluginList, qcmdsList, selectedPlugins, settings} = useContext(UserContext);
+    const {modelInfo, pluginList, qcmdsList, selectedPlugins, settings} = useContext(UserContext);
     const [input, setInput] = useState('');
     const [rows, setRows] = useState(3);        //textarea行数
     const [textareaWidth, setTextareaWidth] = useState(0);
-    const [selectedModel, setSelectedModel] = useState('Azure GPT3.5');  //选中模型
+    const [selectedModel, setSelectedModel] = useState("GPT 3.5");  //选中模型
     const [isWaiting, setIsWaiting] = useState(false);      //是否正在加载
     const [retryMessage, setRetryMessage] = useState(null);
     const [qcmdOptions, setQcmdOptions] = useState([]);     //按输入筛选快捷命令
     const [showQcmdTips, setShowQcmdTips] = useState(false);//是否显示快捷命令提示
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [isPopoverOpen, setIsPopoverOpen] = useState([false, false]);  //控制弹出菜单是否显示(0-模型与插件; 1-图片上传)
+    const [uploadImgList, setUploadImgList] = useState([]);
     
     const isFold = useMediaQuery({ minWidth: 768.1, maxWidth: 960 })
     const isFoldMobile = useMediaQuery({ maxWidth: 432 })
@@ -85,7 +87,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             .catch(error => {
                 console.error('Error fetching messages:', error);
                 if (error.response.data) {
-                    message.error(t('ChatBox_FetchMessageError') + ': ' + `${error.response.data.error}`, 2);
+                    message.error(t('ChatBox_FetchMessageError') + `: ${error.response.data.error}`, 2);
                 } else {
                     message.error(t('ChatBox_FetchMessageError'), 2);
                 }
@@ -93,7 +95,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         }
       }, [selectedSession]);
 
-    useEffect(() => {
+    useEffect(() => {   
         function handleResize() {
           if (textareaRef.current) {
             setTextareaWidth(textareaRef.current.resizableTextArea.textArea.offsetWidth);
@@ -105,23 +107,37 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    //回到List底部
-    const scrollToBottom = () => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
+    const checkModelInfoLoaded = () => {
+        if (modelInfo && modelInfo[selectedModel]) {
+          return (
+            modelInfo[selectedModel].hasOwnProperty('label') &&
+            modelInfo[selectedModel].hasOwnProperty('icon') &&
+            modelInfo[selectedModel].hasOwnProperty('plugin_support') &&
+            modelInfo[selectedModel].hasOwnProperty('image_support')
+          );
         }
-    };
+        return false;
+      };
+
+    //回到List底部
+    // const scrollToBottom = () => {
+    //     if (messagesEndRef.current) {
+    //         messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', });
+    //     }
+    // };
 
     const WaitingText = '回复生成中（若结果较长或遇用量高峰期，请耐心等待~）';
     const ErrorText = '回复生成失败'
     const ContinuePrompt = 'continue'
     const RegeneratePrompt = '%regenerate%'
 
-    // 用户发送消息(可选参数retryMsg，若有则发送之，若无则发送input)
-    const sendUserMessage = async (retryMsg) => {
+    // 用户发送消息(可选参数content，若有则发送之，若无则发送全局state input)
+    // content可能是重试或快捷指令，要求格式 {text, image_urls(可选)}
+    const sendUserMessage = async (content) => {
         setIsWaiting(true);
         setShowQcmdTips(false);
-        const userMessage = retryMsg || input;
+        const userMessage = content?.text || input;
+        let imageUrls = [];
         try {
             const messageData = { 
                 message: Base64.encode(userMessage),
@@ -130,6 +146,23 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             };  // 存储请求数据到变量
             setInput('');
             handleCalcRows('');
+
+            // 若模型支持，append图片url列表  
+            if (modelInfo[selectedModel].image_support) {
+                if (content) {      
+                    if (content?.image_urls && content?.image_urls.length !== 0)
+                    imageUrls = content.image_urls;
+                } else {
+                    let notQcmd = qcmdsList.every(item => item.command !== userMessage) // 检查是否使用快捷指令
+                    if (notQcmd && uploadImgList.length!==0) {
+                        imageUrls = uploadImgList.filter(item => item && item.url)
+                                                .map(item => item.url);
+                        setUploadImgList([]);
+                    }
+                }
+            }
+            messageData.image_urls = imageUrls;
+
             // 先显示用户发送消息，时间为sending
             setMessages((prevMessages) => [
                 ...prevMessages.filter((message) => message.time !== ErrorText && message.sender !== 2),
@@ -137,6 +170,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                     sender: 1,
                     content: userMessage,
                     time: WaitingText,
+                    image_urls: imageUrls
                 },
             ]);
 
@@ -155,6 +189,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                         sender: 1,
                         content: userMessage,
                         time: sendTime.toLocaleString('default', timeOptions),
+                        image_urls: imageUrls
                     },
                     {
                         sender: 0,
@@ -183,10 +218,10 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         } catch (error) {
             console.error('Failed to send message:', error);
             if (error.response.data && error.response.status === 404) {
-                message.error(t('ChatBox_ReplyError') + ':' + `${error.response.data.error}`, 2);
+                message.error(t('ChatBox_ReplyError') + `: ${error.response.data.error}`, 2);
             } else if (error.response.data.error) {
                 showWarning(error.response.data.error);
-                setRetryMessage(userMessage);
+                setRetryMessage({text: userMessage, image_urls: imageUrls});
             } else {
                 message.error(t('ChatBox_ReplyError'), 2);
             }
@@ -202,9 +237,9 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
     //重试发送
     const handleRetry = async () => {
         if (retryMessage) {
-          await sendUserMessage(retryMessage);
+            await sendUserMessage(retryMessage);
         } else {
-          message.error(t('ChatBox_RetryError'), 2);
+            message.error(t('ChatBox_RetryError'), 2);
         }
     };    
 
@@ -310,11 +345,12 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             setShowQcmdTips(false);
         } 
     };
+
     // 用户选择命令时
     const handleSelectQcmds = (value, label) => {
         // setInput(value);
         if (value[0] === '/') { //快捷命令，发送并关闭菜单
-            sendUserMessage(value);
+            sendUserMessage({text: value});
             setShowQcmdTips(false);
         }
         else {
@@ -331,6 +367,15 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
         }
     };
 
+    // 控制popover显示
+    const setPopoverOpen = (index, value) => {
+        setIsPopoverOpen(prevState => {
+            const newState = [...prevState];
+            newState[index] = value;
+            return newState;
+        });
+    };
+
     //头像图标
     const aiIcon = <Avatar 
         className='ai-icon'
@@ -344,23 +389,26 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
 
     const AvatarList = [aiIcon, userIcon, NoticeIcon]
 
-    const modelInfo = {
-        "Azure GPT3.5": {
-            label: 'GPT 3.5', 
-            icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
-            plugin_support: true
-        },
-        "OpenAI GPT4": {
-            label: 'GPT 4', 
-            icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
-            plugin_support: true
-        },
-        "LLAMA 2": {
-            label: '教我算', 
-            icon: <FireOutlined style={{color:'#f5c004'}}/>,
-            plugin_support: false
-        }
-    }
+    // const modelInfo = {
+    //     "Azure GPT3.5": {
+    //         label: 'GPT 3.5', 
+    //         icon: <ThunderboltOutlined style={{color:'#73c9ca'}} />,
+    //         plugin_support: true,
+    //         image_support: false
+    //     },
+    //     "OpenAI GPT4": {
+    //         label: 'GPT 4', 
+    //         icon: <StarOutlined style={{color:'#9b5ffc'}}/>,
+    //         plugin_support: true,
+    //         image_support: true
+    //     },
+    //     "LLAMA 2": {
+    //         label: '教我算', 
+    //         icon: <FireOutlined style={{color:'#f5c004'}}/>,
+    //         plugin_support: false,
+    //         image_support: false
+    //     }
+    // }
     
     // sender标识：AI-0，用户-1，错误提示信息-2（仅留在前端）
 
@@ -435,39 +483,62 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                                         ))
                                     }
                                     {item.sender === 0 && index === messages.length - 1 && !item.flag_qcmd &&
-                                        <Space style={{marginTop: 10}} size="middle">
+                                        <Space size="middle" style={{marginTop:'10px'}}>
                                             {item.interrupted &&
                                                 <Button icon={<DoubleRightOutlined />}
-                                                    onClick={() => sendUserMessage(ContinuePrompt)}>{t('ChatBox_Continue_Btn')}</Button>
+                                                    onClick={() => sendUserMessage({text:ContinuePrompt})}>{t('ChatBox_Continue_Btn')}</Button>
                                             }
                                             <Button icon={<ReloadOutlined />}
-                                                onClick={() => sendUserMessage(RegeneratePrompt)}>{t('ChatBox_Regenerate_Btn')}</Button>
+                                                onClick={() => sendUserMessage({text:RegeneratePrompt})}>{t('ChatBox_Regenerate_Btn')}</Button>
                                         </Space>
                                     }
                                 </>
                             }
                             {item.sender === 1 &&
                                 <div className='user-text' style={{ whiteSpace: 'pre-wrap' }}>
-                                {item.content === ContinuePrompt && 
-                                    <span style={{color:'#0086D1'}}>
-                                        <DoubleRightOutlined style={{marginRight:'10px'}}/>
-                                        {t('ChatBox_Continue_Prompt')}
-                                    </span>
-                                }
-                                {item.content === RegeneratePrompt && 
-                                    <span style={{color:'#0086D1'}}>
-                                        <ReloadOutlined style={{marginRight:'10px'}}/>
-                                        {t('ChatBox_Regenerate_Prompt')}
-                                    </span>
-                                }
-                                {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
-                                    ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
-                                        <span key={i}>
-                                            {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                    {item.image_urls && item.image_urls.length!==0 && 
+                                        <List
+                                            grid={{ gutter: 12 }}
+                                            dataSource={item.image_urls}
+                                            renderItem={img => (
+                                            <List.Item>
+                                                <Card className='card-preview'
+                                                    hoverable
+                                                    style={{width: 100, height:100 }}
+                                                    bodyStyle={{ padding: 0 }}
+                                                    onClick={() => window.open(img, '_blank')}
+                                                >
+                                                    <div className="card-preview-img-wrapper">
+                                                        <img alt="" src={img}/>
+                                                    </div>
+                                                    <div className="card-preview-icon-wrapper">
+                                                        <EyeOutlined style={{ color: 'white', fontSize: '16px' }} />
+                                                    </div>
+                                                </Card>
+                                            </List.Item>
+                                            )}
+                                        />
+                                    }
+                                    {item.content === ContinuePrompt && 
+                                        <span style={{color:'#0086D1'}}>
+                                            <DoubleRightOutlined style={{marginRight:'10px'}}/>
+                                            {t('ChatBox_Continue_Prompt')}
                                         </span>
-                                    ))
-                                }
-                            </div>
+                                    }
+                                    {item.content === RegeneratePrompt && 
+                                        <span style={{color:'#0086D1'}}>
+                                            <ReloadOutlined style={{marginRight:'10px'}}/>
+                                            {t('ChatBox_Regenerate_Prompt')}
+                                        </span>
+                                    }
+                                    {item.content !== RegeneratePrompt && item.content !== ContinuePrompt &&
+                                        ReactStringReplace(item.content, /(\s+)/g, (match, i) => (
+                                            <span key={i}>
+                                                {match.replace(/ /g, '\u00a0').replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                                            </span>
+                                        ))
+                                    }
+                                </div>
                             }
                             {item.sender === 2 && 
                             <Alert type="error" style={{fontSize:'16px'}} message={
@@ -491,7 +562,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                     onClick={scrollToBottom}
                 /> */}
             <Dropdown placement="topLeft" overlay={
-                    <div style={{display: curRightComponent === 1 && !isPopoverOpen ? '' : 'none', width: `${textareaWidth}px`}}>
+                    <div style={{display: curRightComponent === 1 && isPopoverOpen.every(value => value === false) ? '' : 'none', width: `${textareaWidth}px`}}>
                         <Menu style={{maxHeight: '320px', overflowY: 'auto' }}>
                             {qcmdOptions.map(option => (
                                 <Menu.Item key={option.value} onClick={() => handleSelectQcmds(option.value, option.label)}>
@@ -520,63 +591,98 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                 /></div>
             </Dropdown>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Popover className='model-popup' trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen}
-                    onOpenChange={(newOpen) => setIsPopoverOpen(newOpen)}
-                    content={
-                        <> 
-                        <Space direction='vertical'>
-                            <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
-                            <Segmented value={selectedModel}
-                                onChange={value => setSelectedModel(value)}
-                                options={Object.keys(modelInfo).map(key => ({
-                                    value: key,
-                                    label: modelInfo[key].label,
-                                    icon: modelInfo[key].icon,
-                                  }))
-                                }/>
-                            <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
-                            {modelInfo[selectedModel].plugin_support
-                                ? <>
-                                    {selectedPlugins.length <= 0 
-                                        ? t('ChatBox_PluginList_NoActivated')
-                                        : <Space direction='vertical'>
-                                            {t('ChatBox_PluginList_Title')}
-                                            {pluginList.map(item => (
-                                                selectedPlugins.includes(item.id) && 
-                                                <Space>
-                                                    <Avatar shape="square" size={24} src={item.icon}/>
-                                                    {item.name}
-                                                </Space>
-                                            ))}
-                                        </Space>
-                                    }
-                                    <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
-                                        onClick={() => {onChangeComponent(5); setIsPopoverOpen(false)}}>
-                                        {t('ChatBox_PluginStore_Btn')}
-                                    </Button>
-                                </>
-                                : t('ChatBox_Plugin_NotSupported')
-                            }
-                        </Space>
-                        </>
-                    }>
-                    <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
-                        {modelInfo[selectedModel].icon}
-                        {modelInfo[selectedModel].label}
-                        {modelInfo[selectedModel].plugin_support && selectedPlugins.length > 0 && 
-                            <>
-                                <Divider type='vertical'/>
-                                {pluginList.map(item => (
-                                    selectedPlugins.includes(item.id) && 
-                                    <Avatar shape="square" size={20} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
-                                ))}
-                            </>
-                        }
-                        <EllipsisOutlined style={{marginLeft: '7px'}}/>
-                    </Button>
-                </Popover>
                 <Space>
-                    <Button className='clear-button' size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
+                    {checkModelInfoLoaded() 
+                    ? <>
+                        <Popover className='popup' trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen[0]}
+                            onOpenChange={(newOpen) => setPopoverOpen(0, newOpen)}
+                            content={
+                                <> 
+                                <Space direction='vertical'>
+                                    <div className='card_label'>{t('ChatBox_CardLabel_1')}</div>
+                                    <Segmented value={selectedModel}
+                                        onChange={value => setSelectedModel(value)}
+                                        options={modelInfo && Object.keys(modelInfo).map(key => ({
+                                            value: key,
+                                            label: modelInfo[key].label,
+                                            icon: modelInfo[key].icon,
+                                        }))
+                                        }/>
+                                    <div className='card_label'>{t('ChatBox_CardLabel_2')}</div>
+                                    {modelInfo[selectedModel]?.plugin_support
+                                        ? <>
+                                            {selectedPlugins.length <= 0 
+                                                ? t('ChatBox_PluginList_NoActivated')
+                                                : <Space direction='vertical'>
+                                                    {t('ChatBox_PluginList_Title')}
+                                                    {pluginList.map(item => (
+                                                        selectedPlugins.includes(item.id) && 
+                                                        <Space>
+                                                            <Avatar shape="square" size={24} src={item.icon}/>
+                                                            {item.name}
+                                                        </Space>
+                                                    ))}
+                                                </Space>
+                                            }
+                                            <Button block type="link" size="small" style={{ textAlign:'left', paddingLeft:'0px'}} icon={<AppstoreOutlined size={24}/>} 
+                                                onClick={() => {onChangeComponent(5); setPopoverOpen(0, false)}}>
+                                                {t('ChatBox_PluginStore_Btn')}
+                                            </Button>
+                                        </>
+                                        : t('ChatBox_Plugin_NotSupported')
+                                    }
+                                </Space>
+                                </>
+                            }>
+                            <Button size="large" style={{ display: 'flex', alignItems: 'center' }}>
+                                {modelInfo[selectedModel].icon}
+                                {modelInfo[selectedModel].label}
+                                {modelInfo[selectedModel].plugin_support && selectedPlugins.length > 0 && 
+                                    <>
+                                        <Divider type='vertical'/>
+                                        {pluginList.map(item => (
+                                            selectedPlugins.includes(item.id) && 
+                                            <Avatar shape="square" size={20} src={item.icon} style={{marginRight: '3px', marginTop: '-2px'}}/>
+                                        ))}
+                                    </>
+                                }
+                                <EllipsisOutlined style={{marginLeft: '7px'}}/>
+                            </Button>
+                        </Popover>
+                        <Popover className="popup" trigger="click" placement="topLeft" arrow={false} open={isPopoverOpen[1]} 
+                            onOpenChange={(newOpen) => setPopoverOpen(1, newOpen)}
+                            content={
+                                <Space direction="vertical">
+                                    <Upload
+                                        className="img-upload-list"
+                                        customRequest={uploadFile}
+                                        listType="picture-card"
+                                        fileList={uploadImgList}
+                                        onChange={({fileList: newFileList}) => {setUploadImgList(newFileList)}}
+                                    >
+                                        {uploadImgList.length >= 3 ? null
+                                            : <Space><PlusOutlined />{t('ChatBox_UploadPicture')}</Space>} 
+                                    </Upload>
+                                </Space>
+                            }>
+                            <Button 
+                                size="large" 
+                                icon={<PictureOutlined />}
+                                className={`btn-upload-image${uploadImgList.some(item => item && item.url) && !uploadImgList.some(item => item.status === "error") ? '-uploaded' : ''} left-${modelInfo[selectedModel].image_support ? 'fadeIn' : 'fadeOut'}`}
+                                style={{
+                                    opacity: modelInfo[selectedModel].image_support ? 1 : 0,
+                                    visibility: modelInfo[selectedModel].image_support ? 'visible' : 'hidden'
+                                }}
+                                danger={uploadImgList.some(item => item.status === "error")}
+                            >
+                                {uploadImgList.filter(item => item && item.url).length !== 0 ? `${uploadImgList.filter(item => item && item.url).length}` : ''}
+                            </Button>
+                        </Popover></> 
+                    : <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                    }
+                </Space>
+                <Space>
+                    <Button className="btn-clear" size="large" onClick={() => {setInput(''); handleCalcRows('');}}>
                         {t('ChatBox_ClearInput_Btn')}
                     </Button>
                     <Button type="primary" size="large" onClick={handleSend} icon={<SendOutlined />}

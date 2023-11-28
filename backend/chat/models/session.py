@@ -3,6 +3,16 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from asgiref.sync import sync_to_async
+from dataclasses import dataclass
+
+
+@dataclass
+class SessionContext:
+    n: int
+    with_qcmd: bool
+    with_regenerated: bool
+    with_blobs: bool
+    before: timezone.datetime
 
 
 class Session(models.Model):
@@ -24,24 +34,25 @@ class Session(models.Model):
 
     async def get_recent_n(
         self,
-        n: int,
-        attach_with_qcmd: bool,
-        attach_with_regenerated: bool,
-        before: timezone.datetime,
+        sessionContext: SessionContext,
     ):  # 获取最近n条
         def __request_recent_n(n: int):
             filters: dict[str, Union[bool, timezone.datetime]] = {
-                "timestamp__lt": before
+                "timestamp__lt": sessionContext.before
             }
 
-            if not attach_with_qcmd:
+            if not sessionContext.with_qcmd:
                 filters["flag_qcmd"] = False
-            if not attach_with_regenerated:
+            if not sessionContext.with_regenerated:
                 filters["regenerated"] = False
+            messages = list(self.message_set.filter(**filters).order_by("-timestamp")[:sessionContext.n])
 
-            return list(self.message_set.filter(**filters).order_by("-timestamp")[:n])
+            if sessionContext.with_blobs:
+                for message in messages:
+                    message.blobs = list(message.blob_set.order_by("-timestamp").all())
+            return messages
 
-        messages = await sync_to_async(__request_recent_n)(n)
+        messages = await sync_to_async(__request_recent_n)(sessionContext.n)
 
         return messages[::-1]
 

@@ -8,19 +8,23 @@ import { request } from "../../services/request";
 import { updateSettings } from "../../services/user";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { UserContext } from '../../contexts/UserContext';
+import { DisplayContext } from "../../contexts/DisplayContext";
 import i18n from '../../components/I18n/i18n'
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
+function TabSettings({ onCloseTab, changeLanguage }) {
 
-    const userTheme = useContext(ThemeContext);
+    const {displayMode, changeDisplayMode} = useContext(DisplayContext);
+    const {changeTheme, userTheme} = useContext(ThemeContext);
     const [loaded, setLoaded] = useState(true);
     const [isRiskyModal1Open, setRiskyModal1Open] = useState(false);
     const [isRiskyModal2Open, setRiskyModal2Open] = useState(false);
     const { settings, setSettings, fetchSettings } = useContext(UserContext);
+
     const isFold = useMediaQuery({ query: '(min-width: 1280px)' })
+    const isDesktop = useMediaQuery({ query: '(min-width: 768px)' })
 
     useEffect(() => {
         setLoaded(true);
@@ -74,6 +78,7 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
         }
         return 'zh-CN';
     }
+
 {/* obsolete code 
     // 通用Modal 生成函数
     const showConfirmModal = ({ title, content, onOk }) => {
@@ -180,11 +185,21 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                                 onChange={() => { changeTheme(); }}/> */}
                             </Col>
                         </Row>
-                        <Divider className="setting-divider" />
+                        {isDesktop && <><Divider className="setting-divider" />
                         <Row>
                             <Col span={15} className="setting-title">
                                 <div><span>{t('Tabs_settings_Basic_3_Head')}</span></div>
-                                <div>{t('Tabs_settings_Basic_3_Desc')}</div>
+                            </Col>
+                            <Col span={9} className="setting-item">
+                                <Switch checked={displayMode === 'fullscreen'} 
+                                    onChange={() => { changeDisplayMode(displayMode=='fullscreen' ? 'default' : 'fullscreen'); }}/>
+                            </Col>
+                        </Row></>}
+                        <Divider className="setting-divider" />
+                        <Row>
+                            <Col span={15} className="setting-title">
+                                <div><span>{t('Tabs_settings_Basic_4_Head')}</span></div>
+                                <div>{t('Tabs_settings_Basic_4_Desc')}</div>
                             </Col>
                             <Col span={9} className="setting-item">
                                 <Switch checked={settings?.auto_generate_title}
@@ -194,8 +209,8 @@ function TabSettings({ onCloseTab, changeLanguage, changeTheme }) {
                         <Divider className="setting-divider" />
                         <Row>
                             <Col span={15} className="setting-title">
-                                <div><span>{t('Tabs_settings_Basic_4_Head')}</span></div>
-                                <div>{t('Tabs_settings_Basic_4_Desc')}</div>
+                                <div><span>{t('Tabs_settings_Basic_5_Head')}</span></div>
+                                <div>{t('Tabs_settings_Basic_5_Desc')}</div>
                             </Col>
                             <Col span={9} className="setting-item">
                                 <Switch checked={settings?.render_markdown}

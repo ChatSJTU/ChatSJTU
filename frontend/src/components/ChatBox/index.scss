@@ -43,19 +43,122 @@
 	letter-spacing: 0.75px;
 }
 
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+  
+@keyframes fadeOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+}
+
+.left-fadeIn {
+    animation: fadeInLeft 0.5s ease forwards;
+}
+  
+.left-fadeOut {
+    animation: fadeOutLeft 0.5s ease forwards;
+}
+  
+.ant-upload.ant-upload-select{
+    margin-inline-end: 0px !important;
+}
+
+.ant-upload-list-item-container{
+    margin-right: 12px !important;
+}
+
+.card-preview {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-preview .card-preview-icon-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card-preview:hover .card-preview-icon-wrapper {
+    opacity: 0.8;
+}
+
+.card-preview:hover::after {
+    content: '';
+    position: absolute;
+    top: 8%;
+    left: 8%;
+    bottom: 8%;
+    right: 8%;
+    background: rgba(0, 0, 0, 0.4); /* 灰色遮罩的颜色和透明度 */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.card-preview-img-wrapper {
+    padding: 8px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-preview-img-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
 .text-area{
     @include themify {
         background-color: themed('text-area-bg-color');
     }
 }
 
-.model-popup{
+.popup{
     @include themify {
         background-color: themed('button-bg-color');
     }
 }
 
-.clear-button{
+.btn-upload-image{
+    @include themify {
+        background-color: themed('button-bg-color');
+    }
+}
+
+.btn-upload-image-uploaded{
+    @include themify {
+        background-color: themed('button-bg-color');
+        color: themed('selected-outline-color');
+        border-color: themed('selected-outline-color');
+    }
+}
+
+.badge-uploaded-image-count{
+    @include themify {
+        background-color: themed('selected-outline-color');
+    }
+}
+
+.btn-clear{
     @include themify {
         background-color: themed('button-bg-color');
     }

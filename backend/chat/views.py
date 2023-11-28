@@ -5,29 +5,38 @@ from chat.serializers import (
     MessageSerializer,
     ChatErrorSerializer,
 )
-from chat.models import Session, Message, SessionShared, UserAccount, UserPreference
+from chat.models import (
+    Session,
+    Message,
+    SessionShared,
+    UserAccount,
+    UserPreference,
+    Blob,
+)
 from chat.core import (
     STUDENT_LIMIT,
     handle_message,
     summary_title,
     senword_detector_strict,
 )
-from chat.core.base import GPTPermission, GPTRequest, GPTContext
-from chat.core.errors import ChatError
-from chat.core.plugin import plugins_list_serialized
+from .core.base import GPTPermission, GPTContext, GPTRequest
+from .core.errors import ChatError
+from .core.plugin import plugins_list_serialized
+from .core.configs import CHAT_MODELS, ModelCap
 from oauth.models import UserProfile
 
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from asgiref.sync import sync_to_async
-from adrf.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.admin.options import transaction
 from django.forms.utils import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import F
+from asgiref.sync import sync_to_async
+from adrf.decorators import api_view
 
+from dataclasses import asdict
 from typing import Union
 import logging
 import dateutil.parser
@@ -191,6 +200,7 @@ async def __build_gpt_request(
 
     msg: str = base64.b64decode(request.data.get("message")).decode()
     model_engine: str = request.data.get("model")
+    images = request.data.get("image_urls", []) if model_engine == "OpenAI GPT4" else []
     plugins = request.data.get("plugins")
     plugins: list[str] = plugins if plugins is not None else []
 
@@ -202,6 +212,14 @@ async def __build_gpt_request(
         try:
             context.deadline = last_user_message_obj.timestamp
             msg = last_user_message_obj.content
+            images = await sync_to_async(
+                lambda msg: list(
+                    map(
+                        lambda blob: blob.location,
+                        msg.blob_set.order_by("-timestamp").all(),
+                    )
+                )
+            )(last_user_message_obj)
             context.generation = last_ai_message_obj.generation + 1
         except AttributeError:
             raise ChatError("缺少上一条消息，无法重复生成。", status=404)
@@ -223,6 +241,7 @@ async def __build_gpt_request(
     context.request_time = timezone.now()
     context.regen = regen
     context.cont = cont
+    context.image_urls = images
 
     gpt_request = GPTRequest(
         user=request.user,
@@ -264,12 +283,25 @@ def __save_new_request_rounds(
         generation=context.generation,
         regenerated=context.regen,
         interrupted=context.cont,
+        has_blob=len(context.image_urls) != 0,
         flag_qcmd=ai_message_obj.flag_qcmd,
     )
+
     ai_message_obj.session = session
     ai_message_obj.generation = context.generation
     # 将返回消息加入数据库
     ai_message_obj.save()
+
+    if (
+        CHAT_MODELS[gpt_request.model_engine].image_support
+        and len(context.image_urls) != 0
+    ):
+        Blob.objects.bulk_create(
+            [
+                Blob(message=user_message_obj, location=image_url)
+                for image_url in context.image_urls
+            ]
+        )
     return user_message_obj, ai_message_obj
 
 
@@ -350,6 +382,7 @@ async def send_message(request, session_id):
                 "response_timestamp": ai_message_obj.timestamp.isoformat(),
                 "session_rename": session_rename,
                 "plugin_group": ai_message_obj.plugin_group,
+                "image_urls": gpt_request.context.image_urls,
             }
         )
 
@@ -542,9 +575,9 @@ async def save_shared_session(request):
     except AttributeError:
         return shared
 
-    @transaction.atomic
+    @transaction.atomic()
     def create_fork(snapshot: dict):
-        def strip_time(message: dict):
+        def strip(message: dict):
             message.pop("time")
             return message
 
@@ -552,14 +585,32 @@ async def save_shared_session(request):
             user=request.user,
             name="{0} (forked)".format(snapshot["name"]),
         )
-        Message.objects.bulk_create(
-            [
-                Message(session=session, **strip_time(message))
-                for message in snapshot["messages"]
-            ]
-        )
+
+        for msg in snapshot["messages"]:
+            image_urls = msg.pop("image_urls")
+            has_blob = len(image_urls) != 0
+            message = Message.objects.create(
+                session=session, **strip(msg), has_blob=has_blob
+            )
+            if has_blob:
+                Blob.objects.bulk_create(
+                    [Blob(message=message, location=url) for url in image_urls]
+                )
         return session
 
     session = await sync_to_async(create_fork)(snapshot)
     data = await sync_to_async(lambda session: SessionSerializer(session).data)(session)
     return JsonResponse(data, safe=False)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def list_models(request):
+    return JsonResponse(
+        {
+            name: asdict(cap, dict_factory=ModelCap.dict_factory)
+            for name, cap in CHAT_MODELS.items()
+        },
+        status=200,
+    )

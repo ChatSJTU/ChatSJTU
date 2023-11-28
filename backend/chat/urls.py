@@ -46,4 +46,6 @@ urlpatterns = [
     path("user-preference/", views.user_preference, name="user_preference"),
     # 读取插件列表
     path("list-plugins/", views.list_plugins, name="list_plugins"),
+    # 读取模型列表
+    path("list-models/", views.list_models, name="list_models")
 ]

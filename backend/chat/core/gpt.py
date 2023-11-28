@@ -1,9 +1,8 @@
-import dacite
-from chat.core.errors import ChatError
-from chat.models.message import Message
+from ..models.message import Message
 from .testdata.lipsum import LIPSUM
-from .configs import *
 from .plugins.fc import FCSpec
+from .errors import ChatError
+from .configs import *
 
 from typing_extensions import Self
 from typing import Awaitable, Callable, Union
@@ -12,7 +11,9 @@ from abc import ABC, abstractmethod
 import functools
 import tenacity
 import logging
+import dacite
 import openai
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,7 @@ class FunctionRespHandler(RespHandler):
         if finish_reason == "function_call" or finish_reason == "tool_calls":
             fc_gpt_usage = self.extract_usage(response)
             plugin_resp = await self.adapter(msg, response)
-            message = await super().handle(msg, plugin_resp)
+            message = await self.handle(msg, plugin_resp)
             message.prompt_tokens += fc_gpt_usage.prompt_tokens
             message.completion_tokens += fc_gpt_usage.completion_tokens
             return message
@@ -198,22 +199,15 @@ class MockGPTConnection(AbstractGPTConnection):
 
 
 class GPTConnection(AbstractGPTConnection):
-    def __init__(self, model_engine: str = "Azure GPT3.5", mode: str = "oneshot"):
+    def __init__(self, model_engine: str = "GPT 3.5", mode: str = "oneshot"):
         self.displayed_model = model_engine
         self.__model_kwargs = {}
-        if model_engine == "OpenAI GPT4":
-            self.__model_called = "gpt-4"
-            self.__setup_gpt_environment = self.__setup_openai
-        elif model_engine == "Azure GPT3.5":
-            self.__model_called = "gpt-35-turbo-16k"
-            self.__setup_gpt_environment = self.__setup_azure
-        elif model_engine == "LLAMA 2":
-            self.__model_called = "llama2"
-            self.__setup_gpt_environment = self.__setup_llama2
-        else:
-            raise ChatError("模型不存在")
+        self.__model_called = CHAT_MODELS[model_engine].model_called
+        self.__setup_gpt_environment = getattr(
+            self, "_setup_" + CHAT_MODELS[model_engine].provider
+        )
 
-    def __setup_azure(self):
+    def _setup_azure(self):
         openai.api_type = "azure"
         openai.organization = None
         openai.api_key = AZURE_OPENAI_KEY
@@ -221,7 +215,7 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_version = "2023-07-01-preview"
         self.__model_kwargs["engine"] = self.__model_called
 
-    def __setup_openai(self):
+    def _setup_openai(self):
         openai.api_type = "open_ai"
         openai.organization = OPENAI_ORGANIZATION
         openai.api_key = OPENAI_KEY
@@ -229,7 +223,7 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_version = None
         self.__model_kwargs["model"] = self.__model_called
 
-    def __setup_llama2(self):
+    def _setup_llama2(self):
         openai.api_type = "open_ai"
         openai.organization = None
         openai.api_key = "llama2"

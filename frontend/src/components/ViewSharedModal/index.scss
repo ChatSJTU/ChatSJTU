@@ -58,3 +58,48 @@
         background-color: themed('notice-icon-bg-color');
     }
 }
+
+.card-preview {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-preview .card-preview-icon-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card-preview:hover .card-preview-icon-wrapper {
+    opacity: 0.8;
+}
+
+.card-preview:hover::after {
+    content: '';
+    position: absolute;
+    top: 8%;
+    left: 8%;
+    bottom: 8%;
+    right: 8%;
+    background: rgba(0, 0, 0, 0.4); /* 灰色遮罩的颜色和透明度 */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.card-preview .card-preview-img-wrapper-sharedmodal {
+    padding: 8px;
+    height: 84px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-preview .card-preview-img-wrapper-sharedmodal img{
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}

@@ -1,21 +1,22 @@
-from chat.models import UserPreference, Session, Message
-from chat.core.errors import ChatError
-
-from .gpt import GPTConnection, GPTConnectionFactory
+from ..models import UserPreference, Session, SessionContext, Message
+from .errors import ChatError
 from .utils import senword_detector, senword_detector_strict
+from .gpt import GPTConnectionFactory
 from .configs import (
     OPENAI_MOCK,
     SYSTEM_ROLE,
     SYSTEM_ROLE_STRICT,
     SYSTEM_ROLE_FRIENDLY_TL,
+    CHAT_MODELS,
+    ModelCap,
 )
 from .plugin import check_and_exec_qcmds, PluginResponse, fc_get_specs
 from .plugins.fc import FCSpec
 
-from django.utils.timezone import datetime
 from django.contrib.auth.models import User
-from dataclasses import dataclass, field
-from typing import Union
+from django.utils.timezone import datetime
+from dataclasses import dataclass
+from typing import Union, Optional
 
 import logging
 import functools
@@ -50,6 +51,7 @@ class GPTContext:
     msg: str
     cont: bool
     regen: bool
+    image_urls: list[str]
     generation: int
     deadline: datetime
     request_time: datetime
@@ -69,7 +71,46 @@ class GPTRequest:
     context: GPTContext
     plugins: list[str]
     preference: UserPreference
-    images: list = field(default_factory=lambda: [])
+
+
+class InputListContentFactory:
+    __message: Optional[Message]
+    __context: Optional[GPTContext]
+
+    def __init__(self, model_cap: ModelCap):
+        self.__model_cap = model_cap
+
+    def set_message(self, message: Message):
+        self.__context = None
+        self.__message = message
+        return self
+
+    def set_context(self, context: GPTContext):
+        self.__message = None
+        self.__context = context
+        return self
+
+    def build(self):
+        if self.__message:
+            text = self.__message.content
+            image_urls = self.__message.blobs
+        elif self.__context:
+            text = self.__context.msg
+            image_urls = self.__context.image_urls
+        else:
+            raise RuntimeError(f"Source not defined for {self.__class__.__name__}")
+
+        if self.__model_cap.image_support and len(image_urls) != 0:
+            content = [{"type": "text", "text": text}]
+            content.extend(
+                [
+                    {"type": "image_url", "image_url": {"url": image_url}}
+                    for image_url in image_urls
+                ]
+            )
+            return content
+        else:
+            return text
 
 
 def build_fcspec(id: str):
@@ -91,11 +132,14 @@ async def __build_input_list(request: GPTRequest, session: Session):
         else request.preference.attached_message_count
     )
 
-    raw_recent_msgs = await session.get_recent_n(
-        attached_message_count,
-        attach_with_qcmd=preference.attach_with_qcmd,
-        attach_with_regenerated=preference.attach_with_regenerated,
-        before=context.deadline,
+    history = await session.get_recent_n(
+        sessionContext=SessionContext(
+            n=attached_message_count,
+            with_qcmd=preference.attach_with_qcmd,
+            with_regenerated=preference.attach_with_regenerated,
+            with_blobs=preference.attach_with_blobs,
+            before=context.deadline,
+        ),
     )
 
     # 构造输入
@@ -104,6 +148,11 @@ async def __build_input_list(request: GPTRequest, session: Session):
 
     if preference.use_friendly_sysprompt:
         SYSTEM_PREAMBLE += SYSTEM_ROLE_FRIENDLY_TL.format(str(request.user.username))
+
+    try:
+        builder = InputListContentFactory(CHAT_MODELS[request.model_engine])
+    except KeyError:
+        raise ChatError("无模型匹配")
 
     input_list = [
         {
@@ -115,13 +164,14 @@ async def __build_input_list(request: GPTRequest, session: Session):
         [
             {
                 "role": role[message.sender],
-                "content": message.content,
+                "content": builder.set_message(message).build(),
             }
-            for message in raw_recent_msgs
+            for message in history
         ]
     )
 
-    input_list.append({"role": "user", "content": context.msg})
+    input_list.append({"role": "user", "content": builder.set_context(context).build()})
+
     return input_list
 
 

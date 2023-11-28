@@ -24,5 +24,6 @@
     "ChatBox_PluginList_Title": "已启用的插件：",
     "ChatBox_PluginList_NoActivated": "未启用插件",
     "ChatBox_Popover_Title":"本回复调用了插件：",
-    "ChatBox_Plugin_NotSupported": "本模型尚未支持插件"
+    "ChatBox_Plugin_NotSupported": "本模型尚未支持插件",
+    "ChatBox_UploadPicture": "上传"
 }

@@ -8,6 +8,9 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 if(!localStorage.getItem('themeContextValue')){
     localStorage.setItem('themeContextValue', 'light');
 }
+if(!localStorage.getItem('displayMode')){
+  localStorage.setItem('displayMode', 'default');
+}
 const loadedTheme = localStorage.getItem('themeContextValue');
 document.documentElement.setAttribute('data-theme', loadedTheme);
 

@@ -1,8 +1,16 @@
 import { request } from "./request";
+import Config from '../config/config'
 import { message } from 'antd';
 
 export const uploadFile = async (options) => {
     const { onSuccess, onError, file, onProgress } = options;
+
+    const isSizeLimited = file.size / 1024 / 1024 < Config.UPLOAD_LIMIT_SIZE;
+    if (!isSizeLimited) {
+        message.error(`上传失败：上传文件需小于 ${Config.UPLOAD_LIMIT_SIZE} MB`);
+        onError('文件过大', file);
+        return;
+    }
   
     const formData = new FormData();
     formData.append('file', file);

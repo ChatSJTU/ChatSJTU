@@ -1,0 +1,8 @@
+const Config = {
+    JACCOUNT_CLIENT_ID: "",
+    JACCOUNT_LOGIN_RETURI: "",
+
+    UPLOAD_LIMIT_SIZE: 10   // MB
+}
+
+export default Config;

@@ -165,6 +165,14 @@ class StopRespHandler(RespHandler):
             return await super().handle(msg, response)
 
 
+class DeltaRespHandler(RespHandler):
+    def __init__(self, model: str):
+        return super().__init__(model)
+
+    async def handle(self, msg: list, response: dict) -> Message:
+        pass
+
+
 class AbstractGPTConnection(ABC):
     @abstractmethod
     async def interact(
@@ -173,8 +181,7 @@ class AbstractGPTConnection(ABC):
         temperature=0.5,
         max_tokens=1000,
         selected_plugins: list[FCSpec] = [],
-    ) -> Message:
-        raise NotImplementedError()
+    ) -> Message: ...
 
 
 class MockGPTConnection(AbstractGPTConnection):
@@ -199,7 +206,9 @@ class MockGPTConnection(AbstractGPTConnection):
 
 
 class GPTConnection(AbstractGPTConnection):
-    def __init__(self, model_engine: str = "GPT 3.5", mode: str = "oneshot"):
+    def __init__(
+        self, model_engine: str = "GPT 3.5", mode: str = "oneshot", stream=False
+    ):
         self.displayed_model = model_engine
         self.__model_kwargs = {}
         self.__model_called = CHAT_MODELS[model_engine].model_called
@@ -214,6 +223,13 @@ class GPTConnection(AbstractGPTConnection):
         openai.api_base = AZURE_OPENAI_ENDPOINT
         openai.api_version = "2023-07-01-preview"
         self.__model_kwargs["engine"] = self.__model_called
+
+    def _setup_nextchat(self):
+        openai.api_type = "open_ai"
+        openai.organization = None
+        openai.api_key = NEXTCHAT_KEY
+        openai.api_base = NEXTCHAT_ENDPOINT
+        self.__model_kwargs["model"] = self.__model_called
 
     def _setup_openai(self):
         openai.api_type = "open_ai"
@@ -238,9 +254,12 @@ class GPTConnection(AbstractGPTConnection):
             ]
         self.fc_map = {fc_spec.definition.name: fc_spec for fc_spec in selected_plugins}
 
-    def __setup_gpt(self, temperature: float, max_tokens: int):
+    def __setup_gpt(self, temperature: float, max_tokens: int, stream: bool):
         self.gpt = functools.partial(
-            self.__interact_with_gpt, temperature=temperature, max_tokens=max_tokens
+            self.__interact_with_gpt,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=stream,
         )
 
     def __setup_handlers(self):
@@ -252,11 +271,15 @@ class GPTConnection(AbstractGPTConnection):
         )
 
     def __pre_interact(
-        self, temperature: float, max_tokens: int, selected_plugins: list[FCSpec]
+        self,
+        temperature: float,
+        max_tokens: int,
+        selected_plugins: list[FCSpec],
+        stream: bool,
     ):
         self.__setup_gpt_environment()
         self.__setup_plugins(selected_plugins)
-        self.__setup_gpt(temperature, max_tokens)
+        self.__setup_gpt(temperature, max_tokens, stream)
         self.__setup_handlers()
 
     async def __post_interact(self, msg: list, response: dict) -> Message:
@@ -274,19 +297,23 @@ class GPTConnection(AbstractGPTConnection):
         msg: list,
         temperature: float,
         max_tokens: int,
+        stream: bool,
     ):
         try:
             response = await openai.ChatCompletion.acreate(
                 messages=msg,
                 temperature=temperature,
                 max_tokens=max_tokens,
+                stream=stream,
                 **self.__model_kwargs,
             )
             assert isinstance(response, dict)
             return response
         except openai.error.InvalidRequestError as e:
             logger.error(e)
-            raise ChatError("请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入")
+            raise ChatError(
+                "请求失败，输入可能过长，请前往“偏好设置”减少“附带历史消息数”或缩短输入"
+            )
 
         except openai.error.AuthenticationError as e:
             logger.error(e)
@@ -305,6 +332,7 @@ class GPTConnection(AbstractGPTConnection):
         temperature=0.5,
         max_tokens=1000,
         selected_plugins: list[FCSpec] = [],
+        stream=False,
     ) -> Message:
         """
         使用openai包与openai api进行交互
@@ -318,7 +346,7 @@ class GPTConnection(AbstractGPTConnection):
         Error:
             ChatError: 若出错则抛出以及对应的status code
         """
-        self.__pre_interact(temperature, max_tokens, selected_plugins)
+        self.__pre_interact(temperature, max_tokens, selected_plugins, stream)
 
         try:
             response = await self.gpt(msg)

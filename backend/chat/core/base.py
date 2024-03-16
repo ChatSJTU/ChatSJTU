@@ -55,6 +55,9 @@ class GPTContext:
     generation: int
     deadline: datetime
     request_time: datetime
+    tokens: int
+    prompt_tokens: int
+    completion_tokens: int
 
 
 @dataclass
@@ -71,6 +74,7 @@ class GPTRequest:
     context: GPTContext
     plugins: list[str]
     preference: UserPreference
+
 
 
 class InputListContentFactory:
@@ -123,7 +127,7 @@ def build_fcspec(id: str):
 async def __build_input_list(request: GPTRequest, session: Session):
     context = request.context
     preference = request.preference
-    use_strict_prompt = senword_detector.find(context.msg)
+    # use_strict_prompt = senword_detector.find(context.msg)
 
     # 获取并处理历史消息
     attached_message_count = (
@@ -144,7 +148,7 @@ async def __build_input_list(request: GPTRequest, session: Session):
 
     # 构造输入
     role = ["assistant", "user"]
-    SYSTEM_PREAMBLE = SYSTEM_ROLE_STRICT if use_strict_prompt else SYSTEM_ROLE
+    SYSTEM_PREAMBLE = SYSTEM_ROLE
 
     if preference.use_friendly_sysprompt:
         SYSTEM_PREAMBLE += SYSTEM_ROLE_FRIENDLY_TL.format(str(request.user.username))
@@ -173,6 +177,7 @@ async def __build_input_list(request: GPTRequest, session: Session):
     input_list.append({"role": "user", "content": builder.set_context(context).build()})
 
     return input_list
+
 
 
 async def handle_message(
@@ -206,9 +211,9 @@ async def handle_message(
     if not permission.available:
         raise ChatError("您已到达今日使用上限", status=429)
 
-    if senword_detector_strict.find(context.msg):
-        time.sleep(1)  # 避免处理太快前端显示闪烁
-        raise ChatError("请求存在敏感词")
+    # if senword_detector_strict.find(context.msg):
+    #     time.sleep(1)  # 避免处理太快前端显示闪烁
+    #     raise ChatError("请求存在敏感词")
 
     plugins: list[FCSpec] = functools.reduce(
         lambda x, y: x + y, map(build_fcspec, request.plugins), []
@@ -233,10 +238,11 @@ async def handle_message(
     )
 
     # 输出关键词检测
-    if senword_detector_strict.find(context.msg):
-        raise ChatError("复存在敏感词，已屏蔽")
+    # if senword_detector_strict.find(context.msg):
+    #     raise ChatError("复存在敏感词，已屏蔽")
 
     return response
+
 
 
 async def summary_title(msg: str) -> tuple[bool, str]:
@@ -247,7 +253,7 @@ async def summary_title(msg: str) -> tuple[bool, str]:
         {"role": "user", "content": msg + "\n用小于五个词概括上述文字"},
     ]
     try:
-        connection = GPTConnectionFactory().model_engine().mock(OPENAI_MOCK).build()
+        connection = GPTConnectionFactory().model_engine("NextChat").mock(OPENAI_MOCK).build()
         response = await connection.interact(
             msg=input_list,
             max_tokens=20,

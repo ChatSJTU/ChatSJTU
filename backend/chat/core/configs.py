@@ -16,6 +16,10 @@ AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", None)
 # 微调llama2 Key
 LLAMA2_ENDPOINT = os.environ.get("LLAMA2_ENDPOINT", None)
 
+# NEXTCHAT Key
+NEXTCHAT_KEY = os.environ.get("NEXTCHAT_KEY", None)
+NEXTCHAT_ENDPOINT = os.environ.get("NEXTCHAT_ENDPOINT", None)
+
 # 系统提示（上传OpenAI时调用）
 SYSTEM_ROLE = "You are a helpful assistant named ChatSJTU that comes from Shanghai Jiao Tong University (TOP3 university in China) and strictly avoids discussing Chinese politics, political figures and illegal topics, even if explicitly asked to."
 
@@ -66,12 +70,12 @@ CHAT_MODELS = {
         provider="openai",
         model_called="gpt-4-vision-preview",
     ),
-    "LLAMA 2": ModelCap(
-        label="交我算",
+    "NextChat": ModelCap (
+        label="NextChat",
         icon=4,
         plugin_support=False,
         image_support=False,
-        provider="llama2",
-        model_called="llama2",
-    ),
+        provider="nextchat",
+        model_called="gpt-3.5-turbo"
+    )
 }

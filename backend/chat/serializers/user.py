@@ -1,5 +1,6 @@
 # serializers.py
 from rest_framework import serializers
+from chat.models.user import UserGroup
 from chat.models import UserPreference
 
 
@@ -18,4 +19,14 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
             "use_friendly_sysprompt",
             "auto_generate_title",
             "render_markdown",
+        ]
+
+class UserGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserGroup
+        fields = [
+            "name",
+            "prepaid",
+            "completion_tokens",
+            "prompt_tokens"
         ]

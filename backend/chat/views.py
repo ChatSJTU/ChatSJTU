@@ -1,6 +1,8 @@
 from django.utils.http import base36_to_int, int_to_base36
+from chat.renderers import ServerSentEventRenderer
 from chat.serializers import (
     UserPreferenceSerializer,
+    UserGroupSerializer,
     SessionSerializer,
     MessageSerializer,
     ChatErrorSerializer,
@@ -24,13 +26,16 @@ from .core.errors import ChatError
 from .core.plugin import plugins_list_serialized
 from .core.configs import CHAT_MODELS, ModelCap
 from oauth.models import UserProfile
-
-from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.decorators import (
+    authentication_classes,
+    permission_classes,
+    renderer_classes,
+)
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.admin.options import transaction
 from django.forms.utils import ValidationError
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.db.models import F
 from asgiref.sync import sync_to_async
@@ -242,6 +247,8 @@ async def __build_gpt_request(
     context.regen = regen
     context.cont = cont
     context.image_urls = images
+    context.completion_tokens = 0
+    context.prompt_tokens = 0
 
     gpt_request = GPTRequest(
         user=request.user,
@@ -302,6 +309,11 @@ def __save_new_request_rounds(
                 for image_url in context.image_urls
             ]
         )
+    group = UserAccount.objects.filter(user=session.user).first().group
+    group.completion_tokens += gpt_response.completion_tokens
+    group.prompt_tokens += gpt_response.prompt_tokens
+    group.save(update_fields = ["completion_tokens", "prompt_tokens"])
+
     return user_message_obj, ai_message_obj
 
 
@@ -614,3 +626,42 @@ async def list_models(request):
         },
         status=200,
     )
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+async def perpaid_count(request):
+    return JsonResponse(
+        {
+            name: asdict(cap, dict_factory=ModelCap.dict_factory)
+            for name, cap in CHAT_MODELS.items()
+        },
+        status=200,
+    )
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([AllowAny])
+async def sse_message_stream(request):
+
+    async def event_stream():
+        yield "id: 1\n"
+        yield "event: message\n"
+        yield "data: message data\n\n"
+        return
+
+    response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    response["X-Accel-Buffering"] = "no"  # Disable buffering in nginx
+    response["Cache-Control"] = "no-cache"  # Ensure clients don't cache the data
+    return response
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([AllowAny])
+async def group_usage(request):
+    group = UserAccount.objects.get(user=request.user).group
+    serializer = UserGroupSerializer(group)
+    return JsonResponse(serializer.data)
+

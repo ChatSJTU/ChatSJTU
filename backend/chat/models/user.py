@@ -1,7 +1,21 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+class UserGroup(models.Model):
+    class Meta:
+        verbose_name = "用戶组"
+        verbose_name_plural = verbose_name
+
+    completion_tokens = models.IntegerField(default=0)
+    prompt_tokens = models.IntegerField(default=0)
+    prepaid = models.DecimalField(
+        default=Decimal("0.00"), max_digits=6, decimal_places=2
+    )
+    name = models.CharField(max_length=32, blank=False, null=False)
 
 
 class UserAccount(models.Model):
@@ -11,6 +25,9 @@ class UserAccount(models.Model):
 
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, null=False, blank=False, db_index=True
+    )
+    group = models.ForeignKey(
+        UserGroup, on_delete=models.CASCADE, null=False, blank=False
     )
     usage_count = models.IntegerField(default=0)
     last_used = models.DateField(default=timezone.now)

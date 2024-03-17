@@ -5,7 +5,7 @@ from authlib.jose import jwt
 from authlib.oidc.core import CodeIDToken
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.urls import reverse
@@ -88,6 +88,39 @@ def auth_jaccount(request):
             Session.objects.create(name='新会话', user=user)
         return JsonResponse({"message": "login success"}, status=200)
     return JsonResponse({"message": "login failed"}, status=400)
+
+# 用户名密码登录
+@api_view(['POST'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([AllowAny])
+def signin(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+    if not user:
+        return JsonResponse({"message": "login failed"}, status=400)
+    UserProfile.objects.update_or_create(user=user)
+    UserAccount.objects.update_or_create(user=user)
+    UserPreference.objects.update_or_create(user=user)
+    login(request, user)
+    return JsonResponse({"message": "login success"}, status=200)
+
+# 用户名密码注册
+@api_view(['POST'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([AllowAny])
+def register(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    if not username or not password:
+        return JsonResponse({"message": "用户名和密码不能为空"}, status=403)
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"message": "用户名已存在"}, status=403)
+    user = User(username=username)
+    user.set_password(password)
+    user.save()
+    login(request, user)
+    return JsonResponse({"message": "login success"}, status=200)
 
 # 获取用户信息和账户
 @api_view(['GET'])

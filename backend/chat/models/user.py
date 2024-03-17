@@ -23,11 +23,18 @@ class UserAccount(models.Model):
         verbose_name = "账户"
         verbose_name_plural = verbose_name
 
+    def get_default_usergroup():
+        group, created = UserGroup.objects.get_or_create(
+            defaults={'name': '默认组', 'completion_tokens': 0, 'prompt_tokens': 0, 'prepaid': '0.00'},
+            name='默认组'
+        )
+        return group.id
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, null=False, blank=False, db_index=True
     )
     group = models.ForeignKey(
-        UserGroup, on_delete=models.CASCADE, null=False, blank=False
+        UserGroup, on_delete=models.CASCADE, null=False, blank=False, default=get_default_usergroup
     )
     usage_count = models.IntegerField(default=0)
     last_used = models.DateField(default=timezone.now)

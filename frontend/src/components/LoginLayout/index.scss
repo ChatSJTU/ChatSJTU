@@ -35,3 +35,9 @@
         color: themed('reversed-color');
     }
 }
+
+.login-frame {
+    @include themify {
+        background: rgba(themed('ant-menu-color'), 0.4);
+    }
+}

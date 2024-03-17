@@ -33,6 +33,34 @@ export async function jAccountLogin(basePath, next, params = "") {
     window.location.href = `http://localhost:8000/oauth/jaccount/login/?redirect_uri=${redirect_uri}`;
 }
 
+//用户名密码登录
+export async function accountLogin(username, password) {
+    try {
+        const response = await request.post('/oauth/login/', {
+            username,
+            password
+        }); 
+        return response.data;
+    } catch (error) {
+        console.error('Failed to login:', error);
+        throw error;
+    }
+};
+
+//用户名密码注册
+export async function accountRegister(username, password) {
+    try {
+        const response = await request.post('/oauth/register/', {
+            username,
+            password
+        }); 
+        return response.data;
+    } catch (error) {
+        console.error('Failed to register:', error);
+        throw error;
+    }
+};
+
 //获取用户信息
 export async function fetchUserProfile() {
     try {

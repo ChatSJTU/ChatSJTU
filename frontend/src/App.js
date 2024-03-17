@@ -7,7 +7,7 @@ import MainLayout from './components/MainLayout/desktop'
 import MainLayoutMobile from './components/MainLayout/mobile';
 import LoginLayout from './components/LoginLayout';
 import { request } from "./services/request";
-import { jAccountAuth, jAccountLogin} from "./services/user";
+import { accountLogin, accountRegister, jAccountAuth, jAccountLogin} from "./services/user";
 import { ThemeContext } from './contexts/ThemeContext';
 import { DisplayContext } from './contexts/DisplayContext';
 import enUS from 'antd/locale/en_US';
@@ -106,6 +106,35 @@ const App = () => {
         }
     };
 
+    const onLoginFinish = (values) => {
+        accountLogin(values.username, values.password)
+        .then((resp) => {
+            message.success('登录成功，跳转中……');
+            setIsLoggedIn(true);
+        })
+        .catch((error) => {
+            message.error('请求时发生错误：' + error?.response?.data?.message);
+        })
+        .finally(() => {
+            
+        });
+    };
+
+    const onRegisterFinish = (values) => {
+        accountRegister(values.username, values.password)
+        .then((resp) => {
+            message.success('注册成功，跳转中……');
+            setIsLoggedIn(true);
+        })
+        .catch((error) => {
+            message.error('请求时发生错误：' + error?.response?.data?.message);
+        })
+        .finally(() => {
+            
+        });
+    };
+
+
     // const getDeviceId = () => {
     //     const { userAgent } = navigator;
     //     const hashCode = (s) => {
@@ -180,7 +209,8 @@ const App = () => {
             >
                 <div className="layout-container" style={{ height: '100%' }}>
                     <LoginLayout 
-                        handleLogin={() => jAccountLogin('/', "", new URLSearchParams(window.location.search).toString())}
+                        handleLogin={onLoginFinish}
+                        handleRegister={onRegisterFinish}
                         changeLanguage={changeLanguage}
                     />
                 </div>

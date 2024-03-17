@@ -2,6 +2,8 @@
     "Tabs_wallet_Title": "Account Information",
     "Tabs_wallet_Subtitle_1": "Permissions",
     "Tabs_wallet_Subtitle_2": "Usage",
+    "Tabs_wallet_Subtitle_3": "Balance",
+    "Tabs_wallet_Subtitle_4": "Bill",
     "Tabs_wallet_Perm_Title": "Username: ",
     "Tabs_wallet_Perm_Student_1": "Daily limit of 20 model conversation rounds",
     "Tabs_wallet_Perm_Student_2": "Use campus service quick commands",
@@ -17,5 +19,11 @@
     "Tabs_wallet_User_Label7": "Faculty of SHSMU",
     "Tabs_wallet_Usage_Title": "Model quota for today: ",
     "Tabs_wallet_Usage_Head": "",
-    "Tabs_wallet_Usage_End": " used"
+    "Tabs_wallet_Usage_End": " used",
+    "Tabs_wallet_Usage_Column_prompt_tokens": "Prompt Token",
+    "Tabs_wallet_Usage_Column_completion_tokens": "Completion Token",
+    "Tabs_wallet_Balance_Statistic1": "Balance (CNY)",
+    "Tabs_wallet_Balance_Statistic2": "Available Tokens",
+    "Tabs_wallet_Balance_Button": "Recharge",
+    "Tabs_wallet_Balance_Tooltip": "The unit price of tokens varies for different models, requests and responses. Here is the converted amount. "
 }

@@ -119,6 +119,9 @@ def register(request):
     user = User(username=username)
     user.set_password(password)
     user.save()
+    UserProfile.objects.update_or_create(user=user)
+    UserAccount.objects.update_or_create(user=user)
+    UserPreference.objects.update_or_create(user=user)
     login(request, user)
     return JsonResponse({"message": "login success"}, status=200)
 

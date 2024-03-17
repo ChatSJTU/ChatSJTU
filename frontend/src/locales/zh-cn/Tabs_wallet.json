@@ -2,6 +2,8 @@
     "Tabs_wallet_Title": "账户信息",
     "Tabs_wallet_Subtitle_1": "权限",
     "Tabs_wallet_Subtitle_2": "用量",
+    "Tabs_wallet_Subtitle_3": "余额",
+    "Tabs_wallet_Subtitle_4": "明细",
     "Tabs_wallet_Perm_Title": "用户名",
     "Tabs_wallet_Perm_Student_1": "每日限用20条模型对话",
     "Tabs_wallet_Perm_Student_2": "使用校园服务快捷命令",
@@ -17,5 +19,11 @@
     "Tabs_wallet_User_Label7": "医学院教职工",
     "Tabs_wallet_Usage_Title": "今日默认模型用量：",
     "Tabs_wallet_Usage_Head": "已用",
-    "Tabs_wallet_Usage_End": "条"
+    "Tabs_wallet_Usage_End": "条",
+    "Tabs_wallet_Usage_Column_prompt_tokens": "提示 Token",
+    "Tabs_wallet_Usage_Column_completion_tokens": "回复 Token",
+    "Tabs_wallet_Balance_Statistic1": "余额（元）",
+    "Tabs_wallet_Balance_Statistic2": "可用 Token 数",
+    "Tabs_wallet_Balance_Button": "充值",
+    "Tabs_wallet_Balance_Tooltip": "不同模型、输入与输出的 token 单价不同，此处为换算后数额"
 }

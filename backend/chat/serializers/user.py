@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from chat.models.user import UserGroup
 from chat.models import UserPreference
+from .bill import *
 
 
 class UserPreferenceSerializer(serializers.ModelSerializer):
@@ -21,12 +22,19 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
             "render_markdown",
         ]
 
+
 class UserGroupSerializer(serializers.ModelSerializer):
+
+    usage = serializers.SerializerMethodField()
+    bills = serializers.SerializerMethodField()
+
     class Meta:
         model = UserGroup
-        fields = [
-            "name",
-            "prepaid",
-            "completion_tokens",
-            "prompt_tokens"
-        ]
+        fields = ["name", "balance", "usage", "bills"]
+
+    def get_usage(self, obj):
+        return TokenUsageSerializer(list(obj.token_usage_set[:10]), many=True).data
+
+    def get_bills(self, obj):
+        return BillSerializer(list(obj.bill_set[:10]), many=True).data
+

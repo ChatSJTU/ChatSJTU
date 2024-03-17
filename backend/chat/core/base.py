@@ -1,4 +1,12 @@
-from ..models import UserPreference, Session, SessionContext, Message
+from ..models import (
+    UserPreference,
+    Session,
+    SessionContext,
+    Message,
+    UserAccount,
+    UserGroup,
+    TokenUsage
+)
 from .errors import ChatError
 from .utils import senword_detector, senword_detector_strict
 from .gpt import GPTConnectionFactory
@@ -48,16 +56,14 @@ async def check_and_handle_qcmds(msg: str) -> Union[Message, None]:
 
 @dataclass(init=False)
 class GPTContext:
-    msg: str
+    request_msg: str
     cont: bool
     regen: bool
     image_urls: list[str]
     generation: int
     deadline: datetime
     request_time: datetime
-    tokens: int
     prompt_tokens: int
-    completion_tokens: int
 
 
 @dataclass
@@ -69,12 +75,12 @@ class GPTPermission:
 @dataclass
 class GPTRequest:
     user: User
+    token_usage : TokenUsage
     model_engine: str
     permission: GPTPermission
     context: GPTContext
     plugins: list[str]
     preference: UserPreference
-
 
 
 class InputListContentFactory:
@@ -99,7 +105,7 @@ class InputListContentFactory:
             text = self.__message.content
             image_urls = self.__message.blobs
         elif self.__context:
-            text = self.__context.msg
+            text = self.__context.request_msg
             image_urls = self.__context.image_urls
         else:
             raise RuntimeError(f"Source not defined for {self.__class__.__name__}")
@@ -132,7 +138,7 @@ async def __build_input_list(request: GPTRequest, session: Session):
     # 获取并处理历史消息
     attached_message_count = (
         max(request.preference.attached_message_count, 2)
-        if context.msg == "continue"
+        if context.request_msg == "continue"
         else request.preference.attached_message_count
     )
 
@@ -179,7 +185,6 @@ async def __build_input_list(request: GPTRequest, session: Session):
     return input_list
 
 
-
 async def handle_message(
     session: Session,
     request: GPTRequest,
@@ -203,8 +208,8 @@ async def handle_message(
     permission = request.permission
 
     # 快捷命令
-    if context.msg[0] == "/":
-        resp = await check_and_handle_qcmds(context.msg)
+    if context.request_msg[0] == "/":
+        resp = await check_and_handle_qcmds(context.request_msg)
         if resp is not None:
             return resp
     # 查询上限
@@ -244,7 +249,6 @@ async def handle_message(
     return response
 
 
-
 async def summary_title(msg: str) -> tuple[bool, str]:
     """
     用于概括会话标题
@@ -253,11 +257,14 @@ async def summary_title(msg: str) -> tuple[bool, str]:
         {"role": "user", "content": msg + "\n用小于五个词概括上述文字"},
     ]
     try:
-        connection = GPTConnectionFactory().model_engine("NextChat").mock(OPENAI_MOCK).build()
+        connection = (
+            GPTConnectionFactory().model_engine("NextChat").mock(OPENAI_MOCK).build()
+        )
         response = await connection.interact(
             msg=input_list,
             max_tokens=20,
             temperature=0.1,
+            stream=False
         )
     except ChatError:
         return False, ""

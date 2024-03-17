@@ -1,4 +1,5 @@
 from django.utils.http import base36_to_int, int_to_base36
+from transformers import AutoTokenizer
 from chat.renderers import ServerSentEventRenderer
 from chat.serializers import (
     UserPreferenceSerializer,
@@ -13,6 +14,8 @@ from chat.models import (
     SessionShared,
     UserAccount,
     UserPreference,
+    UserGroup,
+    TokenUsage,
     Blob,
 )
 from chat.core import (
@@ -201,13 +204,20 @@ async def __build_gpt_request(
     except UserPreference.DoesNotExist:
         raise ChatError("用户信息错误", status=404)
 
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
     context = GPTContext()
-
     msg: str = base64.b64decode(request.data.get("message")).decode()
     model_engine: str = request.data.get("model")
     images = request.data.get("image_urls", []) if model_engine == "OpenAI GPT4" else []
     plugins = request.data.get("plugins")
     plugins: list[str] = plugins if plugins is not None else []
+
+    group = await UserGroup.objects.aget(name=request.user.username)
+    usage, created = await sync_to_async(
+        lambda group: TokenUsage.objects.get_or_create(
+            group=group, datetime=timezone.now().today(), model=model_engine
+        )
+    )(group)
 
     cont: bool = msg == "continue"
     regen: bool = msg == "%regenerate%"
@@ -242,16 +252,16 @@ async def __build_gpt_request(
         context.generation = 1
         context.deadline = timezone.now()
 
-    context.msg = msg
+    context.request_msg = msg
     context.request_time = timezone.now()
     context.regen = regen
     context.cont = cont
     context.image_urls = images
-    context.completion_tokens = 0
-    context.prompt_tokens = 0
+    context.prompt_tokens = len(tokenizer.tokenize(msg))
 
     gpt_request = GPTRequest(
         user=request.user,
+        token_usage=usage,
         model_engine=model_engine,
         permission=permission,
         context=context,
@@ -285,7 +295,7 @@ def __save_new_request_rounds(
     user_message_obj = Message.objects.create(
         sender=1,
         session=session,
-        content=context.msg,
+        content=context.request_msg,
         timestamp=context.request_time,
         generation=context.generation,
         regenerated=context.regen,
@@ -296,6 +306,7 @@ def __save_new_request_rounds(
 
     ai_message_obj.session = session
     ai_message_obj.generation = context.generation
+    ai_message_obj.prompt_tokens = context.prompt_tokens
     # 将返回消息加入数据库
     ai_message_obj.save()
 
@@ -309,10 +320,11 @@ def __save_new_request_rounds(
                 for image_url in context.image_urls
             ]
         )
-    group = UserAccount.objects.filter(user=session.user).first().group
-    group.completion_tokens += gpt_response.completion_tokens
-    group.prompt_tokens += gpt_response.prompt_tokens
-    group.save(update_fields = ["completion_tokens", "prompt_tokens"])
+
+    token_usage = gpt_request.token_usage
+    token_usage.prompt_tokens += ai_message_obj.prompt_tokens
+    token_usage.completion_tokens += ai_message_obj.completion_tokens
+    token_usage.save(update_fields=["prompt_tokens", "completion_tokens"])
 
     return user_message_obj, ai_message_obj
 
@@ -335,7 +347,7 @@ async def __post_message(
             .values_list("is_renamed", flat=True)
             .afirst()
         ) and preference.auto_generate_title:
-            re_success, re_resp = await summary_title(msg=context.msg)
+            re_success, re_resp = await summary_title(msg=context.request_msg)
             if re_success:
                 session.name = re_resp
                 session_rename = re_resp
@@ -374,33 +386,39 @@ async def send_message(request, session_id):
         request, last_user_message_obj, last_ai_message_obj
     )
 
-    try:
-        gpt_response = await handle_message(session=session, request=gpt_request)
+    async def response_stream(session, reqeust):
+        async for gpt_response in await handle_message(
+            session=session, request=gpt_request
+        ):
+            print(gpt_response)
+            if isinstance(gpt_response, Message):
+                try:
+                    user_message_obj, ai_message_obj = await sync_to_async(
+                        __save_new_request_rounds
+                    )(session, gpt_request, gpt_response)
 
-        user_message_obj, ai_message_obj = await sync_to_async(
-            __save_new_request_rounds
-        )(session, gpt_request, gpt_response)
+                    session_rename = await __post_message(
+                        session_id, session, preference, gpt_request, gpt_response
+                    )
 
-        session_rename = await __post_message(
-            session_id, session, preference, gpt_request, gpt_response
-        )
+                    return JsonResponse(
+                        {
+                            "message": ai_message_obj.content,
+                            "flag_qcmd": ai_message_obj.flag_qcmd,
+                            "use_model": ai_message_obj.use_model,
+                            "send_timestamp": user_message_obj.timestamp.isoformat(),
+                            "response_timestamp": ai_message_obj.timestamp.isoformat(),
+                            "session_rename": session_rename,
+                            "plugin_group": ai_message_obj.plugin_group,
+                            "image_urls": gpt_request.context.image_urls,
+                        }
+                    )
 
-        return JsonResponse(
-            {
-                "message": ai_message_obj.content,
-                "flag_qcmd": ai_message_obj.flag_qcmd,
-                "use_model": ai_message_obj.use_model,
-                "send_timestamp": user_message_obj.timestamp.isoformat(),
-                "response_timestamp": ai_message_obj.timestamp.isoformat(),
-                "session_rename": session_rename,
-                "plugin_group": ai_message_obj.plugin_group,
-                "image_urls": gpt_request.context.image_urls,
-            }
-        )
+                except ChatError as e:
+                    serializer = ChatErrorSerializer(e)
+                    return JsonResponse(serializer.data, status=e.status)
 
-    except ChatError as e:
-        serializer = ChatErrorSerializer(e)
-        return JsonResponse(serializer.data, status=e.status)
+    return await response_stream(session, request)
 
 
 # 更新使用次数
@@ -627,18 +645,6 @@ async def list_models(request):
         status=200,
     )
 
-@api_view(["GET"])
-@authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
-async def perpaid_count(request):
-    return JsonResponse(
-        {
-            name: asdict(cap, dict_factory=ModelCap.dict_factory)
-            for name, cap in CHAT_MODELS.items()
-        },
-        status=200,
-    )
-
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
@@ -657,11 +663,12 @@ async def sse_message_stream(request):
     return response
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([AllowAny])
-async def group_usage(request):
-    group = UserAccount.objects.get(user=request.user).group
-    serializer = UserGroupSerializer(group)
-    return JsonResponse(serializer.data)
-
+async def group(request):
+    name: str = request.get("name")
+    account = await UserAccount.objects.aget(user=request.user)
+    group = await UserGroup.objects.aget(useraccount=account, name=name)
+    data = await sync_to_async(lambda group: UserGroupSerializer(group).data)(group)
+    return JsonResponse(data, safe=False)

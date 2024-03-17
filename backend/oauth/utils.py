@@ -16,7 +16,7 @@ jaccount = oauth.jaccount
 
 AGREE_USERTYPE = ['faculty', 'fs', 'postphd', 'student', 'team', 'vip', 'yxy']
 
-USE_WHITELIST = True
+USE_WHITELIST = False
 
 JACCOUNT_WHITELIST = []
 if os.environ.get('JACCOUNT_WHITELIST', None):

@@ -120,6 +120,26 @@ class RespHandler(AbstractRespHandler):
             return await self.__next.handle(msg, response)
         return await super().handle(msg, response)
 
+    async def handle_delta(self, stream):
+
+        msg = Message(
+            sender=0,
+            flag_qcmd=False,
+            content="",
+            interrupted=0,
+            plugin_group="",
+            use_model=self.model,
+            completion_tokens=0,
+            prompt_tokens=0,
+        )
+
+        async for resp in stream:
+            if not resp["choices"][-1].get("finish_reason"):
+                content = resp["choices"][-1]["delta"]["content"]
+                msg.content += content
+                yield content
+
+        yield msg
 
 class LengthRespHandler(RespHandler):
     def __init__(self, model: str):
@@ -165,14 +185,6 @@ class StopRespHandler(RespHandler):
             return await super().handle(msg, response)
 
 
-class DeltaRespHandler(RespHandler):
-    def __init__(self, model: str):
-        return super().__init__(model)
-
-    async def handle(self, msg: list, response: dict) -> Message:
-        pass
-
-
 class AbstractGPTConnection(ABC):
     @abstractmethod
     async def interact(
@@ -181,6 +193,7 @@ class AbstractGPTConnection(ABC):
         temperature=0.5,
         max_tokens=1000,
         selected_plugins: list[FCSpec] = [],
+        stream: bool = True
     ) -> Message: ...
 
 
@@ -194,6 +207,7 @@ class MockGPTConnection(AbstractGPTConnection):
         temperature=0.5,
         max_tokens=1000,
         selected_plugins: list[FCSpec] = [],
+        stream: bool = True
     ) -> Message:
         return Message(
             sender=0,
@@ -283,7 +297,10 @@ class GPTConnection(AbstractGPTConnection):
         self.__setup_handlers()
 
     async def __post_interact(self, msg: list, response: dict) -> Message:
-        return await self.__handler.handle(msg, response)
+        if isinstance(response, dict):
+            return await self.__handler.handle(msg, response)
+        else:
+            return self.__handler.handle_delta(response)
 
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -307,7 +324,6 @@ class GPTConnection(AbstractGPTConnection):
                 stream=stream,
                 **self.__model_kwargs,
             )
-            assert isinstance(response, dict)
             return response
         except openai.error.InvalidRequestError as e:
             logger.error(e)
@@ -332,7 +348,7 @@ class GPTConnection(AbstractGPTConnection):
         temperature=0.5,
         max_tokens=1000,
         selected_plugins: list[FCSpec] = [],
-        stream=False,
+        stream=True,
     ) -> Message:
         """
         使用openai包与openai api进行交互
@@ -350,7 +366,6 @@ class GPTConnection(AbstractGPTConnection):
 
         try:
             response = await self.gpt(msg)
-            assert isinstance(response, dict)
             return await self.__post_interact(msg, response)
 
         except openai.error.RateLimitError as e:

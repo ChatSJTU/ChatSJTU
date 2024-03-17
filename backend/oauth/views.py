@@ -100,8 +100,14 @@ def signin(request):
     if not user:
         return JsonResponse({"message": "login failed"}, status=400)
     UserProfile.objects.update_or_create(user=user)
-    UserAccount.objects.update_or_create(user=user)
+    account, _ = UserAccount.objects.get_or_create(user=user)
     UserPreference.objects.update_or_create(user=user)
+    group_defaults = {
+        "name": username,
+    }
+    group, _ = UserGroup.objects.get_or_create(**group_defaults)
+    account.groups.add(group)
+    account.save()
     login(request, user)
     return JsonResponse({"message": "login success"}, status=200)
 

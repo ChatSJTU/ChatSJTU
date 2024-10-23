@@ -17,7 +17,7 @@
     "i18next-http-backend": "^2.2.1",
     "js-base64": "^3.7.5",
     "marked": "^5.1.1",
-    "node-sass": "^9.0.0",
+    "node-sass": "9.0.0",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-copy-to-clipboard": "^5.1.0",
@@ -34,6 +34,7 @@
     "remark-gfm": "^3.0.1",
     "remark-html": "^15.0.2",
     "remark-math": "^5.1.1",
+    "sass": "~1.78.0",
     "sass-loader": "^13.3.2",
     "web-vitals": "^2.1.4"
   },

@@ -423,7 +423,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
                 { !(item.sender === 1 && (item.regenerated || item.interrupted)) &&
                 <List.Item 
                     className={item.sender === 1 ? 'user-message' : 'bot-message'}  
-                    style={{padding: '20px 46px 20px 50px', wordBreak: 'break-all'}}>
+                    style={{padding: isFold || isFoldMobile ? '10px 21px 10px 25px' : '20px 46px 20px 50px', wordBreak: 'break-all'}}>
                     <div style={{ width: '100%'}}>
                         <List.Item.Meta
                             // avatar={item.sender ? userIcon : aiIcon}
@@ -555,7 +555,7 @@ function ChatBox({ onChangeSessionInfo, onChangeComponent, curRightComponent}) {
             </div>)}
         />
         
-        <div className='sendbox-area' style={{ padding: '20px 50px', position: 'relative'}}>
+        <div className='sendbox-area' style={{ padding: isFold || isFoldMobile ? '10px 25px' : '20px 50px', position: 'relative'}}>
                 {/* <Button 
                     icon={<ArrowDownOutlined />} 
                     style={{ position: 'absolute', top: -40, right: 10, zIndex: 10 }}

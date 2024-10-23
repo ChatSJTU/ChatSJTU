@@ -70,7 +70,7 @@ const App = () => {
         if (autologin === 'True') {
             jAccountLogin('/', "", urlParams.toString());
         }
-    });
+    }, []);
 
     //分析URL中code参数（jac登录）
     useEffect(() => {
@@ -87,7 +87,7 @@ const App = () => {
             const urlParams = new URLSearchParams(window.location.search);
             handleJacTokenExchange(code, state, urlParams.toString());
         }
-    });
+    }, []);
 
     //jaccount登录之交换令牌
     const handleJacTokenExchange = async (code, state, params = "") => {
